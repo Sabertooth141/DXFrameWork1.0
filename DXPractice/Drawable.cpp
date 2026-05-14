@@ -5,14 +5,14 @@
 
 void Drawable::Draw(Renderer& renderer)
 {
-	for (auto& bound: GetStaticBinds())
+	for (auto& iBind: GetStaticBinds())
 	{
-		bound->Bind(renderer);
+		iBind->Bind(renderer);
 	}
 
-	for (auto& bound : binds)
+	for (auto& iBind : binds)
 	{
-		bound->Bind(renderer);
+		iBind->Bind(renderer);
 	}
 
 	renderer.DrawIndexed(pIndexBuffer->GetIndexCount());

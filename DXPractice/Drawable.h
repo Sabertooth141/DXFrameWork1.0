@@ -14,6 +14,7 @@ class Drawable
 	friend class DrawableBase;
 
 public:
+
 	Drawable() = default;
 	virtual ~Drawable() = default;
 	Drawable(const Drawable&) = delete;
@@ -29,8 +30,10 @@ protected:
 private:
 	virtual const std::vector<std::unique_ptr<Bindable>>& GetStaticBinds() = 0;
 
+protected:
+	IndexBuffer* pIndexBuffer = nullptr;
+
 private:
-	const IndexBuffer* pIndexBuffer = nullptr;
 	std::vector<std::unique_ptr<Bindable>> binds;
 };
 
