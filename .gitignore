@@ -1,0 +1,71 @@
+# ========================
+#  Visual Studio
+# ========================
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.vcxproj.filters
+*.VC.db
+*.VC.opendb
+
+# ========================
+#  Build Output
+# ========================
+[Dd]ebug/
+[Rr]elease/
+[Xx]64/
+[Xx]86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+out/
+
+# ========================
+#  CMake (if applicable)
+# ========================
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+CMakeSettings.json
+build/
+install/
+_deps/
+
+# ========================
+#  Compiled Shaders
+# ========================
+*.cso
+*.fxo
+*.pdb
+
+# ========================
+#  C++ General
+# ========================
+*.obj
+*.lib
+*.dll
+*.exe
+*.ilk
+*.map
+*.exp
+*.idb
+*.ipdb
+*.iobj
+*.pgc
+*.pgd
+*.rsp
+*.tlog
+
+# ========================
+#  Logs & Misc
+# ========================
+*.log
+*.cache
+ipch/
+*.opensdf
+*.sdf
+*.psess
