@@ -8,5 +8,5 @@ int CALLBACK WinMain(
 	int nCmdShow
 )
 {
-	return App{ lpCmdLine }.Start();
+	return App{ lpCmdLine }.Run();
 }

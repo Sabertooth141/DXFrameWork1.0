@@ -86,6 +86,24 @@ Renderer::Renderer(HWND hWnd, int width, int height)
 	vp.MinDepth = 0;
 	vp.MaxDepth = 1;
 	pContext->RSSetViewports(1, &vp);
+
+	// view and proj matrices
+	viewMatrix = DirectX::XMMatrixLookAtLH(
+
+		{0, 0, -5}, // camera position
+		{0, 0, 0}, // look target
+		{0, 1, 0} // up
+
+	);
+
+	projMatrix = DirectX::XMMatrixPerspectiveFovLH(
+
+		70.0f,
+		width / height,
+		0.1f,
+		100.0f
+
+	);
 }
 
 void Renderer::BeginFrame(float r, float g, float b)

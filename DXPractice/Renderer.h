@@ -2,6 +2,7 @@
 #include "Win.h"
 
 #include <d3d11.h>
+#include <DirectXMath.h>
 #include <wrl.h>
 
 class Bindable;
@@ -9,15 +10,26 @@ class Bindable;
 class Renderer
 {
 	friend class Bindable;
+
 public:
 	Renderer(HWND hWnd, int width, int height);
-	Renderer(const Renderer&) = delete;
-	Renderer& operator = (const Renderer&) = delete;
+	Renderer(const Renderer&) = default;
+	Renderer& operator =(const Renderer&) = default;
 	~Renderer() = default;
 
 	void BeginFrame(float r, float g, float b);
 	void EndFrame();
 	void DrawIndexed(UINT count);
+
+	DirectX::XMMATRIX GetView()
+	{
+		return viewMatrix;
+	}
+
+	DirectX::XMMATRIX GetProj()
+	{
+		return projMatrix;
+	}
 
 private:
 	Microsoft::WRL::ComPtr<ID3D11Device> pDevice;
@@ -25,4 +37,7 @@ private:
 	Microsoft::WRL::ComPtr<IDXGISwapChain> pSwapChain;
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> pRTV;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> pDSV;
+
+	DirectX::XMMATRIX viewMatrix;
+	DirectX::XMMATRIX projMatrix;
 };
