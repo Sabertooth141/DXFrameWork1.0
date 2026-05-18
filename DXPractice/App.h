@@ -20,6 +20,8 @@ private:
 	void HandleInput(float deltaTime);
 	void Draw(float deltaTime);
 private:
+	float angle = 0;
+
 	std::string cmdLine;
 
 	Window wnd;

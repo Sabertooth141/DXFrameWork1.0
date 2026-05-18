@@ -34,7 +34,6 @@ void App::Init()
 {
 	model = std::make_unique<Model>(renderer, "../../assets/testCube.obj");
 
-
 	LightData light = {};
 	light.lightPos = {0.0f, 3.0f, -5.0f};
 	light.ambient = {0.1f, 0.1f, 0.1f};
@@ -49,7 +48,6 @@ void App::Init()
 
 void App::Update(float deltaTime)
 {
-	float angle = 0;
 	angle += deltaTime;
 
 	LightData light = {};
@@ -59,7 +57,6 @@ void App::Update(float deltaTime)
 		3,
 		cosf(angle) * -5
 	};
-
 
 	light.ambient = { 0.1f, 0.1f, 0.1f };
 	light.diffuseColor = { 1.0f, 1.0f, 1.0f };
@@ -78,7 +75,7 @@ void App::HandleInput(float deltaTime)
 
 void App::Draw(float deltaTime)
 {
-	renderer.BeginFrame(1, 1, 1);
+	renderer.BeginFrame(.3, .3, .3);
 
 	lightCBuffer->Bind(renderer);
 	model->Draw(renderer);
