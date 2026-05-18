@@ -58,11 +58,11 @@ void App::Update(float deltaTime)
 		cosf(angle) * -5
 	};
 
-	light.ambient = { 0.1f, 0.1f, 0.1f };
-	light.diffuseColor = { 1.0f, 1.0f, 1.0f };
+	light.ambient = { 1, 0.1f, 0.1f };
+	light.diffuseColor = { 0, 1.0f, 1.0f };
 	light.diffuseIntensity = 1.0f;
-	light.attConst = 1.0f;
-	light.attLin = 0.045f;
+	light.attConst = 0.2f;
+	light.attLin = 0.0045f;
 	light.attQuad = 0.0075f;
 
 	lightCBuffer->Update(renderer, light);
