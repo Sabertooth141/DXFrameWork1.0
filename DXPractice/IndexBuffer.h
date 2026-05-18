@@ -6,7 +6,7 @@
 class IndexBuffer : public Bindable
 {
 public:
-	IndexBuffer(Renderer& renderer, const std::vector<unsigned short>& indices);
+	IndexBuffer(Renderer& renderer, const std::vector<unsigned int>& indices);
 	void Bind(Renderer& renderer) override;
 	UINT GetIndexCount() const;
 private:

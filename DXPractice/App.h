@@ -2,8 +2,10 @@
 #include "Window.h"
 #include <string>
 
-#include "Box.h"
+#include "LightCBuffer.h"
 #include "Timer.h"
+
+class Model;
 
 class App
 {
@@ -23,6 +25,7 @@ private:
 	Window wnd;
 	Renderer renderer;
 	Timer timer;
-	Box box;
+	std::unique_ptr<Model> model;
+	std::unique_ptr<LightCBuffer> lightCBuffer;
 };
 

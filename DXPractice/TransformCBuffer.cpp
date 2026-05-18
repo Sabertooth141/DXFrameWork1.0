@@ -2,7 +2,7 @@
 
 #include "Drawable.h"
 
-TransformCBuffer::TransformCBuffer(Renderer& renderer, Drawable& parent) : parent(parent), vCBuffer(renderer, Transforms{})
+TransformCBuffer::TransformCBuffer(Renderer& renderer, Drawable& parent) : parent(parent), vCBuffer(renderer, Transforms{}, 0)
 {
 }
 

@@ -98,8 +98,8 @@ Renderer::Renderer(HWND hWnd, int width, int height)
 
 	projMatrix = DirectX::XMMatrixPerspectiveFovLH(
 
-		70.0f,
-		width / height,
+		DirectX::XMConvertToRadians(70),
+		static_cast<float>(width) / static_cast<float>(height),
 		0.1f,
 		100.0f
 

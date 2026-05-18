@@ -41,14 +41,19 @@ class VertexConstantBuffer : public ConstantBuffer<T>
     using ConstantBuffer<T>::GetContext;
 
 public:
+    VertexConstantBuffer(Renderer& renderer, const T& data, UINT slot = 0) : ConstantBuffer<T>(renderer, data), slot(slot)
+	{}
     using ConstantBuffer<T>::ConstantBuffer;
 
     void Bind(Renderer& renderer) override
     {
         GetContext(renderer)->VSSetConstantBuffers(
-            0, 1, pConstantBuffer.GetAddressOf()
+            slot, 1, pConstantBuffer.GetAddressOf()
         );
     }
+
+private:
+    UINT slot;
 };
 
 template<typename T>
@@ -58,12 +63,17 @@ class PixelConstantBuffer : public ConstantBuffer<T>
     using ConstantBuffer<T>::GetContext;
 
 public:
+    PixelConstantBuffer(Renderer& renderer, const T& data, UINT slot = 0) : ConstantBuffer<T>(renderer, data), slot(slot)
+	{}
     using ConstantBuffer<T>::ConstantBuffer;
 
     void Bind(Renderer& renderer) override
     {
         GetContext(renderer)->PSSetConstantBuffers(
-            0, 1, pConstantBuffer.GetAddressOf()
+            slot, 1, pConstantBuffer.GetAddressOf()
         );
     }
+
+private:
+    UINT slot;
 };

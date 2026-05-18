@@ -1,9 +1,10 @@
 #include "App.h"
 
+#include "Model.h"
+
 App::App(const std::string& cmdLine) : cmdLine(cmdLine),
                                        wnd(800, 600, L"DXPractice"),
-                                       renderer(wnd.GetRenderer()),
-                                       box(wnd.GetRenderer())
+                                       renderer(wnd.GetRenderer())
 {
 }
 
@@ -31,11 +32,44 @@ int App::Run()
 
 void App::Init()
 {
+	model = std::make_unique<Model>(renderer, "../../assets/testCube.obj");
+
+
+	LightData light = {};
+	light.lightPos = {0.0f, 3.0f, -5.0f};
+	light.ambient = {0.1f, 0.1f, 0.1f};
+	light.diffuseColor = {1.0f, 1.0f, 1.0f};
+	light.diffuseIntensity = 1.0f;
+	light.attConst = 1.0f;
+	light.attLin = 0.045f;
+	light.attQuad = 0.0075f;
+
+	lightCBuffer = std::make_unique<LightCBuffer>(renderer, light);
 }
 
 void App::Update(float deltaTime)
 {
-	box.Update(deltaTime);
+	float angle = 0;
+	angle += deltaTime;
+
+	LightData light = {};
+	light.lightPos =
+	{
+		sinf(angle) * 5,
+		3,
+		cosf(angle) * -5
+	};
+
+
+	light.ambient = { 0.1f, 0.1f, 0.1f };
+	light.diffuseColor = { 1.0f, 1.0f, 1.0f };
+	light.diffuseIntensity = 1.0f;
+	light.attConst = 1.0f;
+	light.attLin = 0.045f;
+	light.attQuad = 0.0075f;
+
+	lightCBuffer->Update(renderer, light);
+
 }
 
 void App::HandleInput(float deltaTime)
@@ -45,6 +79,8 @@ void App::HandleInput(float deltaTime)
 void App::Draw(float deltaTime)
 {
 	renderer.BeginFrame(1, 1, 1);
-	box.Draw(renderer);
+
+	lightCBuffer->Bind(renderer);
+	model->Draw(renderer);
 	renderer.EndFrame();
 }
