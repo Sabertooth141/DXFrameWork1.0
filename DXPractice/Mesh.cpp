@@ -26,13 +26,13 @@ Mesh::Mesh(Renderer& renderer, const std::vector<Vertex>& vertices, const std::v
             {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0}
         };
 
-        AddStaticBind(std::make_unique<InputLayout>(renderer, layout, vsByteCode));
-        AddStaticBind(std::make_unique<Topology>(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
+        AddStaticBind(std::make_unique<InputLayout>(renderer, layout, vsByteCode)); // done
+        AddStaticBind(std::make_unique<Topology>(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));// done
     }
 
     // per instance
-    AddBind(std::make_unique<VertexBuffer>(renderer, vertices));
-    AddIndexBuffer(std::make_unique<IndexBuffer>(renderer, indices));
+    AddBind(std::make_unique<VertexBuffer>(renderer, vertices));//done
+    AddIndexBuffer(std::make_unique<IndexBuffer>(renderer, indices));// done
 
     AddBind(std::make_unique<TransformCBuffer>(renderer, *this));
 
@@ -41,7 +41,7 @@ Mesh::Mesh(Renderer& renderer, const std::vector<Vertex>& vertices, const std::v
     mat.specularIntensity = 1.0f;
     mat.specularPower = 32.0f;
 
-    AddBind(std::make_unique<MaterialCBuffer>(renderer, mat));
+    AddBind(std::make_unique<MaterialCBuffer>(renderer, mat)); // done
 
 }
 

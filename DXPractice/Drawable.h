@@ -19,9 +19,9 @@ public:
 	virtual ~Drawable() = default;
 	Drawable(const Drawable&) = delete;
 
-	virtual void Update(float deltaTime) = 0;
-	virtual DirectX::XMMATRIX GetTransformMatrix() = 0;
-	void Draw(Renderer& renderer);
+	//virtual void Update(float deltaTime) = 0;
+	//virtual DirectX::XMMATRIX GetTransformMatrix() = 0;
+	virtual void Draw(Renderer& renderer);
 
 protected:
 	void AddBind(std::unique_ptr<Bindable> bind);
@@ -32,8 +32,6 @@ private:
 
 protected:
 	IndexBuffer* pIndexBuffer = nullptr;
-
-private:
-	std::vector<std::unique_ptr<Bindable>> binds;
+	std::vector<std::unique_ptr<Bindable>> bindings;
 };
 

@@ -10,7 +10,7 @@ void Drawable::Draw(Renderer& renderer)
 		iBind->Bind(renderer);
 	}
 
-	for (auto& iBind : binds)
+	for (auto& iBind : bindings)
 	{
 		iBind->Bind(renderer);
 	}
@@ -21,12 +21,12 @@ void Drawable::Draw(Renderer& renderer)
 void Drawable::AddBind(std::unique_ptr<Bindable> bind)
 {
 	assert("*MUST* use AddIndexBuffer to bind index buffer" && typeid(*bind) != typeid(IndexBuffer));
-	binds.push_back(std::move(bind));
+	bindings.push_back(std::move(bind));
 }
 
 void Drawable::AddIndexBuffer(std::unique_ptr<IndexBuffer> iBuffer)
 {
 	assert("Attempting to add index buffer a second time" && pIndexBuffer == nullptr);
 	pIndexBuffer = iBuffer.get();
-	binds.push_back(std::move(iBuffer));
+	bindings.push_back(std::move(iBuffer));
 }
