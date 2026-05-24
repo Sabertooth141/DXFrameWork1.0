@@ -44,12 +44,3 @@ Mesh::Mesh(Renderer& renderer, const std::vector<Vertex>& vertices, const std::v
     AddBind(std::make_unique<MaterialCBuffer>(renderer, mat)); // done
 
 }
-
-void Mesh::Update(float deltaTime)
-{
-}
-
-DirectX::XMMATRIX Mesh::GetTransformMatrix()
-{
-	return DirectX::XMMatrixTranslation(position.x, position.y, position.z);
-}

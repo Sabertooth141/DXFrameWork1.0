@@ -14,9 +14,6 @@ public:
 	Mesh(Renderer& renderer,
 		const std::vector<Vertex>& vertices,
 		const std::vector<unsigned int>& indices);
-	void Update(float deltaTime) override;
-
-	DirectX::XMMATRIX GetTransformMatrix() override;
 
 private:
 	DirectX::XMFLOAT3 position = {0, 0, 0};
