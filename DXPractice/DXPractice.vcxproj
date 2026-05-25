@@ -139,7 +139,6 @@
     <ClCompile Include="LightCBuffer.cpp" />
     <ClCompile Include="MaterialCBuffer.cpp" />
     <ClCompile Include="MaterialComponent.cpp" />
-    <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="MeshComponent.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="PixelShader.cpp" />
@@ -163,8 +162,8 @@
     <ClInclude Include="Material.h" />
     <ClInclude Include="MaterialCBuffer.h" />
     <ClInclude Include="MaterialComponent.h" />
-    <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshComponent.h" />
+    <ClInclude Include="MeshData.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="IndexBuffer.h" />
@@ -174,6 +173,7 @@
     <ClInclude Include="Topology.h" />
     <ClInclude Include="TransformCBuffer.h" />
     <ClInclude Include="TransformComponent.h" />
+    <ClInclude Include="Vertex.h" />
     <ClInclude Include="VertexBuffer.h" />
     <ClInclude Include="VertexShader.h" />
     <ClInclude Include="Win.h" />

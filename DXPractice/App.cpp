@@ -75,9 +75,8 @@ void App::HandleInput(float deltaTime)
 
 void App::Draw(float deltaTime)
 {
-	renderer.BeginFrame(.3, .3, .3);
+	renderer.BeginFrame(0.3f, 0.3f, 0.3f);
 
 	lightCBuffer->Bind(renderer);
-	model->Draw(renderer);
 	renderer.EndFrame();
 }

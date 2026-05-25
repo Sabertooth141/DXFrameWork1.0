@@ -3,8 +3,7 @@
 
 #include "Bindable.h"
 #include "ConstantBuffer.h"
-
-class Drawable;
+#include "TransformComponent.h"
 
 struct Transforms
 {
@@ -16,12 +15,12 @@ struct Transforms
 class TransformCBuffer : public Bindable
 {
 public:
-	TransformCBuffer(Renderer& renderer, Drawable& parent);
+	TransformCBuffer(Renderer& renderer, const TransformComponent& transformComp);
 
 	void Bind(Renderer& renderer) override;
 
 private:
-	Drawable& parent;
 	VertexConstantBuffer<Transforms> vCBuffer;
+	const TransformComponent& transformComp;
 };
 

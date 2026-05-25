@@ -1,7 +1,5 @@
 #include "Model.h"
 
-#include "Mesh.h"
-
 Model::Model(Renderer& renderer, const std::string& path)
 {
 	Assimp::Importer importer;
@@ -25,20 +23,12 @@ Model::Model(Renderer& renderer, const std::string& path)
 	ProcessNode(renderer, scene->mRootNode, scene);
 }
 
-void Model::Draw(Renderer& renderer)
-{
-	for (auto& mesh : meshes)
-	{
-		mesh->Draw(renderer);
-	}
-}
-
 void Model::ProcessNode(Renderer& renderer, aiNode* node, const aiScene* scene)
 {
 	for (unsigned i = 0; i < node->mNumMeshes; i++)
 	{
 		auto mesh = scene->mMeshes[node->mMeshes[i]];
-		meshes.push_back(ProcessMesh(renderer, mesh));
+		meshData.push_back(ProcessMesh(mesh));
 	}
 
 	for (unsigned i = 0; i < node->mNumChildren; i++)
@@ -47,10 +37,9 @@ void Model::ProcessNode(Renderer& renderer, aiNode* node, const aiScene* scene)
 	}
 }
 
-std::unique_ptr<Mesh> Model::ProcessMesh(Renderer& renderer, aiMesh* mesh)
+MeshData Model::ProcessMesh(aiMesh* mesh)
 {
-	std::vector<Vertex> vertices;
-	std::vector<unsigned int> indices;
+	MeshData result;
 
 	// vertices
 	for (unsigned i = 0; i < mesh->mNumVertices; i++)
@@ -81,7 +70,7 @@ std::unique_ptr<Mesh> Model::ProcessMesh(Renderer& renderer, aiMesh* mesh)
 			v.texcoord = {0, 0};
 		}
 
-		vertices.push_back(v);
+		result.vertices.push_back(v);
 	}
 
 	// indices
@@ -90,9 +79,9 @@ std::unique_ptr<Mesh> Model::ProcessMesh(Renderer& renderer, aiMesh* mesh)
 		const aiFace& face = mesh->mFaces[i];
 		for (unsigned j = 0; j < face.mNumIndices; j++)
 		{
-			indices.push_back(face.mIndices[j]);
+			result.indices.push_back(face.mIndices[j]);
 		}
 	}
 
-	return std::make_unique<Mesh>(renderer, vertices, indices);
+	return result;
 }

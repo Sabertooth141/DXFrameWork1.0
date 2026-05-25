@@ -4,7 +4,8 @@
 
 #include "Component.h"
 #include "DrawableBase.h"
-#include "Mesh.h"
+#include "TransformComponent.h"
+#include "Vertex.h"
 
 /**
  * handles vertices, indices, binds VB IB and topology on construct
@@ -13,6 +14,6 @@
 class MeshComponent : public Component, public DrawableBase<MeshComponent>
 {
 public:
-	MeshComponent(Renderer& renderer, std::vector<Vertex>& vertices, std::vector<unsigned int>& indices);
+	MeshComponent(Renderer& renderer, std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, TransformComponent& transformComp);
 };
 

@@ -86,9 +86,6 @@
     <ClCompile Include="TransformCBuffer.cpp">
       <Filter>Source Files\Graphics\Bindable</Filter>
     </ClCompile>
-    <ClCompile Include="Mesh.cpp">
-      <Filter>Source Files\Graphics\Drawable</Filter>
-    </ClCompile>
     <ClCompile Include="Model.cpp">
       <Filter>Source Files\Graphics</Filter>
     </ClCompile>
@@ -105,7 +102,7 @@
       <Filter>Source Files\Components</Filter>
     </ClCompile>
     <ClCompile Include="TransformComponent.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Components</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -154,25 +151,16 @@
     <ClInclude Include="Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mesh.h">
-      <Filter>Header Files\Graphics\Drawable</Filter>
-    </ClInclude>
     <ClInclude Include="Model.h">
       <Filter>Header Files\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="LightCBuffer.h">
       <Filter>Header Files\Graphics\Bindable</Filter>
     </ClInclude>
-    <ClInclude Include="Light.h">
-      <Filter>Header Files\Graphics\Bindable</Filter>
-    </ClInclude>
     <ClInclude Include="MaterialCBuffer.h">
       <Filter>Header Files\Graphics\Bindable</Filter>
     </ClInclude>
     <ClInclude Include="TransformCBuffer.h">
-      <Filter>Header Files\Graphics\Bindable</Filter>
-    </ClInclude>
-    <ClInclude Include="Material.h">
       <Filter>Header Files\Graphics\Bindable</Filter>
     </ClInclude>
     <ClInclude Include="Component.h">
@@ -185,7 +173,19 @@
       <Filter>Header Files\Components</Filter>
     </ClInclude>
     <ClInclude Include="TransformComponent.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Light.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Vertex.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshData.h">
+      <Filter>Header Files\Graphics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
