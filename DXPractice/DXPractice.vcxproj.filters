@@ -40,6 +40,18 @@
     <Filter Include="Source Files\Components">
       <UniqueIdentifier>{1f4439e2-dd7b-4db4-af3e-600f1149bbe4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\GameObject">
+      <UniqueIdentifier>{da45f1ff-bb5a-4ebb-ba18-575a0719e52e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GameObject">
+      <UniqueIdentifier>{2f7c51a6-b7e0-47bf-9312-eb27e841f0b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Input">
+      <UniqueIdentifier>{75128cf3-7bad-4aae-b153-98f2af8fc9c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Input">
+      <UniqueIdentifier>{0748f28e-6082-4898-bef1-faa2b6dee259}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Image Include="small.ico">
@@ -86,7 +98,7 @@
     <ClCompile Include="TransformCBuffer.cpp">
       <Filter>Source Files\Graphics\Bindable</Filter>
     </ClCompile>
-    <ClCompile Include="Model.cpp">
+    <ClCompile Include="ModelReader.cpp">
       <Filter>Source Files\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="LightCBuffer.cpp">
@@ -103,6 +115,12 @@
     </ClCompile>
     <ClCompile Include="TransformComponent.cpp">
       <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObject.cpp">
+      <Filter>Source Files\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="InputSystem.cpp">
+      <Filter>Source Files\Input</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -151,7 +169,7 @@
     <ClInclude Include="Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Model.h">
+    <ClInclude Include="ModelReader.h">
       <Filter>Header Files\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="LightCBuffer.h">
@@ -186,6 +204,12 @@
     </ClInclude>
     <ClInclude Include="MeshData.h">
       <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObject.h">
+      <Filter>Header Files\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="InputSystem.h">
+      <Filter>Header Files\Input</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

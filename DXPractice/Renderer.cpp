@@ -90,7 +90,7 @@ Renderer::Renderer(HWND hWnd, int width, int height)
 	// view and proj matrices
 	viewMatrix = DirectX::XMMatrixLookAtLH(
 
-		{0, 0, -5}, // camera position
+		{5, 5, -5}, // camera position
 		{0, 0, 0}, // look target
 		{0, 1, 0} // up
 

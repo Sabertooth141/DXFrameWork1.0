@@ -34,7 +34,10 @@ HINSTANCE Window::WindowClass::GetInstance()
 	return wndClass.hInstance;
 }
 
-Window::Window(int width, int height, const wchar_t* name) : width(width), height(height)
+Window::Window(int width, int height, const wchar_t* name, InputSystem& inputSystem) :
+	width(width),
+	height(height),
+	input(inputSystem)
 {
 	RECT wr;
 	wr.left = 100;
@@ -58,7 +61,6 @@ Window::Window(int width, int height, const wchar_t* name) : width(width), heigh
 	ShowWindow(hWnd, SW_SHOWDEFAULT);
 
 	renderer.emplace(hWnd, width, height);
-
 }
 
 Renderer& Window::GetRenderer()
@@ -94,7 +96,7 @@ LRESULT Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 	if (msg == WM_NCCREATE)
 	{
 		const CREATESTRUCTW* const pCreate = reinterpret_cast<CREATESTRUCTW*>(lParam);
-		Window* const pWnd = static_cast<Window*>(pCreate->lpCreateParams);
+		const auto pWnd = static_cast<Window*>(pCreate->lpCreateParams);
 		SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pWnd));
 		SetWindowLongPtr(hWnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&Window::HandleMsgInterpret));
 
@@ -106,7 +108,7 @@ LRESULT Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 
 LRESULT Window::HandleMsgInterpret(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	Window* const pWnd = reinterpret_cast<Window*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+	const auto pWnd = reinterpret_cast<Window*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
 	return pWnd->HandleMsg(hWnd, msg, wParam, lParam);
 }
 
@@ -118,9 +120,9 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		PostQuitMessage(0);
 		return 0;
 	// keyboard msg
-		// TODO: keyboard event 
 	case WM_KEYDOWN:
 	case WM_SYSKEYDOWN:
+		if (!(lParam & 0x400000000))
 		break;
 	case WM_KEYUP:
 	case WM_SYSKEYUP:
@@ -129,7 +131,7 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		break;
 
 	// mouse msg
-		// TODO: mouse event
+	// TODO: mouse event
 	case WM_MOUSEMOVE:
 		break;
 	default:

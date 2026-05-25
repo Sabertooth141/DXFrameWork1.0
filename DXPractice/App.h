@@ -2,10 +2,12 @@
 #include "Window.h"
 #include <string>
 
+#include "InputSystem.h"
 #include "LightCBuffer.h"
 #include "Timer.h"
 
-class Model;
+class GameObject;
+class ModelReader;
 
 class App
 {
@@ -27,7 +29,10 @@ private:
 	Window wnd;
 	Renderer renderer;
 	Timer timer;
-	std::unique_ptr<Model> model;
+	std::unique_ptr<ModelReader> model;
 	std::unique_ptr<LightCBuffer> lightCBuffer;
+
+	std::vector<std::unique_ptr<GameObject>> gameObjects;
+	InputSystem inputSystem;
 };
 

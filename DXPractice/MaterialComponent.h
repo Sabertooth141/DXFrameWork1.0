@@ -7,10 +7,15 @@ struct MaterialData;
  * handles materials, shaders, input layouts
  * binds vs, ps, inputLayout and matCBuffer
  */
-class MaterialComponent : public Component, public DrawableBase<MaterialComponent>
+class MaterialComponent : public Component
 {
 public:
-	MaterialComponent(Renderer& renderer, MaterialData& matData);
-	void Draw(Renderer& renderer) override;
+	MaterialComponent(Renderer& renderer, const MaterialData& matData);
+
+	void Bind(Renderer& renderer);
+
+private:
+	static std::vector<std::unique_ptr<Bindable>> staticBinds;
+	std::vector<std::unique_ptr<Bindable>> instanceBinds;
 };
 

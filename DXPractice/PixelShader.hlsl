@@ -45,7 +45,8 @@ float4 main(
 	float3 specular = att * diffuseColor * pow(max(0, dot(refl, toEye)), specularPower) * specularIntensity;
 
 	// texture
-	float3 texColor = tex.Sample(sampler0, texcoord).rgb;
+    float4 texSample = tex.Sample(sampler0, texcoord);
+    float3 texColor = any(texSample.rgb) ? texSample.rgb : float3(1, 1, 1);
 
 	float3 result = saturate((diffuse + ambient) * texColor * matColor + specular);
 	return float4(result, 1); 

@@ -134,13 +134,15 @@
     <ClCompile Include="App.cpp" />
     <ClCompile Include="Bindable.cpp" />
     <ClCompile Include="Drawable.cpp" />
+    <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="IndexBuffer.cpp" />
     <ClCompile Include="InputLayout.cpp" />
+    <ClCompile Include="InputSystem.cpp" />
     <ClCompile Include="LightCBuffer.cpp" />
     <ClCompile Include="MaterialCBuffer.cpp" />
     <ClCompile Include="MaterialComponent.cpp" />
     <ClCompile Include="MeshComponent.cpp" />
-    <ClCompile Include="Model.cpp" />
+    <ClCompile Include="ModelReader.cpp" />
     <ClCompile Include="PixelShader.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Topology.cpp" />
@@ -157,6 +159,8 @@
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="Drawable.h" />
     <ClInclude Include="DrawableBase.h" />
+    <ClInclude Include="GameObject.h" />
+    <ClInclude Include="InputSystem.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="LightCBuffer.h" />
     <ClInclude Include="Material.h" />
@@ -164,7 +168,7 @@
     <ClInclude Include="MaterialComponent.h" />
     <ClInclude Include="MeshComponent.h" />
     <ClInclude Include="MeshData.h" />
-    <ClInclude Include="Model.h" />
+    <ClInclude Include="ModelReader.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="IndexBuffer.h" />
     <ClInclude Include="InputLayout.h" />

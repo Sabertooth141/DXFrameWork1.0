@@ -1,6 +1,8 @@
-#include "Model.h"
+#include "ModelReader.h"
 
-Model::Model(Renderer& renderer, const std::string& path)
+#include <assimp/postprocess.h>
+
+ModelReader::ModelReader(Renderer& renderer, const std::string& path)
 {
 	Assimp::Importer importer;
 
@@ -23,12 +25,17 @@ Model::Model(Renderer& renderer, const std::string& path)
 	ProcessNode(renderer, scene->mRootNode, scene);
 }
 
-void Model::ProcessNode(Renderer& renderer, aiNode* node, const aiScene* scene)
+std::vector<MeshData> ModelReader::GetMeshes() const
+{
+	return meshData;
+}
+
+void ModelReader::ProcessNode(Renderer& renderer, aiNode* node, const aiScene* scene)
 {
 	for (unsigned i = 0; i < node->mNumMeshes; i++)
 	{
 		auto mesh = scene->mMeshes[node->mMeshes[i]];
-		meshData.push_back(ProcessMesh(mesh));
+		meshData.push_back(ProcessMesh(mesh, scene));
 	}
 
 	for (unsigned i = 0; i < node->mNumChildren; i++)
@@ -37,7 +44,7 @@ void Model::ProcessNode(Renderer& renderer, aiNode* node, const aiScene* scene)
 	}
 }
 
-MeshData Model::ProcessMesh(aiMesh* mesh)
+MeshData ModelReader::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 {
 	MeshData result;
 
@@ -71,6 +78,11 @@ MeshData Model::ProcessMesh(aiMesh* mesh)
 		}
 
 		result.vertices.push_back(v);
+	}
+	// texture
+	if (mesh->mMaterialIndex < scene->mNumMaterials)
+	{
+		
 	}
 
 	// indices

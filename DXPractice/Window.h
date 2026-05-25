@@ -2,6 +2,7 @@
 #include <optional>
 #include <string>
 
+#include "InputSystem.h"
 #include "Win.h"
 #include "Renderer.h"
 
@@ -24,7 +25,7 @@ private:
 		HINSTANCE hInstance;
 	};
 public:
-	Window(int width, int height, const wchar_t* name);
+	Window(int width, int height, const wchar_t* name, InputSystem& inputSystem);
 	~Window() = default;
 	Window(const Window&) = delete;
 	Window& operator = (const Window&) = delete;
@@ -44,5 +45,6 @@ private:
 	int width;
 	int height;
 	std::optional<Renderer> renderer;
+	InputSystem& input;
 };
 

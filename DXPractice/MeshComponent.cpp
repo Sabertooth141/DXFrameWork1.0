@@ -4,10 +4,10 @@
 #include "TransformCBuffer.h"
 #include "VertexBuffer.h"
 
-MeshComponent::MeshComponent(Renderer& renderer, std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, TransformComponent& transformComp)
+MeshComponent::MeshComponent(Renderer& renderer, MeshData& meshData, TransformComponent& transformComp)
 {
-	AddBind(std::make_unique<VertexBuffer>(renderer, vertices));
-	AddIndexBuffer(std::make_unique<IndexBuffer>(renderer, indices));
+	AddBind(std::make_unique<VertexBuffer>(renderer, meshData.vertices));
+	AddIndexBuffer(std::make_unique<IndexBuffer>(renderer, meshData.indices));
 	AddBind(std::make_unique<TransformCBuffer>(renderer, transformComp));
 
 	if (!IsStaticInit())
