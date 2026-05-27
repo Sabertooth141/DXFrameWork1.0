@@ -34,10 +34,9 @@ HINSTANCE Window::WindowClass::GetInstance()
 	return wndClass.hInstance;
 }
 
-Window::Window(int width, int height, const wchar_t* name, InputSystem& inputSystem) :
+Window::Window(int width, int height, const wchar_t* name) :
 	width(width),
-	height(height),
-	input(inputSystem)
+	height(height)
 {
 	RECT wr;
 	wr.left = 100;
@@ -119,15 +118,23 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_CLOSE:
 		PostQuitMessage(0);
 		return 0;
+	case WM_KILLFOCUS:
+		keyboard.ClearState();
+		break;
 	// keyboard msg
 	case WM_KEYDOWN:
 	case WM_SYSKEYDOWN:
-		if (!(lParam & 0x400000000))
+		if (!(lParam & 0x40000000) || keyboard.AutorepeatIsEnabled())
+		{
+			keyboard.OnKeyPressed(static_cast<unsigned char>(wParam));
+		}
 		break;
 	case WM_KEYUP:
 	case WM_SYSKEYUP:
+		keyboard.OnKeyReleased(static_cast<unsigned char>(wParam));
 		break;
 	case WM_CHAR:
+		keyboard.OnChar(static_cast<unsigned char>(wParam));
 		break;
 
 	// mouse msg
