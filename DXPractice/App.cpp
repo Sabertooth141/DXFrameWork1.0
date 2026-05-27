@@ -5,7 +5,7 @@
 #include "ModelReader.h"
 
 App::App(const std::string& cmdLine) : cmdLine(cmdLine),
-                                       wnd(800, 600, L"DXPractice", inputSystem),
+                                       wnd(800, 600, L"DXPractice"),
                                        renderer(wnd.GetRenderer())
 {
 }

@@ -137,7 +137,7 @@
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="IndexBuffer.cpp" />
     <ClCompile Include="InputLayout.cpp" />
-    <ClCompile Include="InputSystem.cpp" />
+    <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="LightCBuffer.cpp" />
     <ClCompile Include="MaterialCBuffer.cpp" />
     <ClCompile Include="MaterialComponent.cpp" />
@@ -160,7 +160,7 @@
     <ClInclude Include="Drawable.h" />
     <ClInclude Include="DrawableBase.h" />
     <ClInclude Include="GameObject.h" />
-    <ClInclude Include="InputSystem.h" />
+    <ClInclude Include="Keyboard.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="LightCBuffer.h" />
     <ClInclude Include="Material.h" />

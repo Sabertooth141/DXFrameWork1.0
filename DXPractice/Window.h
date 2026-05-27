@@ -2,7 +2,7 @@
 #include <optional>
 #include <string>
 
-#include "InputSystem.h"
+#include "Keyboard.h"
 #include "Win.h"
 #include "Renderer.h"
 
@@ -25,7 +25,7 @@ private:
 		HINSTANCE hInstance;
 	};
 public:
-	Window(int width, int height, const wchar_t* name, InputSystem& inputSystem);
+	Window(int width, int height, const wchar_t* name);
 	~Window() = default;
 	Window(const Window&) = delete;
 	Window& operator = (const Window&) = delete;
@@ -35,6 +35,8 @@ public:
 
 	Renderer& GetRenderer();
 
+public:
+	Keyboard keyboard;
 private:
 	static LRESULT CALLBACK HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK HandleMsgInterpret(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -45,6 +47,5 @@ private:
 	int width;
 	int height;
 	std::optional<Renderer> renderer;
-	InputSystem& input;
 };
 
