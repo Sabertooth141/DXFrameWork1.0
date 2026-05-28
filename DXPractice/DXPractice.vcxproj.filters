@@ -120,11 +120,10 @@
       <Filter>Source Files\GameObject</Filter>
     </ClCompile>
     <ClCompile Include="Keyboard.cpp">
-<<<<<<< HEAD
       <Filter>Source Files\Input</Filter>
-=======
-      <Filter>Source Files</Filter>
->>>>>>> 08e7cceabd6c7ec494522c264be568198f813c13
+    </ClCompile>
+    <ClCompile Include="Mouse.cpp">
+      <Filter>Source Files\Input</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -213,6 +212,9 @@
       <Filter>Header Files\GameObject</Filter>
     </ClInclude>
     <ClInclude Include="Keyboard.h">
+      <Filter>Header Files\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Mouse.h">
       <Filter>Header Files\Input</Filter>
     </ClInclude>
   </ItemGroup>

@@ -121,6 +121,22 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_KILLFOCUS:
 		keyboard.ClearState();
 		break;
+	case WM_ACTIVATE:
+		if (!cursorEnabled)
+		{
+			if (wParam & WA_ACTIVE)
+			{
+				ConfineCursor();
+				HideCursor();
+			}
+			else
+			{
+				FreeCursor();
+				ShowCursor();
+			}
+		}
+		break;
+
 	// keyboard msg
 	case WM_KEYDOWN:
 	case WM_SYSKEYDOWN:
@@ -138,12 +154,179 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		break;
 
 	// mouse msg
-	// TODO: mouse event
 	case WM_MOUSEMOVE:
+	{
+		const POINTS pt = MAKEPOINTS(lParam);
+
+		if (!cursorEnabled)
+		{
+			if (!mouse.isInWindow)
+			{
+				SetCapture(hWnd);
+				mouse.OnMouseEnter();
+				HideCursor();
+			}
+			break;
+		}
+		// in client region -> log move first | in client region NOW but not BEFORE -> log enter + focus on window
+		if (pt.x >= 0 && pt.x < width && pt.y >= 0 && pt.y < height)
+		{
+			mouse.OnMouseMove(pt.x, pt.y);
+			if (!mouse.IsInWindow())
+			{
+				SetCapture(hWnd);
+				mouse.OnMouseEnter();
+			}
+		}
+		// for out-of-window tracking - if button down still log move | if not release
+		else
+		{
+			if (wParam & (MK_LBUTTON | MK_RBUTTON))
+			{
+				mouse.OnMouseMove(pt.x, pt.y);
+			}
+			else
+			{
+				ReleaseCapture();
+				mouse.OnMouseLeave();
+			}
+		}
 		break;
+	}
+	case WM_LBUTTONDOWN:
+	{
+		SetForegroundWindow(hWnd);
+		if (!cursorEnabled)
+		{
+			ConfineCursor();
+			HideCursor();
+		}
+
+		const POINTS pt = MAKEPOINTS(lParam);
+		mouse.OnLeftPressed(pt.x, pt.y);
+		break;
+	}
+	case WM_RBUTTONDOWN:
+	{
+		const POINTS pt = MAKEPOINTS(lParam);
+		mouse.OnRightPressed(pt.x, pt.y);
+		break;
+	}
+	case WM_LBUTTONUP:
+	{
+		const POINTS pt = MAKEPOINTS(lParam);
+		mouse.OnLeftReleased(pt.x, pt.y);
+		// release mouse if outside window
+		if (pt.x < 0 || pt.x >= width || pt.y < 0 || pt.y >= height)
+		{
+			ReleaseCapture();
+			mouse.OnMouseLeave();
+		}
+		break;
+	}
+	case WM_RBUTTONUP:
+	{
+		const POINTS pt = MAKEPOINTS(lParam);
+		mouse.OnRightReleased(pt.x, pt.y);
+		// release mouse if outside window
+		if (pt.x < 0 || pt.x >= width || pt.y < 0 || pt.y >= height)
+		{
+			ReleaseCapture();
+			mouse.OnMouseLeave();
+		}
+		break;
+	}
+	case WM_MOUSEWHEEL:
+	{
+		const POINTS pt = MAKEPOINTS(lParam);
+		const int delta = GET_WHEEL_DELTA_WPARAM(wParam);
+		mouse.OnWheelDelta(pt.x, pt.y, delta);
+		break;
+	}
+
+	// raw mouse msg
+	case WM_INPUT:
+	{
+		if (!mouse.rawEnabled)
+		{
+			break;
+		}
+
+		UINT size;
+		// first get size
+		if (GetRawInputData(
+			reinterpret_cast<HRAWINPUT>(lParam),
+			RID_INPUT,
+			nullptr,
+			&size,
+			sizeof(RAWINPUTHEADER)) == -1)
+		{
+			// bail if err
+			break;
+		}
+		rawBuffer.resize(size);
+
+		// read input data
+		if ((GetRawInputData(
+			reinterpret_cast<HRAWINPUT>(lParam),
+			RID_INPUT,
+			rawBuffer.data(),
+			&size,
+			sizeof(RAWINPUTHEADER)) != size))
+		{
+			// bail if err
+			break;
+		}
+
+		const RAWINPUT& ri = reinterpret_cast<const RAWINPUT&>(*rawBuffer.data());
+		if (ri.header.dwType == RIM_TYPEMOUSE && (ri.data.mouse.lLastX != 0 || ri.data.mouse.lLastY != 0))
+		{
+			mouse.OnRawDelta(ri.data.mouse.lLastX, ri.data.mouse.lLastY);
+		}
+		break;
+	}
 	default:
 		break;
 	}
 
 	return DefWindowProc(hWnd, msg, wParam, lParam);
+}
+
+void Window::EnableCursor()
+{
+	cursorEnabled = true;
+}
+
+void Window::DisableCursor()
+{
+	cursorEnabled = false;
+}
+
+bool Window::CursorEnabled() const
+{
+	return cursorEnabled;
+}
+
+void Window::ConfineCursor()
+{
+	RECT rect;
+
+	GetClientRect(hWnd, &rect);
+	MapWindowPoints(hWnd, nullptr, reinterpret_cast<POINT*>(&rect), 2);
+	ClipCursor(&rect);
+}
+
+void Window::FreeCursor()
+{
+	ClipCursor(nullptr);
+}
+
+void Window::ShowCursor()
+{
+	while (::ShowCursor(TRUE) >= 0);
+}
+
+void Window::HideCursor()
+{
+	while (::ShowCursor(FALSE) < 0);
 }

@@ -2,7 +2,7 @@
 #include "Component.h"
 #include "DrawableBase.h"
 
-class TransformComponent : public Component, public DrawableBase<TransformComponent>
+class TransformComponent : public Component
 {
 public:
 	TransformComponent(DirectX::XMFLOAT3 pos = {}, DirectX::XMFLOAT3 rot = {}, DirectX::XMFLOAT3 scale = {});

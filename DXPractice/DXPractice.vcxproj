@@ -143,6 +143,7 @@
     <ClCompile Include="MaterialComponent.cpp" />
     <ClCompile Include="MeshComponent.cpp" />
     <ClCompile Include="ModelReader.cpp" />
+    <ClCompile Include="Mouse.cpp" />
     <ClCompile Include="PixelShader.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Topology.cpp" />
@@ -169,6 +170,7 @@
     <ClInclude Include="MeshComponent.h" />
     <ClInclude Include="MeshData.h" />
     <ClInclude Include="ModelReader.h" />
+    <ClInclude Include="Mouse.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="IndexBuffer.h" />
     <ClInclude Include="InputLayout.h" />
