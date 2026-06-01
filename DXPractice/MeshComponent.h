@@ -2,7 +2,7 @@
 #include <memory>
 #include <vector>
 
-#include "Component.h"
+#include "IComponent.h"
 #include "DrawableBase.h"
 #include "MeshData.h"
 #include "TransformComponent.h"
@@ -11,7 +11,7 @@
  * handles vertices, indices, binds VB IB and topology on construct
  * takes component class as interface, drawableBase as base class
  */
-class MeshComponent : public Component, public DrawableBase<MeshComponent>
+class MeshComponent : public IComponent, public DrawableBase<MeshComponent>
 {
 public:
 	MeshComponent(Renderer& renderer, MeshData& meshData, TransformComponent& transformComp);

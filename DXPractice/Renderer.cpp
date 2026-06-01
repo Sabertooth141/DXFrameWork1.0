@@ -90,7 +90,7 @@ Renderer::Renderer(HWND hWnd, int width, int height)
 	// view and proj matrices
 	viewMatrix = DirectX::XMMatrixLookAtLH(
 
-		{5, 5, -5}, // camera position
+		{10, 0, 0}, // camera position
 		{0, 0, 0}, // look target
 		{0, 1, 0} // up
 
@@ -104,6 +104,22 @@ Renderer::Renderer(HWND hWnd, int width, int height)
 		100.0f
 
 	);
+
+	// After device creation
+#ifdef _DEBUG
+	Microsoft::WRL::ComPtr<ID3D11InfoQueue> pInfoQueue;
+	pDevice->QueryInterface(__uuidof(ID3D11InfoQueue), &pInfoQueue);
+
+	D3D11_MESSAGE_ID hide[] =
+	{
+		D3D11_MESSAGE_ID_DEVICE_DRAW_SAMPLER_NOT_SET
+	};
+
+	D3D11_INFO_QUEUE_FILTER filter = {};
+	filter.DenyList.NumIDs = 1;
+	filter.DenyList.pIDList = hide;
+	pInfoQueue->AddStorageFilterEntries(&filter);
+#endif
 }
 
 void Renderer::BeginFrame(float r, float g, float b)

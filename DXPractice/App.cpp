@@ -34,15 +34,26 @@ int App::Run()
 
 void App::Init()
 {
-	model = std::make_unique<ModelReader>(renderer, "../../assets/testCube.obj");
+	// cube
+	std::unique_ptr<ModelReader> model = std::make_unique<ModelReader>(renderer, "../../assets/testCube.obj");
 
 	MaterialData matData = {};
 	matData.color = DirectX::XMFLOAT3(0.3f, 0.4f, 1.0f);
-	matData.specularIntensity = 0.5;
-	matData.specularPower = 5;
+	matData.specularIntensity = 0.5f;
+	matData.specularPower = 5.0f;
+	std::unique_ptr<GameObject> cube = std::make_unique<GameObject>(renderer, matData, *model);
+	cube->GetTransform()->SetRotation(rotation);
 
-	gameObjects.push_back(std::make_unique<GameObject>(renderer, matData, *model));
+	gameObjects.push_back(std::move(cube));
 
+	// sprite
+	std::unique_ptr<GameObject> sprite = std::make_unique<GameObject>(renderer);
+	sprite->AddComponent<MaterialComponent>(renderer, MaterialData{}, L"SpriteVertexShader.cso", L"SpritePixelShader.cso");
+	sprite->GetTransform()->SetPosition(DirectX::XMFLOAT3(2, 0, 0));
+
+	gameObjects.push_back(std::move(sprite));
+
+	// light 
 	LightData light = {};
 	light.lightPos = {0.0f, 3.0f, -5.0f};
 	light.ambient = {0.1f, 0.1f, 0.1f};
@@ -53,12 +64,12 @@ void App::Init()
 	light.attQuad = 0.0075f;
 
 	lightCBuffer = std::make_unique<LightCBuffer>(renderer, light);
+
+	wnd.mouse.EnableRaw();
 }
 
 void App::Update(float deltaTime)
 {
-	angle += deltaTime;
-
 	//LightData light = {};
 	//light.lightPos =
 	//{
@@ -76,7 +87,19 @@ void App::Update(float deltaTime)
 
 	//lightCBuffer->Update(renderer, light);
 
-	gameObjects[0]->GetTransform()->SetRotation(DirectX::XMFLOAT3(0, angle, 0));
+	if (wnd.mouse.LeftPressed())
+	{
+		if (const std::optional<Mouse::RawDelta> delta = wnd.mouse.readRawDelta())
+		{
+			//char buf[64];
+			//sprintf_s(buf, "raw x: %f, y: %f \n", delta.value().x, delta.value().y);
+			//OutputDebugStringA(buf);
+			rotation.x += delta.value().y * sensitivity;
+			rotation.y += delta.value().x * sensitivity;
+		}
+	}
+
+	gameObjects[0]->GetTransform()->SetRotation(rotation);
 	for (const auto& gameObject : gameObjects)
 	{
 		gameObject->Update(deltaTime);

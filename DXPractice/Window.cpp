@@ -60,6 +60,13 @@ Window::Window(int width, int height, const wchar_t* name) :
 	ShowWindow(hWnd, SW_SHOWDEFAULT);
 
 	renderer.emplace(hWnd, width, height);
+
+	RAWINPUTDEVICE rid;
+	rid.usUsagePage = 0x01;
+	rid.usUsage = 0x02;
+	rid.dwFlags = 0;
+	rid.hwndTarget = nullptr;
+	RegisterRawInputDevices(&rid, 1, sizeof(rid));
 }
 
 Renderer& Window::GetRenderer()

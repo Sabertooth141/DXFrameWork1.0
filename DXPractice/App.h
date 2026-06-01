@@ -21,16 +21,17 @@ private:
 	void HandleInput(float deltaTime);
 	void Draw(float deltaTime);
 private:
-	float angle = 0;
+	DirectX::XMFLOAT3 rotation = {};
 
 	std::string cmdLine;
 
 	Window wnd;
 	Renderer renderer;
 	Timer timer;
-	std::unique_ptr<ModelReader> model;
 	std::unique_ptr<LightCBuffer> lightCBuffer;
 
 	std::vector<std::unique_ptr<GameObject>> gameObjects;
+
+	float sensitivity = 0.004;
 };
 

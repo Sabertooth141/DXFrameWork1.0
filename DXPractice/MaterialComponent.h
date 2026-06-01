@@ -1,5 +1,8 @@
 #pragma once
-#include "Component.h"
+#include <string>
+#include <unordered_map>
+
+#include "IComponent.h"
 #include "DrawableBase.h"
 
 struct MaterialData;
@@ -7,15 +10,18 @@ struct MaterialData;
  * handles materials, shaders, input layouts
  * binds vs, ps, inputLayout and matCBuffer
  */
-class MaterialComponent : public Component
+class MaterialComponent : public IComponent
 {
 public:
-	MaterialComponent(Renderer& renderer, const MaterialData& matData);
+	MaterialComponent(Renderer& renderer,
+	                  const MaterialData& matData,
+	                  const std::wstring& vsPath = L"VertexShader.cso",
+	                  const std::wstring& psPath = L"PixelShader.cso");
 
 	void Bind(Renderer& renderer);
 
 private:
-	static std::vector<std::unique_ptr<Bindable>> staticBinds;
+	static std::unordered_map<std::wstring, std::vector<std::unique_ptr<Bindable>>> staticBindsMap;
 	std::vector<std::unique_ptr<Bindable>> instanceBinds;
+	std::wstring shaderKey;
 };
-

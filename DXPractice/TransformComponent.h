@@ -1,11 +1,13 @@
 #pragma once
-#include "Component.h"
+#include "IComponent.h"
 #include "DrawableBase.h"
 
-class TransformComponent : public Component
+class TransformComponent : public IComponent
 {
 public:
-	TransformComponent(DirectX::XMFLOAT3 pos = {}, DirectX::XMFLOAT3 rot = {}, DirectX::XMFLOAT3 scale = {});
+	TransformComponent(DirectX::XMFLOAT3 pos = {0, 0, 0},
+	                   DirectX::XMFLOAT3 rot = {0, 0, 0},
+	                   DirectX::XMFLOAT3 scale = {1, 1, 1});
 
 	void SetPosition(DirectX::XMFLOAT3 inPosition);
 	void SetRotation(DirectX::XMFLOAT3 inRotation);
@@ -18,7 +20,6 @@ public:
 
 private:
 	DirectX::XMFLOAT3 position = {0, 0, 0};
-	DirectX::XMFLOAT3 rotation = { 0, 0, 0 };
-	DirectX::XMFLOAT3 scale = { 0, 0, 0 };
+	DirectX::XMFLOAT3 rotation = {0, 0, 0};
+	DirectX::XMFLOAT3 scale = {0, 0, 0};
 };
-

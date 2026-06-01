@@ -3,33 +3,33 @@
 #include "ModelReader.h"
 #include "Material.h"
 
-GameObject::GameObject(Renderer& renderer, const MaterialData& matData, const ModelReader& modelReader) :
-transformComp({0, 0, 0}, {0, 0, 0}, {1, 1, 1}),
-materialComp(renderer, matData)
+GameObject::GameObject(Renderer& renderer, const MaterialData& matData, const ModelReader& modelReader)
 {
+	TransformComponent& transformComp = AddComponent<TransformComponent>();
+	AddComponent<MaterialComponent>(renderer, matData);
 	for (auto& meshData : modelReader.GetMeshes())
 	{
 		meshes.push_back(std::make_unique<MeshComponent>(renderer, meshData, transformComp));
 	}
 }
 
-GameObject::GameObject(Renderer& renderer, const std::vector<Vertex> vertices, const std::vector<unsigned int> indices) :
-	transformComp({ 0, 0, 0 }, { 0, 0, 0 }, { 1, 1, 1 }),
-	materialComp(renderer, {})
+GameObject::GameObject(Renderer& renderer, const std::vector<Vertex> vertices, const std::vector<unsigned int> indices)
 {
+	TransformComponent& transformComp = AddComponent<TransformComponent>();
+	AddComponent<MaterialComponent>(renderer, MaterialData{});
 	MeshData mesh = {vertices, indices};
 	meshes.push_back(std::make_unique<MeshComponent>(renderer, mesh, transformComp));
 }
 
-GameObject::GameObject(Renderer& renderer) :
-	transformComp({ 0, 0, 0 }, { 0, 0, 0 }, { 1, 1, 1 }),
-	materialComp(renderer, {})
+GameObject::GameObject(Renderer& renderer)
 {
+	TransformComponent& transformComp = AddComponent<TransformComponent>();
 }
 
 void GameObject::Draw(Renderer& renderer)
 {
-	materialComp.Bind(renderer);
+	MaterialComponent* comp = GetComponent<MaterialComponent>();
+	comp->Bind(renderer);
 	for (auto& mesh : meshes)
 	{
 		mesh->Draw(renderer);
@@ -42,5 +42,5 @@ void GameObject::Update(float deltaTime)
 
 TransformComponent* GameObject::GetTransform()
 {
-	return &transformComp;
+	return GetComponent<TransformComponent>();
 }

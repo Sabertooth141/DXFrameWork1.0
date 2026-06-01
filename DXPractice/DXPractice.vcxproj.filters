@@ -52,6 +52,12 @@
     <Filter Include="Header Files\Input">
       <UniqueIdentifier>{0748f28e-6082-4898-bef1-faa2b6dee259}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Components\Sprite">
+      <UniqueIdentifier>{e43c8771-528a-4ec4-8238-f01a1c9a4577}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Components\Sprite">
+      <UniqueIdentifier>{a7482c74-d7b4-4ba6-af2c-91f6d40b9a4b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Image Include="small.ico">
@@ -125,6 +131,15 @@
     <ClCompile Include="Mouse.cpp">
       <Filter>Source Files\Input</Filter>
     </ClCompile>
+    <ClCompile Include="Sampler.cpp">
+      <Filter>Source Files\Graphics\Bindable</Filter>
+    </ClCompile>
+    <ClCompile Include="SpriteRendererComponent.cpp">
+      <Filter>Source Files\Components\Sprite</Filter>
+    </ClCompile>
+    <ClCompile Include="SpriteAnimatorComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Win.h">
@@ -184,7 +199,7 @@
     <ClInclude Include="TransformCBuffer.h">
       <Filter>Header Files\Graphics\Bindable</Filter>
     </ClInclude>
-    <ClInclude Include="Component.h">
+    <ClInclude Include="IComponent.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
     <ClInclude Include="MeshComponent.h">
@@ -217,12 +232,33 @@
     <ClInclude Include="Mouse.h">
       <Filter>Header Files\Input</Filter>
     </ClInclude>
+    <ClInclude Include="UVTransformData.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Header Files\Graphics\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="Sampler.h">
+      <Filter>Header Files\Graphics\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteRendererComponent.h">
+      <Filter>Header Files\Components\Sprite</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteAnimatorComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="PixelShader.hlsl">
       <Filter>shader</Filter>
     </FxCompile>
     <FxCompile Include="VertexShader.hlsl">
+      <Filter>shader</Filter>
+    </FxCompile>
+    <FxCompile Include="SpritePixelShader.hlsl">
+      <Filter>shader</Filter>
+    </FxCompile>
+    <FxCompile Include="SpriteVertexShader.hlsl">
       <Filter>shader</Filter>
     </FxCompile>
   </ItemGroup>
