@@ -138,7 +138,7 @@
       <Filter>Source Files\Components\Sprite</Filter>
     </ClCompile>
     <ClCompile Include="SpriteAnimatorComponent.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Components\Sprite</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -245,7 +245,7 @@
       <Filter>Header Files\Components\Sprite</Filter>
     </ClInclude>
     <ClInclude Include="SpriteAnimatorComponent.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Components\Sprite</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
