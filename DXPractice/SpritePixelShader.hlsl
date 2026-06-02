@@ -11,6 +11,6 @@ float4 main(float2 uv : TEXCOORD) : SV_TARGET
 {
     float2 finalUV = uvOffset + uv * uvScale;
     float4 color = tex.Sample(sam, finalUV);
-    clip(color.a - 0.1f);
+    //clip(color.a - 0.1f);
     return color;
-}
+} 

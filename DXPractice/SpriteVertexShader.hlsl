@@ -1,12 +1,8 @@
-cbuffer CameraBuffer : register(b0)
-{
-    matrix view;
-    matrix projection;
-}
-
-cbuffer ModelBuffer : register(b1)
+cbuffer ModelBuffer : register(b0)
 {
     matrix world;
+    matrix view;
+    matrix projection;
 }
 
 struct VSOut
@@ -19,9 +15,9 @@ VSOut main(float3 pos : POSITION, float3 normal : NORMAL, float2 uv : TEXCOORD)
 {
     VSOut output;
     float4 posOut = float4(pos, 1);
-	posOut = mul(pos, world);
-    posOut = mul(pos, view);
-    posOut = mul(pos, projection);
+	posOut = mul(posOut, world);
+    posOut = mul(posOut, view);
+    posOut = mul(posOut, projection);
     output.pos = posOut;
     output.uv = uv;
 

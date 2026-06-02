@@ -3,20 +3,23 @@
 #include "ModelReader.h"
 #include "Material.h"
 
-GameObject::GameObject(Renderer& renderer, const MaterialData& matData, const ModelReader& modelReader)
+GameObject::GameObject(Renderer& renderer, const MaterialData& matData, const ModelReader& modelReader,
+                       const std::wstring& vsPath, const std::wstring& psPath)
 {
 	TransformComponent& transformComp = AddComponent<TransformComponent>();
-	AddComponent<MaterialComponent>(renderer, matData);
+	AddComponent<MaterialComponent>(renderer, matData, vsPath, psPath);
 	for (auto& meshData : modelReader.GetMeshes())
 	{
 		meshes.push_back(std::make_unique<MeshComponent>(renderer, meshData, transformComp));
 	}
 }
 
-GameObject::GameObject(Renderer& renderer, const std::vector<Vertex> vertices, const std::vector<unsigned int> indices)
+GameObject::GameObject(Renderer& renderer,
+                       const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices,
+                       const std::wstring& vsPath, const std::wstring& psPath)
 {
 	TransformComponent& transformComp = AddComponent<TransformComponent>();
-	AddComponent<MaterialComponent>(renderer, MaterialData{});
+	AddComponent<MaterialComponent>(renderer, MaterialData{}, vsPath, psPath);
 	MeshData mesh = {vertices, indices};
 	meshes.push_back(std::make_unique<MeshComponent>(renderer, mesh, transformComp));
 }

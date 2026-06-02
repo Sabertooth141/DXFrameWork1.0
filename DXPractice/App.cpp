@@ -53,8 +53,7 @@ void App::Init()
 	// sprite
 	ID3D11ShaderResourceView* testSRV = TextureCache::Load(renderer, L"../../assets/jinx.jpg");
 	MeshData quad = MakeSpriteQuad();
-	std::unique_ptr<GameObject> sprite = std::make_unique<GameObject>(renderer, quad.vertices, quad.indices);
-	sprite->AddComponent<MaterialComponent>(renderer, MaterialData{}, L"SpriteVertexShader.cso", L"SpritePixelShader.cso");
+	std::unique_ptr<GameObject> sprite = std::make_unique<GameObject>(renderer, quad.vertices, quad.indices, L"SpriteVertexShader.cso", L"SpritePixelShader.cso");
 	
 	auto& spriteRenderer = sprite->AddComponent<SpriteRendererComponent>(renderer, testSRV);
 
@@ -72,16 +71,16 @@ void App::Init()
 
 
 	// light 
-	LightData light = {};
-	light.lightPos = {0.0f, 3.0f, -5.0f};
-	light.ambient = {0.1f, 0.1f, 0.1f};
-	light.diffuseColor = {1.0f, 1.0f, 1.0f};
-	light.diffuseIntensity = 1.0f;
-	light.attConst = 1.0f;
-	light.attLin = 0.045f;
-	light.attQuad = 0.0075f;
+	//LightData light = {};
+	//light.lightPos = {0.0f, 3.0f, -5.0f};
+	//light.ambient = {0.1f, 0.1f, 0.1f};
+	//light.diffuseColor = {1.0f, 1.0f, 1.0f};
+	//light.diffuseIntensity = 1.0f;
+	//light.attConst = 1.0f;
+	//light.attLin = 0.045f;
+	//light.attQuad = 0.0075f;
 
-	lightCBuffer = std::make_unique<LightCBuffer>(renderer, light);
+	//lightCBuffer = std::make_unique<LightCBuffer>(renderer, light);
 
 	wnd.mouse.EnableRaw();
 }
@@ -132,7 +131,10 @@ void App::Draw(float deltaTime)
 {
 	renderer.BeginFrame(0.3f, 1, 0.3f);
 
-	lightCBuffer->Bind(renderer);
+	if (lightCBuffer != nullptr)
+	{
+		lightCBuffer->Bind(renderer);
+	}
 
 	for (const auto& gameObject : gameObjects)
 	{

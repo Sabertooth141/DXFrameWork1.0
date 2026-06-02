@@ -2,7 +2,7 @@
 
 SpriteRendererComponent::SpriteRendererComponent(Renderer& renderer, ID3D11ShaderResourceView* srv)
     : renderer(renderer)
-    , uvCBuffer(renderer, UVTransformData{ {0.f, 0.f}, {1.f, 1.f} }, 1) // b1
+    , uvCBuffer(renderer, UVTransformData{ {0.f, 0.f}, {1.f, 1.f} }, 2) // b2
     , texture(srv, 0)    // t0
     , sampler(renderer, 0) // s0
 

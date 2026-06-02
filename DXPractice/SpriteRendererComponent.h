@@ -21,7 +21,7 @@ public:
 
 private:
 	Renderer& renderer;
-	VertexConstantBuffer<UVTransformData> uvCBuffer;
+	PixelConstantBuffer<UVTransformData> uvCBuffer;
 	Texture texture;
 	Sampler sampler;
 };
