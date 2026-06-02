@@ -32,6 +32,6 @@ private:
 
 	std::vector<std::unique_ptr<GameObject>> gameObjects;
 
-	float sensitivity = 0.004;
+	float sensitivity = 0.004f;
 };
 

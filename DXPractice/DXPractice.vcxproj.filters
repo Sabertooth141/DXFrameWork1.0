@@ -31,9 +31,6 @@
     <Filter Include="Source Files\Graphics\Drawable">
       <UniqueIdentifier>{f0dbbd36-b397-4067-b005-d1801d046cfb}</UniqueIdentifier>
     </Filter>
-    <Filter Include="shader">
-      <UniqueIdentifier>{7cff404b-02d8-4fc1-9179-814690d5e1f5}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Components">
       <UniqueIdentifier>{15b7adfd-f744-4e40-a4d9-6ad622c5102e}</UniqueIdentifier>
     </Filter>
@@ -57,6 +54,12 @@
     </Filter>
     <Filter Include="Header Files\Components\Sprite">
       <UniqueIdentifier>{a7482c74-d7b4-4ba6-af2c-91f6d40b9a4b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\3rdParty">
+      <UniqueIdentifier>{ad28ff0a-e400-4db8-8598-765a30de0223}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{7cff404b-02d8-4fc1-9179-814690d5e1f5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -139,6 +142,9 @@
     </ClCompile>
     <ClCompile Include="SpriteAnimatorComponent.cpp">
       <Filter>Source Files\Components\Sprite</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureCache.cpp">
+      <Filter>Source Files\Graphics\Bindable</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -247,22 +253,28 @@
     <ClInclude Include="SpriteAnimatorComponent.h">
       <Filter>Header Files\Components\Sprite</Filter>
     </ClInclude>
+    <ClInclude Include="TextureCache.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_image.h">
+      <Filter>Header Files\3rdParty</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteVertex.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="PixelShader.hlsl">
-      <Filter>shader</Filter>
+      <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="VertexShader.hlsl">
-      <Filter>shader</Filter>
+      <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="SpritePixelShader.hlsl">
-      <Filter>shader</Filter>
+      <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="SpriteVertexShader.hlsl">
-      <Filter>shader</Filter>
+      <Filter>Shaders</Filter>
     </FxCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
 </Project>

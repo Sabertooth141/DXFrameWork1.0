@@ -1,5 +1,6 @@
+
 {
-  "name": "dx11-engine",
+  "name": "dxpractice",
   "version": "0.1.0",
   "dependencies": [
     "assimp"

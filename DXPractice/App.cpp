@@ -3,6 +3,10 @@
 #include "GameObject.h"
 #include "Material.h"
 #include "ModelReader.h"
+#include "SpriteAnimatorComponent.h"
+#include "SpriteRendererComponent.h"
+#include "SpriteVertex.h"
+#include "TextureCache.h"
 
 App::App(const std::string& cmdLine) : cmdLine(cmdLine),
                                        wnd(800, 600, L"DXPractice"),
@@ -35,23 +39,37 @@ int App::Run()
 void App::Init()
 {
 	// cube
-	std::unique_ptr<ModelReader> model = std::make_unique<ModelReader>(renderer, "../../assets/testCube.obj");
+	//std::unique_ptr<ModelReader> model = std::make_unique<ModelReader>(renderer, "../../assets/testCube.fbx");
 
-	MaterialData matData = {};
-	matData.color = DirectX::XMFLOAT3(0.3f, 0.4f, 1.0f);
-	matData.specularIntensity = 0.5f;
-	matData.specularPower = 5.0f;
-	std::unique_ptr<GameObject> cube = std::make_unique<GameObject>(renderer, matData, *model);
-	cube->GetTransform()->SetRotation(rotation);
+	//MaterialData matData = {};
+	//matData.color = DirectX::XMFLOAT3(0.3f, 0.4f, 1.0f);
+	//matData.specularIntensity = 0.5f;
+	//matData.specularPower = 5.0f;
+	//std::unique_ptr<GameObject> cube = std::make_unique<GameObject>(renderer, matData, *model);
+	//cube->GetTransform()->SetRotation(rotation);
 
-	gameObjects.push_back(std::move(cube));
+	//gameObjects.push_back(std::move(cube));
 
 	// sprite
-	std::unique_ptr<GameObject> sprite = std::make_unique<GameObject>(renderer);
+	ID3D11ShaderResourceView* testSRV = TextureCache::Load(renderer, L"../../assets/jinx.jpg");
+	MeshData quad = MakeSpriteQuad();
+	std::unique_ptr<GameObject> sprite = std::make_unique<GameObject>(renderer, quad.vertices, quad.indices);
 	sprite->AddComponent<MaterialComponent>(renderer, MaterialData{}, L"SpriteVertexShader.cso", L"SpritePixelShader.cso");
-	sprite->GetTransform()->SetPosition(DirectX::XMFLOAT3(2, 0, 0));
+	
+	auto& spriteRenderer = sprite->AddComponent<SpriteRendererComponent>(renderer, testSRV);
 
+	sprite->AddComponent<SpriteAnimatorComponent>(
+		spriteRenderer,
+		1,      // columns in spritesheet
+		1,      // rows
+		1,      // total frames
+		1// fps
+	);
+
+	sprite->GetTransform()->SetPosition({ 0, 0, 3 });
 	gameObjects.push_back(std::move(sprite));
+
+
 
 	// light 
 	LightData light = {};
@@ -99,7 +117,7 @@ void App::Update(float deltaTime)
 		}
 	}
 
-	gameObjects[0]->GetTransform()->SetRotation(rotation);
+	//gameObjects[0]->GetTransform()->SetRotation(rotation);
 	for (const auto& gameObject : gameObjects)
 	{
 		gameObject->Update(deltaTime);
@@ -115,8 +133,13 @@ void App::Draw(float deltaTime)
 	renderer.BeginFrame(0.3f, 1, 0.3f);
 
 	lightCBuffer->Bind(renderer);
+
 	for (const auto& gameObject : gameObjects)
 	{
+
+		if (auto* sr = gameObject->GetComponent<SpriteRendererComponent>())
+			sr->Bind(renderer);  // b1 UV, t0 texture, s0 sampler
+
 		gameObject->Draw(renderer);
 	}
 

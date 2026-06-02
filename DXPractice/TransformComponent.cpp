@@ -4,7 +4,7 @@ TransformComponent::TransformComponent(DirectX::XMFLOAT3 pos, DirectX::XMFLOAT3 
 	position(pos),
 	rotation(rot),
 	scale(scale)
-{
+{ 
 }
 
 DirectX::XMMATRIX TransformComponent::GetMatrix() const

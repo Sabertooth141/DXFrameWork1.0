@@ -1,11 +1,5 @@
 #include "SpriteRendererComponent.h"
 
-struct SpriteVertex
-{
-	DirectX::XMFLOAT3 pos;
-	DirectX::XMFLOAT2 uv;
-};
-
 SpriteRendererComponent::SpriteRendererComponent(Renderer& renderer, ID3D11ShaderResourceView* srv)
     : renderer(renderer)
     , uvCBuffer(renderer, UVTransformData{ {0.f, 0.f}, {1.f, 1.f} }, 1) // b1
@@ -13,6 +7,11 @@ SpriteRendererComponent::SpriteRendererComponent(Renderer& renderer, ID3D11Shade
     , sampler(renderer, 0) // s0
 
 {
+}
+
+void SpriteRendererComponent::Update(float deltaTime)
+{
+	IComponent::Update(deltaTime);
 }
 
 void SpriteRendererComponent::Bind(Renderer& renderer)

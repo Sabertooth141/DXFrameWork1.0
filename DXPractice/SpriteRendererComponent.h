@@ -10,12 +10,12 @@
 #include "Texture.h"
 #include "UVTransformData.h"
 
-
-class SpriteRendererComponent : public IComponent, public Drawable
+class SpriteRendererComponent : public IComponent
 {
 public:
 	SpriteRendererComponent(Renderer& renderer, ID3D11ShaderResourceView* srv);
 
+	void Update(float deltaTime) override;
 	void Bind(Renderer& renderer);
 	void UpdateUV(const UVTransformData& data);
 
