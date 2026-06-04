@@ -41,6 +41,10 @@ void GameObject::Draw(Renderer& renderer)
 
 void GameObject::Update(float deltaTime)
 {
+	for (auto& component : components)
+	{
+		component.second->Update(deltaTime);
+	}
 }
 
 TransformComponent* GameObject::GetTransform()

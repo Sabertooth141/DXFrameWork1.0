@@ -14,6 +14,11 @@ DirectX::XMMATRIX TransformComponent::GetMatrix() const
 		* DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 }
 
+void TransformComponent::Update(float deltaTime)
+{
+	IComponent::Update(deltaTime);
+}
+
 void TransformComponent::SetPosition(DirectX::XMFLOAT3 inPosition)
 {
 

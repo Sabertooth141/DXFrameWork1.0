@@ -55,17 +55,18 @@ void App::Init()
 	MeshData quad = MakeSpriteQuad();
 	std::unique_ptr<GameObject> sprite = std::make_unique<GameObject>(renderer, quad.vertices, quad.indices, L"SpriteVertexShader.cso", L"SpritePixelShader.cso");
 	
+	sprite->GetTransform()->SetScale({ 6, 6, 1 });
+	sprite->GetTransform()->SetPosition({ 0, 0, 3 });
+
 	auto& spriteRenderer = sprite->AddComponent<SpriteRendererComponent>(renderer, testSRV);
 
 	sprite->AddComponent<SpriteAnimatorComponent>(
 		spriteRenderer,
-		1,      // columns in spritesheet
-		1,      // rows
-		1,      // total frames
-		1// fps
+		3,      // columns in spritesheet
+		3,      // rows
+		9,      // total frames
+		3// fps
 	);
-
-	sprite->GetTransform()->SetPosition({ 0, 0, 3 });
 	gameObjects.push_back(std::move(sprite));
 
 

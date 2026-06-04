@@ -18,6 +18,8 @@ public:
 
 	DirectX::XMMATRIX GetMatrix() const;
 
+	void Update(float deltaTime) override;
+
 private:
 	DirectX::XMFLOAT3 position = {0, 0, 0};
 	DirectX::XMFLOAT3 rotation = {0, 0, 0};

@@ -111,13 +111,16 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)vcpkg_installed\x64-windows\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)vcpkg_installed\x64-windows\debug\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);assimp-vc143-mtd.lib</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y "E:\vcpkg\installed\x64-windows\debug\bin\*.dll" "$(OutDir)"</Command>
+      <Command>if "$(Configuration)"=="Debug" (xcopy /y "$(SolutionDir)vcpkg_installed\x64-windows\debug\bin\*.dll" "$(OutDir)") else (xcopy /y "$(SolutionDir)vcpkg_installed\x64-windows\bin\*.dll" "$(OutDir)")</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -129,13 +132,16 @@
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)vcpkg_installed\x64-windows\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)vcpkg_installed\x64-windows\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);assimp-vc143-mt.lib</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y "%VCPKG_ROOT%\installed\x64-windows\bin\*.dll" "$(OutDir)"</Command>
+      <Command>if "$(Configuration)"=="Debug" (xcopy /y "$(SolutionDir)vcpkg_installed\x64-windows\debug\bin\*.dll" "$(OutDir)") else (xcopy /y "$(SolutionDir)vcpkg_installed\x64-windows\bin\*.dll" "$(OutDir)")</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

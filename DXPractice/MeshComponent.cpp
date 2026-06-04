@@ -15,3 +15,8 @@ MeshComponent::MeshComponent(Renderer& renderer, MeshData& meshData, TransformCo
 		AddStaticBind(std::make_unique<Topology>(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
 	}
 }
+
+void MeshComponent::Update(float deltaTime)
+{
+	IComponent::Update(deltaTime);
+}

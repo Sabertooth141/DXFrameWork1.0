@@ -15,5 +15,6 @@ class MeshComponent : public IComponent, public DrawableBase<MeshComponent>
 {
 public:
 	MeshComponent(Renderer& renderer, MeshData& meshData, TransformComponent& transformComp);
+	void Update(float deltaTime) override;
 };
 
