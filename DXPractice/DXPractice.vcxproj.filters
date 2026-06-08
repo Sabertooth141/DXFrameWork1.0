@@ -61,6 +61,18 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{7cff404b-02d8-4fc1-9179-814690d5e1f5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Scripts">
+      <UniqueIdentifier>{40e38806-25cb-4c7f-a20f-2e4cf6ab000a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Scripts">
+      <UniqueIdentifier>{3dea4041-899e-43e2-bbb4-37c090839d4c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Components\ScriptSystem">
+      <UniqueIdentifier>{dd915b6b-f964-4582-b55f-cdbdf23acd24}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Components\ScriptSystem">
+      <UniqueIdentifier>{3a03b70f-4fd0-4595-97ac-1842b69ed93d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Image Include="small.ico">
@@ -148,6 +160,12 @@
     </ClCompile>
     <ClCompile Include="AnimatorComponent.cpp">
       <Filter>Source Files\Components\Sprite</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerController.cpp">
+      <Filter>Source Files\Scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="MonoBehavior.cpp">
+      <Filter>Source Files\Components\ScriptSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -267,6 +285,24 @@
     </ClInclude>
     <ClInclude Include="AnimatorComponent.h">
       <Filter>Header Files\Components\Sprite</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerController.h">
+      <Filter>Header Files\Scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="MonoBehavior.h">
+      <Filter>Header Files\Components\ScriptSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ScriptSystem.h">
+      <Filter>Header Files\Components\ScriptSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimationSystem.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderSystem.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderLayer.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

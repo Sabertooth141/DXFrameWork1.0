@@ -6,6 +6,7 @@
 #include "Drawable.h"
 #include "IComponent.h"
 #include "PixelShader.h"
+#include "RenderLayer.h"
 #include "Sampler.h"
 #include "Texture.h"
 #include "UVTransformData.h"
@@ -18,6 +19,12 @@ public:
 	void Update(float deltaTime) override;
 	void Bind(Renderer& renderer);
 	void UpdateUV(const UVTransformData& data);
+	void Render();
+
+public:
+	RenderLayer layer = RenderLayer::Default;
+	int sortOrder = 0;
+	bool enabled = true;
 
 private:
 	Renderer& renderer;

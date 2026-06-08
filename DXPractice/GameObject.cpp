@@ -1,5 +1,6 @@
 #include "GameObject.h"
 
+#include "AnimationSystem.h"
 #include "ModelReader.h"
 #include "Material.h"
 
@@ -27,6 +28,12 @@ GameObject::GameObject(Renderer& renderer,
 GameObject::GameObject(Renderer& renderer)
 {
 	TransformComponent& transformComp = AddComponent<TransformComponent>();
+}
+
+void GameObject::Init(ScriptSystem& inScriptSystem, AnimationSystem& inAnimationSystem)
+{
+	scriptSystem = &inScriptSystem;
+	animationSystem = &inAnimationSystem;
 }
 
 void GameObject::Draw(Renderer& renderer)

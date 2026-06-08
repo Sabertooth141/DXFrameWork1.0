@@ -21,10 +21,15 @@ public:
 	AnimationEntry& GetCurrAnimation() const;
 	bool SetCurrAnimation(const std::string& animName);
 	void Update(float deltaTime) override;
+	
+	bool IsEnabled() const { return enabled; }
+	void SetEnabled(bool inEnabled);
 
 private:
 	Renderer& renderer;
 	GameObject* parent = nullptr;
 	std::unordered_map<std::string, AnimationEntry> animations;
 	AnimationEntry* currAnimation;
+
+	bool enabled = true;
 };

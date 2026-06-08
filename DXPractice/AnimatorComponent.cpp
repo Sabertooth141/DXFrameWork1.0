@@ -51,3 +51,8 @@ void AnimatorComponent::Update(float deltaTime)
 	currAnimation->spriteAnimator->Update(deltaTime);
 	currAnimation->spriteRenderer->Bind(renderer);  // b1 UV, t0 texture, s0 sampler
 }
+
+void AnimatorComponent::SetEnabled(bool inEnabled)
+{
+	enabled = inEnabled;
+}

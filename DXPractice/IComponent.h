@@ -1,4 +1,5 @@
 #pragma once
+class GameObject;
 class Renderer;
 
 class IComponent

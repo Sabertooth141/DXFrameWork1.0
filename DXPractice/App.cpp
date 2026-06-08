@@ -4,6 +4,7 @@
 #include "GameObject.h"
 #include "Material.h"
 #include "ModelReader.h"
+#include "MonoBehavior.h"
 #include "SpriteAnimatorComponent.h"
 #include "SpriteRendererComponent.h"
 #include "SpriteVertex.h"
@@ -55,6 +56,7 @@ void App::Init()
 	MeshData quad = MakeSpriteQuad();
 	auto sprite = std::make_unique<GameObject>(renderer, quad.vertices, quad.indices, L"SpriteVertexShader.cso",
 	                                           L"SpritePixelShader.cso");
+	sprite->Init(scriptSystem, animationSystem);
 
 	sprite->GetTransform()->SetScale({6, 6, 1});
 	sprite->GetTransform()->SetPosition({0, 0, 3});
@@ -66,16 +68,20 @@ void App::Init()
 	gameObjects.push_back(std::move(sprite));
 
 	// light 
-	//LightData light = {};
-	//light.lightPos = {0.0f, 3.0f, -5.0f};
-	//light.ambient = {0.1f, 0.1f, 0.1f};
-	//light.diffuseColor = {1.0f, 1.0f, 1.0f};
-	//light.diffuseIntensity = 1.0f;
-	//light.attConst = 1.0f;
-	//light.attLin = 0.045f;
-	//light.attQuad = 0.0075f;
+	LightData light = {};
+	light.lightPos = {0.0f, 3.0f, -5.0f};
+	light.ambient = {0.1f, 0.1f, 0.1f};
+	light.diffuseColor = {1.0f, 1.0f, 1.0f};
+	light.diffuseIntensity = 1.0f;
+	light.attConst = 1.0f;
+	light.attLin = 0.045f;
+	light.attQuad = 0.0075f;
 
-	//lightCBuffer = std::make_unique<LightCBuffer>(renderer, light);
+	lightCBuffer = std::make_unique<LightCBuffer>(renderer, light);
+	for (auto& gameObject : gameObjects)
+	{
+
+	}
 
 	wnd.mouse.EnableRaw();
 }
@@ -111,11 +117,11 @@ void App::Update(float deltaTime)
 		}
 	}
 
-	//gameObjects[0]->GetTransform()->SetRotation(rotation);
-	for (const auto& gameObject : gameObjects)
-	{
-		gameObject->Update(deltaTime);
-	}
+	////gameObjects[0]->GetTransform()->SetRotation(rotation);
+	
+	// systems
+	scriptSystem.Update(deltaTime);
+	animationSystem.Update(deltaTime);
 }
 
 void App::HandleInput(float deltaTime)

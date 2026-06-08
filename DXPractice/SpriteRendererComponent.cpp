@@ -25,3 +25,8 @@ void SpriteRendererComponent::UpdateUV(const UVTransformData& data)
 {
     uvCBuffer.Update(renderer, data);
 }
+
+void SpriteRendererComponent::Render()
+{
+
+}

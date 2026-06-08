@@ -2,7 +2,9 @@
 #include "Window.h"
 #include <string>
 
+#include "AnimationSystem.h"
 #include "LightCBuffer.h"
+#include "ScriptSystem.h"
 #include "Timer.h"
 
 class GameObject;
@@ -28,6 +30,9 @@ private:
 	Window wnd;
 	Renderer renderer;
 	Timer timer;
+	ScriptSystem scriptSystem;
+	AnimationSystem animationSystem;
+
 	std::unique_ptr<LightCBuffer> lightCBuffer;
 
 	std::vector<std::unique_ptr<GameObject>> gameObjects;
