@@ -149,6 +149,7 @@
     <Image Include="small.ico" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AnimatorComponent.cpp" />
     <ClCompile Include="App.cpp" />
     <ClCompile Include="Bindable.cpp" />
     <ClCompile Include="Drawable.cpp" />
@@ -176,6 +177,7 @@
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AnimatorComponent.h" />
     <ClInclude Include="App.h" />
     <ClInclude Include="Bindable.h" />
     <ClInclude Include="IComponent.h" />

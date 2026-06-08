@@ -146,6 +146,9 @@
     <ClCompile Include="TextureCache.cpp">
       <Filter>Source Files\Graphics\Bindable</Filter>
     </ClCompile>
+    <ClCompile Include="AnimatorComponent.cpp">
+      <Filter>Source Files\Components\Sprite</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Win.h">
@@ -261,6 +264,9 @@
     </ClInclude>
     <ClInclude Include="SpriteVertex.h">
       <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimatorComponent.h">
+      <Filter>Header Files\Components\Sprite</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

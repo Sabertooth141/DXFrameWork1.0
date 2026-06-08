@@ -1,5 +1,6 @@
 #include "App.h"
 
+#include "AnimatorComponent.h"
 #include "GameObject.h"
 #include "Material.h"
 #include "ModelReader.h"
@@ -51,25 +52,18 @@ void App::Init()
 	//gameObjects.push_back(std::move(cube));
 
 	// sprite
-	ID3D11ShaderResourceView* testSRV = TextureCache::Load(renderer, L"../../assets/jinx.jpg");
 	MeshData quad = MakeSpriteQuad();
-	std::unique_ptr<GameObject> sprite = std::make_unique<GameObject>(renderer, quad.vertices, quad.indices, L"SpriteVertexShader.cso", L"SpritePixelShader.cso");
-	
-	sprite->GetTransform()->SetScale({ 6, 6, 1 });
-	sprite->GetTransform()->SetPosition({ 0, 0, 3 });
+	auto sprite = std::make_unique<GameObject>(renderer, quad.vertices, quad.indices, L"SpriteVertexShader.cso",
+	                                           L"SpritePixelShader.cso");
 
-	auto& spriteRenderer = sprite->AddComponent<SpriteRendererComponent>(renderer, testSRV);
+	sprite->GetTransform()->SetScale({6, 6, 1});
+	sprite->GetTransform()->SetPosition({0, 0, 3});
 
-	sprite->AddComponent<SpriteAnimatorComponent>(
-		spriteRenderer,
-		3,      // columns in spritesheet
-		3,      // rows
-		9,      // total frames
-		3// fps
-	);
+	sprite->AddComponent<AnimatorComponent>(renderer);
+	sprite->GetComponent<AnimatorComponent>()->AddAnimation("CharIdle", L"../../assets/PlayerCharacter.png",
+	                                                        L"../../assets/PlayerCharacter.json");
+	sprite->GetComponent<AnimatorComponent>()->SetCurrAnimation("CharIdle");
 	gameObjects.push_back(std::move(sprite));
-
-
 
 	// light 
 	//LightData light = {};
@@ -139,10 +133,6 @@ void App::Draw(float deltaTime)
 
 	for (const auto& gameObject : gameObjects)
 	{
-
-		if (auto* sr = gameObject->GetComponent<SpriteRendererComponent>())
-			sr->Bind(renderer);  // b1 UV, t0 texture, s0 sampler
-
 		gameObject->Draw(renderer);
 	}
 
