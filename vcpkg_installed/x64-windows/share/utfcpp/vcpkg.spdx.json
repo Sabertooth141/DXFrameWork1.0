@@ -3,13 +3,13 @@
   "spdxVersion": "SPDX-2.2",
   "dataLicense": "CC0-1.0",
   "SPDXID": "SPDXRef-DOCUMENT",
-  "documentNamespace": "https://spdx.org/spdxdocs/utfcpp-x64-windows-4.1.1-7fd283ed-8882-4d61-aafe-ba6d08aa23dc",
-  "name": "utfcpp:x64-windows@4.1.1 077a1f2c233c0e54cdf666bcd6bedb1289094aa7d0f1438ef192321fc31abb80",
+  "documentNamespace": "https://spdx.org/spdxdocs/utfcpp-x64-windows-4.1.1-70145498-4c75-45c9-b112-2792050024fc",
+  "name": "utfcpp:x64-windows@4.1.1 ad48c3138e590b23a2c821dd2d4bb76cd4f6690dc7b940df85a4b01a831141cd",
   "creationInfo": {
     "creators": [
       "Tool: vcpkg-2026-05-27-d5b6777d666efc1a7f491babfcdab37794c1ae3e"
     ],
-    "created": "2026-06-04T02:06:51Z"
+    "created": "2026-06-02T13:52:33Z"
   },
   "relationships": [
     {
@@ -109,7 +109,7 @@
     {
       "name": "utfcpp:x64-windows",
       "SPDXID": "SPDXRef-binary",
-      "versionInfo": "077a1f2c233c0e54cdf666bcd6bedb1289094aa7d0f1438ef192321fc31abb80",
+      "versionInfo": "ad48c3138e590b23a2c821dd2d4bb76cd4f6690dc7b940df85a4b01a831141cd",
       "downloadLocation": "NONE",
       "licenseConcluded": "BSL-1.0",
       "licenseDeclared": "NOASSERTION",
