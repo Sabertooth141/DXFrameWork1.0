@@ -3,13 +3,13 @@
   "spdxVersion": "SPDX-2.2",
   "dataLicense": "CC0-1.0",
   "SPDXID": "SPDXRef-DOCUMENT",
-  "documentNamespace": "https://spdx.org/spdxdocs/assimp-x64-windows-6.0.4#2-96180567-0cd8-4fb9-ac8c-59e45a06efdf",
-  "name": "assimp:x64-windows@6.0.4#2 c22daed52bb747a7c00a2d748f6c2b2f6a4b67d5f766027c48c9f52c813e57c3",
+  "documentNamespace": "https://spdx.org/spdxdocs/assimp-x64-windows-6.0.4#2-9097048f-9c6e-406e-bb89-0d72511abfa5",
+  "name": "assimp:x64-windows@6.0.4#2 749569d0a89039105fe05ae428eece46773be511083fe8a43349ffc00e20892e",
   "creationInfo": {
     "creators": [
       "Tool: vcpkg-2026-05-27-d5b6777d666efc1a7f491babfcdab37794c1ae3e"
     ],
-    "created": "2026-06-02T13:54:11Z"
+    "created": "2026-06-11T01:00:31Z"
   },
   "relationships": [
     {
@@ -574,7 +574,7 @@
     {
       "name": "assimp:x64-windows",
       "SPDXID": "SPDXRef-binary",
-      "versionInfo": "c22daed52bb747a7c00a2d748f6c2b2f6a4b67d5f766027c48c9f52c813e57c3",
+      "versionInfo": "749569d0a89039105fe05ae428eece46773be511083fe8a43349ffc00e20892e",
       "downloadLocation": "NONE",
       "licenseConcluded": "BSD-3-Clause",
       "licenseDeclared": "NOASSERTION",
@@ -634,24 +634,24 @@
       "copyrightText": "NOASSERTION"
     },
     {
-      "fileName": "./bin/assimp-vc145-mt.dll",
+      "fileName": "./bin/assimp-vc143-mt.dll",
       "SPDXID": "SPDXRef-binary-file-0",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "9ca60259f7069b04ac3a2def0150b36d7b008a8090494ece30b0e07ee3142ea5"
+          "checksumValue": "42dd83dae4ce6d88eb29b824e14b7f976a45fdd5be19812ec8655c97a9dd071b"
         }
       ],
       "licenseConcluded": "NOASSERTION",
       "copyrightText": "NOASSERTION"
     },
     {
-      "fileName": "./bin/assimp-vc145-mt.pdb",
+      "fileName": "./bin/assimp-vc143-mt.pdb",
       "SPDXID": "SPDXRef-binary-file-1",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "8eb3bbbab98c1be56230165f57faf27944a29a82699d7dbd592f6ec55787835a"
+          "checksumValue": "098624d17068eef794cc661f2689f6e6e266aba53d9660303dbdb798857150d2"
         }
       ],
       "licenseConcluded": "NOASSERTION",
@@ -670,36 +670,36 @@
       "copyrightText": "NOASSERTION"
     },
     {
-      "fileName": "./debug/bin/assimp-vc145-mtd.dll",
+      "fileName": "./debug/bin/assimp-vc143-mtd.dll",
       "SPDXID": "SPDXRef-binary-file-3",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "532d6391673f32e08d97c70ef01e5ce59e1e9f0fb0ba89d199f281df620532eb"
+          "checksumValue": "67cd411af823d1b6dfdc8160e4ed3e5ff8e4425e3491d24ea0a2d843acf5ec00"
         }
       ],
       "licenseConcluded": "NOASSERTION",
       "copyrightText": "NOASSERTION"
     },
     {
-      "fileName": "./debug/bin/assimp-vc145-mtd.pdb",
+      "fileName": "./debug/bin/assimp-vc143-mtd.pdb",
       "SPDXID": "SPDXRef-binary-file-4",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "27edca5818b7fed76d66ad063aff12415c03d70817ba5df8f20b83a425a7a4ac"
+          "checksumValue": "2af62ac0ef5f7e10f7113a983b4515e452c13131742a99aab815663bfe1ceb73"
         }
       ],
       "licenseConcluded": "NOASSERTION",
       "copyrightText": "NOASSERTION"
     },
     {
-      "fileName": "./debug/lib/assimp-vc145-mtd.lib",
+      "fileName": "./debug/lib/assimp-vc143-mtd.lib",
       "SPDXID": "SPDXRef-binary-file-5",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "cc688d3faee148974df7185a2507c33665ab4ba434989fa9ade691428de8e19a"
+          "checksumValue": "643fb6859302e876438ae3a07e7be649121fa275c51d65c73c3e4f7b277350ca"
         }
       ],
       "licenseConcluded": "NOASSERTION",
@@ -711,7 +711,7 @@
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "8d588f562ac333593d3ad331f215d8deb37cf4a121d2d539a32c536e75834589"
+          "checksumValue": "aa555121a25845d3265db9fd941201995e19bbe9db76615ca2d3f8a5d5bde680"
         }
       ],
       "licenseConcluded": "NOASSERTION",
@@ -1786,12 +1786,12 @@
       "copyrightText": "NOASSERTION"
     },
     {
-      "fileName": "./lib/assimp-vc145-mt.lib",
+      "fileName": "./lib/assimp-vc143-mt.lib",
       "SPDXID": "SPDXRef-binary-file-96",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "ef7706613255e43971eb8e5f73f60607f081c228a675bd2a0819ed411ceda2a5"
+          "checksumValue": "8d30d39b539498a2a69d1181a08d64df48c9af9a16291cdf6065db2ee52f22f4"
         }
       ],
       "licenseConcluded": "NOASSERTION",
@@ -1803,7 +1803,7 @@
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "7a4324ca5332d799de28a3938de8220e48453325e75defad06f201c64fbd537a"
+          "checksumValue": "0f58da5a396fc7a74beadd8c5bb564c6524e7d54314c553c9c0df7f29bd53b16"
         }
       ],
       "licenseConcluded": "NOASSERTION",
@@ -1839,7 +1839,7 @@
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "92b897b016cada5b511ffe150424ee04cbd7b764025037570ee797190403c105"
+          "checksumValue": "c3ab49c4cd3a21439c4636cb7a82f94acb04ca0eb9b26d9af86bdb042d9e0c13"
         }
       ],
       "licenseConcluded": "NOASSERTION",
@@ -1851,7 +1851,7 @@
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "2b2bf5acefe73d2275c63aa55a9ac176cdf7437fe36e41883a6dd1155656374f"
+          "checksumValue": "8c03aad70f8348c61941e9b3b30b84c8c53c014ae4f69fe690394f70911300b6"
         }
       ],
       "licenseConcluded": "NOASSERTION",

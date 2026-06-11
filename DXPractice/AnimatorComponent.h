@@ -21,6 +21,7 @@ public:
 	AnimationEntry& GetCurrAnimation() const;
 	bool SetCurrAnimation(const std::string& animName);
 	void Update(float deltaTime) override;
+	void Render();
 	
 	bool IsEnabled() const { return enabled; }
 	void SetEnabled(bool inEnabled);

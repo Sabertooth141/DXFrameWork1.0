@@ -4,6 +4,7 @@
 
 #include "AnimationSystem.h"
 #include "LightCBuffer.h"
+#include "RenderSystem.h"
 #include "ScriptSystem.h"
 #include "Timer.h"
 
@@ -32,6 +33,7 @@ private:
 	Timer timer;
 	ScriptSystem scriptSystem;
 	AnimationSystem animationSystem;
+	RenderSystem renderSystem;
 
 	std::unique_ptr<LightCBuffer> lightCBuffer;
 

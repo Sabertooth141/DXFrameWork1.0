@@ -304,6 +304,9 @@
     <ClInclude Include="RenderLayer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SpriteRenderSystem.h">
+      <Filter>Header Files\Components\Sprite</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="PixelShader.hlsl">

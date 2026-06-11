@@ -1,2 +1,34 @@
 #pragma once
+#include "Renderer.h"
+#include "SpriteRenderSystem.h"
 
+class RenderSystem
+{
+public:
+	RenderSystem(Renderer& renderer) : renderer(renderer)
+	{
+	}
+
+	void Register(AnimatorComponent* sprite)
+	{
+		spriteSystem.Register(sprite);
+	}
+
+	void Render()
+	{
+		Render2DPass();
+	}
+
+private:
+	void Render2DPass()
+	{
+		renderer.SetDepthEnabled(false);
+		renderer.SetAlphaEnabled(true);
+
+		spriteSystem.Render();
+	}
+
+private:
+	SpriteRenderSystem spriteSystem;
+	Renderer& renderer;
+};

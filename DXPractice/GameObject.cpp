@@ -30,20 +30,11 @@ GameObject::GameObject(Renderer& renderer)
 	TransformComponent& transformComp = AddComponent<TransformComponent>();
 }
 
-void GameObject::Init(ScriptSystem& inScriptSystem, AnimationSystem& inAnimationSystem)
+void GameObject::Init(ScriptSystem& inScriptSystem, AnimationSystem& inAnimationSystem, RenderSystem& inRenderSystem)
 {
 	scriptSystem = &inScriptSystem;
 	animationSystem = &inAnimationSystem;
-}
-
-void GameObject::Draw(Renderer& renderer)
-{
-	MaterialComponent* comp = GetComponent<MaterialComponent>();
-	comp->Bind(renderer);
-	for (auto& mesh : meshes)
-	{
-		mesh->Draw(renderer);
-	}
+	renderSystem = &inRenderSystem;
 }
 
 void GameObject::Update(float deltaTime)
@@ -57,4 +48,9 @@ void GameObject::Update(float deltaTime)
 TransformComponent* GameObject::GetTransform()
 {
 	return GetComponent<TransformComponent>();
+}
+
+std::vector<std::unique_ptr<MeshComponent>>& GameObject::GetMeshes()
+{
+	return meshes;
 }

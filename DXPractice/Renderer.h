@@ -31,12 +31,23 @@ public:
 		return projMatrix;
 	}
 
+	void SetDepthEnabled(bool enabled);
+	void SetAlphaEnabled(bool enabled);
+
 private:
 	Microsoft::WRL::ComPtr<ID3D11Device> pDevice;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> pContext;
 	Microsoft::WRL::ComPtr<IDXGISwapChain> pSwapChain;
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> pRTV;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> pDSV;
+
+	// depth states
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> pDSStateOn; // 3D DSS ON
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> pDSStateOff; // 2D DSS off
+
+	// blend states
+	Microsoft::WRL::ComPtr<ID3D11BlendState> pBlendOff; // 3D
+	Microsoft::WRL::ComPtr<ID3D11BlendState> pBlendAlpha; // 2D
 
 	DirectX::XMMATRIX viewMatrix;
 	DirectX::XMMATRIX projMatrix;

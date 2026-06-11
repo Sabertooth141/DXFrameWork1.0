@@ -1,13 +1,13 @@
 x64-windows/
 x64-windows/bin/
-x64-windows/bin/assimp-vc145-mt.dll
-x64-windows/bin/assimp-vc145-mt.pdb
+x64-windows/bin/assimp-vc143-mt.dll
+x64-windows/bin/assimp-vc143-mt.pdb
 x64-windows/debug/
 x64-windows/debug/bin/
-x64-windows/debug/bin/assimp-vc145-mtd.dll
-x64-windows/debug/bin/assimp-vc145-mtd.pdb
+x64-windows/debug/bin/assimp-vc143-mtd.dll
+x64-windows/debug/bin/assimp-vc143-mtd.pdb
 x64-windows/debug/lib/
-x64-windows/debug/lib/assimp-vc145-mtd.lib
+x64-windows/debug/lib/assimp-vc143-mtd.lib
 x64-windows/debug/lib/pkgconfig/
 x64-windows/debug/lib/pkgconfig/assimp.pc
 x64-windows/include/
@@ -103,7 +103,7 @@ x64-windows/include/assimp/vector3.h
 x64-windows/include/assimp/vector3.inl
 x64-windows/include/assimp/version.h
 x64-windows/lib/
-x64-windows/lib/assimp-vc145-mt.lib
+x64-windows/lib/assimp-vc143-mt.lib
 x64-windows/lib/pkgconfig/
 x64-windows/lib/pkgconfig/assimp.pc
 x64-windows/share/

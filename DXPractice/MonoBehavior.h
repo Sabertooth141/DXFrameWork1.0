@@ -32,8 +32,6 @@ public:
 	Keyboard* keyboard = nullptr;
 	Mouse* mouse = nullptr;
 
-	GameObject* owner = nullptr;
-
 private:
 	bool started = false;
 	bool enabled = true;

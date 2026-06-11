@@ -12,7 +12,7 @@
 
 App::App(const std::string& cmdLine) : cmdLine(cmdLine),
                                        wnd(800, 600, L"DXPractice"),
-                                       renderer(wnd.GetRenderer())
+                                       renderer(wnd.GetRenderer()), renderSystem(RenderSystem(renderer))
 {
 }
 
@@ -56,7 +56,7 @@ void App::Init()
 	MeshData quad = MakeSpriteQuad();
 	auto sprite = std::make_unique<GameObject>(renderer, quad.vertices, quad.indices, L"SpriteVertexShader.cso",
 	                                           L"SpritePixelShader.cso");
-	sprite->Init(scriptSystem, animationSystem);
+	sprite->Init(scriptSystem, animationSystem, renderSystem);
 
 	sprite->GetTransform()->SetScale({6, 6, 1});
 	sprite->GetTransform()->SetPosition({0, 0, 3});
@@ -80,7 +80,6 @@ void App::Init()
 	lightCBuffer = std::make_unique<LightCBuffer>(renderer, light);
 	for (auto& gameObject : gameObjects)
 	{
-
 	}
 
 	wnd.mouse.EnableRaw();
@@ -117,8 +116,6 @@ void App::Update(float deltaTime)
 		}
 	}
 
-	////gameObjects[0]->GetTransform()->SetRotation(rotation);
-	
 	// systems
 	scriptSystem.Update(deltaTime);
 	animationSystem.Update(deltaTime);
@@ -137,10 +134,6 @@ void App::Draw(float deltaTime)
 		lightCBuffer->Bind(renderer);
 	}
 
-	for (const auto& gameObject : gameObjects)
-	{
-		gameObject->Draw(renderer);
-	}
-
+	renderSystem.Render();
 	renderer.EndFrame();
 }

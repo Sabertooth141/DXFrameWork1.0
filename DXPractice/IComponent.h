@@ -1,4 +1,5 @@
 #pragma once
+
 class GameObject;
 class Renderer;
 
@@ -10,4 +11,7 @@ public:
 	virtual void Update(float deltaTime)
 	{
 	}
+
+public:
+	GameObject* owner = nullptr;
 };

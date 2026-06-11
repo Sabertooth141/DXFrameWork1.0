@@ -23,7 +23,9 @@ void AnimatorComponent::AddAnimation(const std::string& animName, const std::wst
 	
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv = TextureCache::Load(renderer, spritePath);
 	auto spriteRenderer = std::make_unique<SpriteRendererComponent>(renderer, srv.Get());
+	spriteRenderer->owner = owner;
 	auto spriteAnimator = std::make_unique<SpriteAnimatorComponent>(*spriteRenderer, spriteJson);
+	spriteAnimator->owner = owner;
 
 	animations[animName] = {std::move(spriteRenderer), std::move(spriteAnimator)};
 }
@@ -50,6 +52,11 @@ void AnimatorComponent::Update(float deltaTime)
 	currAnimation->spriteRenderer->Update(deltaTime);
 	currAnimation->spriteAnimator->Update(deltaTime);
 	currAnimation->spriteRenderer->Bind(renderer);  // b1 UV, t0 texture, s0 sampler
+}
+
+void AnimatorComponent::Render()
+{
+	currAnimation->spriteRenderer->Render();
 }
 
 void AnimatorComponent::SetEnabled(bool inEnabled)

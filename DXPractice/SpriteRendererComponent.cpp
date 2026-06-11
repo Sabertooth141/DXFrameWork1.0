@@ -1,5 +1,8 @@
 #include "SpriteRendererComponent.h"
 
+#include "MaterialComponent.h"
+#include "GameObject.h"
+
 SpriteRendererComponent::SpriteRendererComponent(Renderer& renderer, ID3D11ShaderResourceView* srv)
     : renderer(renderer)
     , uvCBuffer(renderer, UVTransformData{ {0.f, 0.f}, {1.f, 1.f} }, 2) // b2
@@ -28,5 +31,10 @@ void SpriteRendererComponent::UpdateUV(const UVTransformData& data)
 
 void SpriteRendererComponent::Render()
 {
-
+    MaterialComponent* comp = owner->GetComponent<MaterialComponent>();
+    comp->Bind(renderer);
+    for (auto& mesh : owner->GetMeshes())
+    {
+        mesh->Draw(renderer);
+    }
 }

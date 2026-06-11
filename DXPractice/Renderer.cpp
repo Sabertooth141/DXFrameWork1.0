@@ -46,14 +46,21 @@ Renderer::Renderer(HWND hWnd, int width, int height)
 	pDevice->CreateRenderTargetView(pBackBuffer.Get(), nullptr, &pRTV);
 
 	// depth stencil buffer + view
-	D3D11_DEPTH_STENCIL_DESC dsDesc = {};
-	dsDesc.DepthEnable = TRUE;
-	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-	dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	// depth ON for 3D
+	D3D11_DEPTH_STENCIL_DESC dsOn = {};
+	dsOn.DepthEnable = TRUE;
+	dsOn.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	dsOn.DepthFunc = D3D11_COMPARISON_LESS;
+	pDevice->CreateDepthStencilState(&dsOn, &pDSStateOn);
 
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> pDSState;
-	pDevice->CreateDepthStencilState(&dsDesc, &pDSState);
-	pContext->OMSetDepthStencilState(pDSState.Get(), 1);
+	// depth OFF for 2D
+	D3D11_DEPTH_STENCIL_DESC dsOff= {};
+	dsOff.DepthEnable = FALSE;
+	dsOff.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+	pDevice->CreateDepthStencilState(&dsOff, &pDSStateOff);
+
+	// default to depth ON
+	pContext->OMSetDepthStencilState(pDSStateOn.Get(), 1);
 
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> pDepthStencil;
 	D3D11_TEXTURE2D_DESC dtDesc = {};
@@ -86,6 +93,28 @@ Renderer::Renderer(HWND hWnd, int width, int height)
 	vp.MinDepth = 0;
 	vp.MaxDepth = 1;
 	pContext->RSSetViewports(1, &vp);
+
+	// blend states
+	// alpha blend ON for 2D
+	D3D11_BLEND_DESC bdAlpha = {};
+	bdAlpha.RenderTarget[0].BlendEnable = TRUE;
+	bdAlpha.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	bdAlpha.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+	bdAlpha.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	bdAlpha.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	bdAlpha.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+	bdAlpha.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	bdAlpha.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	pDevice->CreateBlendState(&bdAlpha, &pBlendAlpha);
+
+	// alpha blend OFF for 3D
+	D3D11_BLEND_DESC bdOff = {};
+	bdOff.RenderTarget[0].BlendEnable = FALSE;
+	bdOff.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	pDevice->CreateBlendState(&bdAlpha, &pBlendOff);
+
+	// default to blend OFF
+	pContext->OMSetBlendState(pBlendOff.Get(), nullptr, 0xFFFFFFFF);
 
 	// view and proj matrices
 	viewMatrix = DirectX::XMMatrixLookAtLH(
@@ -120,6 +149,16 @@ Renderer::Renderer(HWND hWnd, int width, int height)
 	filter.DenyList.pIDList = hide;
 	pInfoQueue->AddStorageFilterEntries(&filter);
 #endif
+}
+
+void Renderer::SetDepthEnabled(bool enabled)
+{
+	pContext->OMSetDepthStencilState(enabled ? pDSStateOn.Get() : pDSStateOff.Get(), 1);
+}
+
+void Renderer::SetAlphaEnabled(bool enabled)
+{
+	pContext->OMSetBlendState(enabled ? pBlendAlpha.Get() : pBlendOff.Get(), nullptr, 0xFFFFFFFF);
 }
 
 void Renderer::BeginFrame(float r, float g, float b)

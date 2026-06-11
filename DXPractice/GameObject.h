@@ -8,8 +8,8 @@
 #include "TransformComponent.h"
 #include "MonoBehavior.h"
 #include "ScriptSystem.h"
+#include "RenderSystem.h"
 
-class ScriptSystem;
 class ModelReader;
 class Renderer;
 
@@ -22,9 +22,7 @@ public:
 	           const std::wstring& vsPath = L"VertexShader.cso", const std::wstring& psPath = L"PixelShader.cso");
 	GameObject(Renderer& renderer);
 
-	void Init(ScriptSystem& inScriptSystem, AnimationSystem& inAnimationSystem);
-
-	void Draw(Renderer& renderer);
+	void Init(ScriptSystem& inScriptSystem, AnimationSystem& inAnimationSystem, RenderSystem& inRenderSystem);
 	void Update(float deltaTime);
 
 	template <typename T, typename... Args>
@@ -32,15 +30,16 @@ public:
 	{
 		std::unique_ptr<T> comp = std::make_unique<T>(std::forward<Args>(args)...);
 		T& ref = *comp;
+		ref.owner = this;
 
 		if constexpr (std::is_base_of_v<MonoBehavior, T>)
 		{
-			ref.owner = this;
 			scriptSystem->RegisterScript(ref);
 		}
 		else if constexpr (std::is_base_of_v<AnimatorComponent, T>)
 		{
 			animationSystem->Register(&ref);
+			renderSystem->Register(&ref);
 		}
 
 		components[typeid(T)] = std::move(comp);
@@ -59,6 +58,7 @@ public:
 	}
 
 	TransformComponent* GetTransform();
+	std::vector<std::unique_ptr<MeshComponent>>& GetMeshes();
 
 private:
 	std::unordered_map<std::type_index, std::unique_ptr<IComponent>> components;
@@ -66,4 +66,5 @@ private:
 
 	ScriptSystem* scriptSystem = nullptr;
 	AnimationSystem* animationSystem = nullptr;
+	RenderSystem* renderSystem = nullptr;
 };
