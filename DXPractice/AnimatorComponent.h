@@ -4,6 +4,7 @@
 #include <unordered_map>
 
 #include "IComponent.h"
+#include "RenderLayer.h"
 #include "SpriteAnimatorComponent.h"
 class GameObject;
 
@@ -26,11 +27,17 @@ public:
 	bool IsEnabled() const { return enabled; }
 	void SetEnabled(bool inEnabled);
 
+	void SetRenderLayer(RenderLayer inLayer);
+	void SetSortOrder(int inOrder);
+
 private:
 	Renderer& renderer;
 	GameObject* parent = nullptr;
 	std::unordered_map<std::string, AnimationEntry> animations;
 	AnimationEntry* currAnimation;
+
+	RenderLayer renderLayer = RenderLayer::Default;
+	int sortOrder = 0;
 
 	bool enabled = true;
 };

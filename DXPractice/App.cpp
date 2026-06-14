@@ -62,10 +62,28 @@ void App::Init()
 	sprite->GetTransform()->SetPosition({0, 0, 3});
 
 	sprite->AddComponent<AnimatorComponent>(renderer);
+	sprite->GetComponent<AnimatorComponent>()->SetRenderLayer(RenderLayer::Player);
+	sprite->GetComponent<AnimatorComponent>()->SetSortOrder(0);
 	sprite->GetComponent<AnimatorComponent>()->AddAnimation("CharIdle", L"../../assets/PlayerCharacter.png",
 	                                                        L"../../assets/PlayerCharacter.json");
 	sprite->GetComponent<AnimatorComponent>()->SetCurrAnimation("CharIdle");
 	gameObjects.push_back(std::move(sprite));
+
+	// layer test
+	auto backGround = std::make_unique<GameObject>(renderer, quad.vertices, quad.indices, L"SpriteVertexShader.cso",
+		L"SpritePixelShader.cso");
+	backGround->Init(scriptSystem, animationSystem, renderSystem);
+
+	backGround->GetTransform()->SetScale({ 10, 10, 1 });
+	backGround->GetTransform()->SetPosition({ 0, 0, 3 });
+
+	backGround->AddComponent<AnimatorComponent>(renderer);
+	backGround->GetComponent<AnimatorComponent>()->SetRenderLayer(RenderLayer::BackGround);
+	backGround->GetComponent<AnimatorComponent>()->SetSortOrder(0);
+	backGround->GetComponent<AnimatorComponent>()->AddAnimation("CharIdle", L"../../assets/PlayerCharacter.png",
+		L"../../assets/PlayerCharacter.json");
+	backGround->GetComponent<AnimatorComponent>()->SetCurrAnimation("CharIdle");
+	gameObjects.push_back(std::move(backGround));
 
 	// light 
 	LightData light = {};

@@ -23,6 +23,9 @@ void AnimatorComponent::AddAnimation(const std::string& animName, const std::wst
 	
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv = TextureCache::Load(renderer, spritePath);
 	auto spriteRenderer = std::make_unique<SpriteRendererComponent>(renderer, srv.Get());
+	spriteRenderer->layer = renderLayer;
+	spriteRenderer->sortOrder = sortOrder;
+
 	spriteRenderer->owner = owner;
 	auto spriteAnimator = std::make_unique<SpriteAnimatorComponent>(*spriteRenderer, spriteJson);
 	spriteAnimator->owner = owner;
@@ -62,4 +65,22 @@ void AnimatorComponent::Render()
 void AnimatorComponent::SetEnabled(bool inEnabled)
 {
 	enabled = inEnabled;
+}
+
+void AnimatorComponent::SetRenderLayer(const RenderLayer inLayer)
+{
+	renderLayer = inLayer;
+	for (auto& entry : animations)
+	{
+		entry.second.spriteRenderer->layer = inLayer;
+	}
+}
+
+void AnimatorComponent::SetSortOrder(const int inOrder)
+{
+	sortOrder = inOrder;
+	for (auto& entry : animations)
+	{
+		entry.second.spriteRenderer->sortOrder = inOrder;
+	}
 }
