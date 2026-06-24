@@ -47,6 +47,7 @@ private:
 	{
 		for (auto* destroyed : destroyQueue)
 		{
+			delete destroyed;
 			std::erase(activeScripts, destroyed);
 		}
 		destroyQueue.clear();

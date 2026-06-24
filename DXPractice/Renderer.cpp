@@ -81,6 +81,16 @@ Renderer::Renderer(HWND hWnd, int width, int height)
 	dsvDesc.Texture2D.MipSlice = 0;
 	pDevice->CreateDepthStencilView(pDepthStencil.Get(), &dsvDesc, &pDSV);
 
+	// buffer for flipping x and y
+	D3D11_BUFFER_DESC cbd = {};
+	cbd.Usage = D3D11_USAGE_DYNAMIC;
+	cbd.ByteWidth = sizeof(SpriteData);
+	cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	pDevice->CreateBuffer(&cbd, nullptr, &pCBSpriteData);
+
+	pContext->PSSetConstantBuffers(3, 1, pCBSpriteData.GetAddressOf());
+
 	// bind render target + depth stencil
 	pContext->OMSetRenderTargets(1, pRTV.GetAddressOf(), pDSV.Get());
 
@@ -111,12 +121,12 @@ Renderer::Renderer(HWND hWnd, int width, int height)
 	D3D11_BLEND_DESC bdOff = {};
 	bdOff.RenderTarget[0].BlendEnable = FALSE;
 	bdOff.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-	pDevice->CreateBlendState(&bdAlpha, &pBlendOff);
+	pDevice->CreateBlendState(&bdOff, &pBlendOff);
 
 	// default to blend OFF
 	pContext->OMSetBlendState(pBlendOff.Get(), nullptr, 0xFFFFFFFF);
 
-	// view and proj matrices
+	// view and proj / ortho matrices
 	viewMatrix = DirectX::XMMatrixLookAtLH(
 
 		{0, 0, -5}, // camera position
@@ -131,7 +141,13 @@ Renderer::Renderer(HWND hWnd, int width, int height)
 		static_cast<float>(width) / static_cast<float>(height),
 		0.1f,
 		100.0f
+	);
 
+	orthoMatrix = DirectX::XMMatrixOrthographicLH(
+		static_cast<float>(width),
+		static_cast<float>(height),
+		0.1f,
+		100.0f
 	);
 
 	// After device creation
@@ -159,6 +175,31 @@ void Renderer::SetDepthEnabled(bool enabled)
 void Renderer::SetAlphaEnabled(bool enabled)
 {
 	pContext->OMSetBlendState(enabled ? pBlendAlpha.Get() : pBlendOff.Get(), nullptr, 0xFFFFFFFF);
+}
+
+void Renderer::SetSpriteFlip(bool flipX, bool flipY)
+{
+	D3D11_MAPPED_SUBRESOURCE msr;
+	pContext->Map(pCBSpriteData.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
+	SpriteData* data = reinterpret_cast<SpriteData*>(msr.pData);
+	data->flipX = flipX ? 1 : 0;
+	data->flipY = flipY ? 1 : 0;
+
+	pContext->Unmap(pCBSpriteData.Get(), 0);
+}
+
+void Renderer::Set3DMode()
+{
+	SetDepthEnabled(true);
+	SetAlphaEnabled(false);
+	activeProj = projMatrix;
+}
+
+void Renderer::Set2DMode()
+{
+	SetDepthEnabled(false);
+	SetAlphaEnabled(true);
+	activeProj = orthoMatrix;
 }
 
 void Renderer::BeginFrame(float r, float g, float b)

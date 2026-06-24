@@ -20,7 +20,7 @@ void AnimatorComponent::AddAnimation(const std::string& animName, const std::wst
 	{
 		throw std::runtime_error("Animation name [" + animName + "] already used");
 	}
-	
+
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv = TextureCache::Load(renderer, spritePath);
 	auto spriteRenderer = std::make_unique<SpriteRendererComponent>(renderer, srv.Get());
 	spriteRenderer->layer = renderLayer;
@@ -30,12 +30,34 @@ void AnimatorComponent::AddAnimation(const std::string& animName, const std::wst
 	auto spriteAnimator = std::make_unique<SpriteAnimatorComponent>(*spriteRenderer, spriteJson);
 	spriteAnimator->owner = owner;
 
-	animations[animName] = {std::move(spriteRenderer), std::move(spriteAnimator)};
+	owner->GetTransform()->SetScale({spriteAnimator->GetFrameSize().x, spriteAnimator->GetFrameSize().y, 1});
+	animations[animName] = {animName, std::move(spriteRenderer), std::move(spriteAnimator)};
+}
+
+void AnimatorComponent::SetStatic(const std::wstring& spritePath)
+{
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv = TextureCache::Load(renderer, spritePath);
+	auto spriteRenderer = std::make_unique<SpriteRendererComponent>(renderer, srv.Get());
+	spriteRenderer->layer = renderLayer;
+	spriteRenderer->sortOrder = sortOrder;
+	spriteRenderer->owner = owner;
+	auto spriteAnimator = std::make_unique<SpriteAnimatorComponent>(*spriteRenderer, 1, 1, 1);
+	spriteAnimator->owner = owner;
+
+	owner->GetTransform()->SetScale({spriteAnimator->GetFrameSize().x, spriteAnimator->GetFrameSize().y, 1});
+	animations["Static"] = {"Static", std::move(spriteRenderer), std::move(spriteAnimator)};
+
+	SetCurrAnimation("Static");
 }
 
 AnimationEntry& AnimatorComponent::GetCurrAnimation() const
 {
 	return *currAnimation;
+}
+
+std::string& AnimatorComponent::GetCurrAnimName() const
+{
+	return currAnimation->animName;
 }
 
 bool AnimatorComponent::SetCurrAnimation(const std::string& animName)
@@ -54,11 +76,11 @@ void AnimatorComponent::Update(float deltaTime)
 {
 	currAnimation->spriteRenderer->Update(deltaTime);
 	currAnimation->spriteAnimator->Update(deltaTime);
-	currAnimation->spriteRenderer->Bind(renderer);  // b1 UV, t0 texture, s0 sampler
 }
 
 void AnimatorComponent::Render()
 {
+	currAnimation->spriteRenderer->Bind(renderer); // b1 UV, t0 texture, s0 sampler
 	currAnimation->spriteRenderer->Render();
 }
 
@@ -82,5 +104,21 @@ void AnimatorComponent::SetSortOrder(const int inOrder)
 	for (auto& entry : animations)
 	{
 		entry.second.spriteRenderer->sortOrder = inOrder;
+	}
+}
+
+void AnimatorComponent::SetFlipX(const bool inFlip) const
+{
+	for (auto& entry : animations)
+	{
+		entry.second.spriteRenderer->flipX = inFlip;
+	}
+}
+
+void AnimatorComponent::SetFlipY(const bool inFlip) const
+{
+	for (auto& entry : animations)
+	{
+		entry.second.spriteRenderer->flipY = inFlip;
 	}
 }

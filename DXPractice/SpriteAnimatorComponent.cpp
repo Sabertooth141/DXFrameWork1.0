@@ -12,6 +12,10 @@ SpriteAnimatorComponent::SpriteAnimatorComponent(SpriteRendererComponent& sr, in
 	frameDuration(0.1f),
 	timer(0), loop(true)
 {
+	loopStartFrame = startFrame;
+	loopEndFrame = endFrame;
+	frameW = srComp->GetTexture().GetTextureSize().x;
+	frameH = srComp->GetTexture().GetTextureSize().y;
 	PushUV();
 }
 
@@ -25,8 +29,14 @@ SpriteAnimatorComponent::SpriteAnimatorComponent(SpriteRendererComponent& sr, co
 	frameDuration(0.1f),
 	timer(0), loop(true)
 {
+	loopStartFrame = startFrame;
+	loopEndFrame = endFrame;
 	ParseJson(ReadJson(jsonPath));
 	endFrame = static_cast<int>(animInfo.size()) - 1;
+	if (loopEndFrame == 0)
+	{
+		loopEndFrame = endFrame;
+	}
 	PushUV();
 }
 
@@ -57,9 +67,9 @@ void SpriteAnimatorComponent::SetAnimation(int inStartFrame, int inEndFrame, flo
 
 void SpriteAnimatorComponent::AdvanceFrame()
 {
-	if (++currFrame > endFrame)
+	if (++currFrame > loopEndFrame)
 	{
-		currFrame = loop ? startFrame : endFrame;
+		currFrame = loop ? loopStartFrame : endFrame;
 	}
 	if (!animInfo.empty() && currFrame < static_cast<int>(animInfo.size()))
 	{
@@ -130,6 +140,16 @@ bool SpriteAnimatorComponent::ParseJson(const std::string& jsonString)
 		frame.w = ParseInt(frameInfo, "w");
 		frame.h = ParseInt(frameInfo, "h");
 
+		if (frameW != static_cast<float>(frame.w))
+		{
+			frameW = static_cast<float>(frame.w);
+		}
+
+		if (frameH != static_cast<float>(frame.h))
+		{
+			frameH = static_cast<float>(frame.h);
+		}
+
 		const size_t durationPos = jsonString.find("\"duration\":", frameInfoEnd);
 		const size_t nextFramePos = jsonString.find("\"frame\":", frameInfoEnd);
 
@@ -162,6 +182,17 @@ bool SpriteAnimatorComponent::ParseJson(const std::string& jsonString)
 	const std::string sheetSizeInfo = jsonString.substr(sheetSizePos, sheetSizeEndPos - sheetSizePos + 1);
 	spriteSheetW = static_cast<float>(ParseInt(sheetSizeInfo, "w"));
 	spriteSheetH = static_cast<float>(ParseInt(sheetSizeInfo, "h"));
+
+	// find loop info
+	const size_t loopInfoPos = jsonString.find("\"Loop\"", sheetSizeEndPos);
+	if (loopInfoPos != std::string::npos)
+	{
+		const size_t loopFromPos = jsonString.find("\"from\"", loopInfoPos);
+		loopStartFrame = ParseInt(jsonString.substr(loopFromPos, 30), "from");
+		const size_t loopToPos = jsonString.find("\"to\"", loopFromPos);
+		loopEndFrame = ParseInt(jsonString.substr(loopToPos, 30), "to");
+	}
+
 	return !animInfo.empty();
 }
 

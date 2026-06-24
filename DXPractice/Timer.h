@@ -12,9 +12,9 @@ public:
 	float Mark()
 	{
 		const auto now = std::chrono::steady_clock::now();
-		const std::chrono::duration<float> delaTime = now - last;
+		const std::chrono::duration<float> deltaTime = now - last;
 		last = now;
-		return delaTime.count();
+		return deltaTime.count();
 	}
 
 	float Peek() const

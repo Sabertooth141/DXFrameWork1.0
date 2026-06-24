@@ -35,6 +35,11 @@ void TransformComponent::SetScale(DirectX::XMFLOAT3 inScale)
 	scale = inScale;
 }
 
+void TransformComponent::SetScale(float inScale)
+{
+	scale = {scale.x * inScale, scale.y * inScale, 1};
+}
+
 void TransformComponent::Rotate(DirectX::XMFLOAT3 inRotate)
 {
 	rotation = DirectX::XMFLOAT3(rotation.x + inRotate.x, rotation.y + inRotate.y, rotation.z + inRotate.z);

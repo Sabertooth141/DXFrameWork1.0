@@ -22,8 +22,7 @@ public:
 private:
 	void Render2DPass()
 	{
-		renderer.SetDepthEnabled(false);
-		renderer.SetAlphaEnabled(true);
+		renderer.Set2DMode();
 
 		spriteSystem.Render();
 	}

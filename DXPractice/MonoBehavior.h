@@ -32,7 +32,7 @@ public:
 	Keyboard* keyboard = nullptr;
 	Mouse* mouse = nullptr;
 
-private:
+protected:
 	bool started = false;
 	bool enabled = true;
 };

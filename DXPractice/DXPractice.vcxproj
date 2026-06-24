@@ -111,16 +111,16 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)vcpkg_installed\x64-windows\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)ThirdParty\Assimp\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)vcpkg_installed\x64-windows\debug\lib;$(SolutionDir)vcpkg_installed\x64-windows\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)ThirdParty\Assimp\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(CoreLibraryDependencies);assimp-vc143-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>if "$(Configuration)"=="Debug" (xcopy /y "$(SolutionDir)vcpkg_installed\x64-windows\debug\bin\*.dll" "$(OutDir)") else (xcopy /y "$(SolutionDir)vcpkg_installed\x64-windows\bin\*.dll" "$(OutDir)")</Command>
+      <Command>xcopy /y /d "$(SolutionDir)ThirdParty\Assimp\bin\assimp-vc143-mtd.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -152,6 +152,7 @@
     <ClCompile Include="AnimatorComponent.cpp" />
     <ClCompile Include="App.cpp" />
     <ClCompile Include="Bindable.cpp" />
+    <ClCompile Include="BoxCollider2D.cpp" />
     <ClCompile Include="Drawable.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="IndexBuffer.cpp" />
@@ -164,6 +165,7 @@
     <ClCompile Include="ModelReader.cpp" />
     <ClCompile Include="MonoBehavior.cpp" />
     <ClCompile Include="Mouse.cpp" />
+    <ClCompile Include="PhysicsSystem.cpp" />
     <ClCompile Include="PixelShader.cpp" />
     <ClCompile Include="PlayerController.cpp" />
     <ClCompile Include="Renderer.cpp" />
@@ -183,6 +185,9 @@
     <ClInclude Include="AnimatorComponent.h" />
     <ClInclude Include="App.h" />
     <ClInclude Include="Bindable.h" />
+    <ClInclude Include="BoxCollider2D.h" />
+    <ClInclude Include="Collider2D.h" />
+    <ClInclude Include="CollisionDispatch.h" />
     <ClInclude Include="IComponent.h" />
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="Drawable.h" />
@@ -199,6 +204,7 @@
     <ClInclude Include="ModelReader.h" />
     <ClInclude Include="MonoBehavior.h" />
     <ClInclude Include="Mouse.h" />
+    <ClInclude Include="PhysicsSystem.h" />
     <ClInclude Include="PlayerController.h" />
     <ClInclude Include="RenderLayer.h" />
     <ClInclude Include="RenderSystem.h" />
@@ -225,6 +231,7 @@
     <ClInclude Include="VertexShader.h" />
     <ClInclude Include="Win.h" />
     <ClInclude Include="Window.h" />
+    <ClInclude Include="WindowSettings.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="PixelShader.hlsl">
@@ -249,7 +256,7 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

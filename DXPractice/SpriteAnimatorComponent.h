@@ -1,4 +1,5 @@
 #pragma once
+#include <DirectXMath.h>
 #include <string>
 #include <vector>
 
@@ -23,6 +24,8 @@ public:
 	bool ParseJson(const std::string& jsonString);
 	SpriteRendererComponent* GetSpriteRenderer() const;
 
+	DirectX::XMFLOAT2 GetFrameSize() const { return {frameW, frameH}; }
+
 private:
 	void AdvanceFrame();
 	void PushUV();
@@ -33,9 +36,11 @@ private:
 private:
 	SpriteRendererComponent* srComp = nullptr;
 	std::vector<SpriteFrame> animInfo;
-	float spriteSheetW, spriteSheetH;
+	float spriteSheetW = 0, spriteSheetH = 0;
+	float frameW = 0, frameH = 0;
 	int cols, rows;
 	int startFrame, endFrame, currFrame;
+	int loopStartFrame, loopEndFrame;
 	float frameDuration;
 	float timer;
 	bool loop;

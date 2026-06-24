@@ -29,10 +29,11 @@ void SpriteRendererComponent::UpdateUV(const UVTransformData& data)
     uvCBuffer.Update(renderer, data);
 }
 
-void SpriteRendererComponent::Render()
+void SpriteRendererComponent::Render() const
 {
     MaterialComponent* comp = owner->GetComponent<MaterialComponent>();
     comp->Bind(renderer);
+    renderer.SetSpriteFlip(flipX, flipY);
     for (auto& mesh : owner->GetMeshes())
     {
         mesh->Draw(renderer);

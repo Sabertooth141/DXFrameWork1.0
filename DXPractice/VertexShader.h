@@ -13,6 +13,6 @@ public:
 	ID3DBlob* GetByteCode() const;
 
 private:
-	Microsoft::WRL::ComPtr<ID3DBlob> pByteCodeBlob;
-	Microsoft::WRL::ComPtr<ID3D11VertexShader> pVertexShader;
+	Microsoft::WRL::ComPtr<ID3DBlob> pByteCodeBlob = nullptr;
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> pVertexShader = nullptr;
 };

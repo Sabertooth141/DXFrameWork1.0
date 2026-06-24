@@ -3,6 +3,7 @@
 #include <unordered_map>
 
 #include "AnimationSystem.h"
+#include "BoxCollider2D.h"
 #include "MaterialComponent.h"
 #include "MeshComponent.h"
 #include "TransformComponent.h"
@@ -34,7 +35,7 @@ public:
 
 		if constexpr (std::is_base_of_v<MonoBehavior, T>)
 		{
-			scriptSystem->RegisterScript(ref);
+			scriptSystem->RegisterScript(&ref);
 		}
 		else if constexpr (std::is_base_of_v<AnimatorComponent, T>)
 		{
@@ -56,6 +57,9 @@ public:
 		}
 		return nullptr;
 	}
+
+	void NotifyColliderEnter2D(const BoxCollider2D& other) const;
+	void NotifyColliderLeave2D(const BoxCollider2D& other) const;
 
 	TransformComponent* GetTransform();
 	std::vector<std::unique_ptr<MeshComponent>>& GetMeshes();

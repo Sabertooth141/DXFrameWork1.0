@@ -10,6 +10,7 @@ class GameObject;
 
 struct AnimationEntry
 {
+	std::string animName;
 	std::unique_ptr<SpriteRendererComponent> spriteRenderer;
 	std::unique_ptr<SpriteAnimatorComponent> spriteAnimator;
 };
@@ -19,7 +20,9 @@ class AnimatorComponent : public IComponent
 public:
 	AnimatorComponent(Renderer& renderer);
 	void AddAnimation(const std::string& animName, const std::wstring& spritePath, const std::wstring& spriteJson);
+	void SetStatic(const std::wstring& spritePath);
 	AnimationEntry& GetCurrAnimation() const;
+	std::string& GetCurrAnimName() const;
 	bool SetCurrAnimation(const std::string& animName);
 	void Update(float deltaTime) override;
 	void Render();
@@ -29,6 +32,9 @@ public:
 
 	void SetRenderLayer(RenderLayer inLayer);
 	void SetSortOrder(int inOrder);
+
+	void SetFlipX(bool inFlip) const;
+	void SetFlipY(bool inFlip) const;
 
 private:
 	Renderer& renderer;

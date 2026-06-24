@@ -73,6 +73,12 @@
     <Filter Include="Source Files\Components\ScriptSystem">
       <UniqueIdentifier>{3a03b70f-4fd0-4595-97ac-1842b69ed93d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Components\Physics">
+      <UniqueIdentifier>{f6a4b929-c944-46f7-a1a0-096fea719fdf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Components\Physics">
+      <UniqueIdentifier>{8d6cebeb-9715-413f-9185-8a12738c64ff}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Image Include="small.ico">
@@ -166,6 +172,12 @@
     </ClCompile>
     <ClCompile Include="MonoBehavior.cpp">
       <Filter>Source Files\Components\ScriptSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="BoxCollider2D.cpp">
+      <Filter>Source Files\Components\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="PhysicsSystem.cpp">
+      <Filter>Source Files\Components\Physics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -306,6 +318,21 @@
     </ClInclude>
     <ClInclude Include="SpriteRenderSystem.h">
       <Filter>Header Files\Components\Sprite</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowSettings.h">
+      <Filter>Header Files\3rdParty</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsSystem.h">
+      <Filter>Header Files\Components\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="BoxCollider2D.h">
+      <Filter>Header Files\Components\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Collider2D.h">
+      <Filter>Header Files\Components\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionDispatch.h">
+      <Filter>Header Files\Components\Physics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

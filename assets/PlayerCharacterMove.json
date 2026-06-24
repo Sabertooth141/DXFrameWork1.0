@@ -1,0 +1,112 @@
+{ "frames": {
+   "PlayerCharacterMove 0.aseprite": {
+    "frame": { "x": 0, "y": 0, "w": 64, "h": 64 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 64 },
+    "sourceSize": { "w": 64, "h": 64 },
+    "duration": 100
+   },
+   "PlayerCharacterMove 1.aseprite": {
+    "frame": { "x": 64, "y": 0, "w": 64, "h": 64 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 64 },
+    "sourceSize": { "w": 64, "h": 64 },
+    "duration": 100
+   },
+   "PlayerCharacterMove 2.aseprite": {
+    "frame": { "x": 128, "y": 0, "w": 64, "h": 64 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 64 },
+    "sourceSize": { "w": 64, "h": 64 },
+    "duration": 100
+   },
+   "PlayerCharacterMove 3.aseprite": {
+    "frame": { "x": 192, "y": 0, "w": 64, "h": 64 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 64 },
+    "sourceSize": { "w": 64, "h": 64 },
+    "duration": 100
+   },
+   "PlayerCharacterMove 4.aseprite": {
+    "frame": { "x": 0, "y": 64, "w": 64, "h": 64 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 64 },
+    "sourceSize": { "w": 64, "h": 64 },
+    "duration": 100
+   },
+   "PlayerCharacterMove 5.aseprite": {
+    "frame": { "x": 64, "y": 64, "w": 64, "h": 64 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 64 },
+    "sourceSize": { "w": 64, "h": 64 },
+    "duration": 100
+   },
+   "PlayerCharacterMove 6.aseprite": {
+    "frame": { "x": 128, "y": 64, "w": 64, "h": 64 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 64 },
+    "sourceSize": { "w": 64, "h": 64 },
+    "duration": 100
+   },
+   "PlayerCharacterMove 7.aseprite": {
+    "frame": { "x": 192, "y": 64, "w": 64, "h": 64 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 64 },
+    "sourceSize": { "w": 64, "h": 64 },
+    "duration": 100
+   },
+   "PlayerCharacterMove 8.aseprite": {
+    "frame": { "x": 0, "y": 128, "w": 64, "h": 64 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 64 },
+    "sourceSize": { "w": 64, "h": 64 },
+    "duration": 100
+   },
+   "PlayerCharacterMove 9.aseprite": {
+    "frame": { "x": 64, "y": 128, "w": 64, "h": 64 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 64 },
+    "sourceSize": { "w": 64, "h": 64 },
+    "duration": 100
+   },
+   "PlayerCharacterMove 10.aseprite": {
+    "frame": { "x": 128, "y": 128, "w": 64, "h": 64 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 64 },
+    "sourceSize": { "w": 64, "h": 64 },
+    "duration": 100
+   }
+ },
+ "meta": {
+  "app": "https://www.aseprite.org/",
+  "version": "1.3.17.2-x64",
+  "image": "PlayerCharacterMove.png",
+  "format": "I8",
+  "size": { "w": 256, "h": 192 },
+  "scale": "1",
+  "frameTags": [
+   { "name": "Loop", "from": 1, "to": 10, "direction": "forward", "color": "#000000ff" }
+  ],
+  "layers": [
+   { "name": "Layer 1", "opacity": 255, "blendMode": "normal" },
+   { "name": "legs", "opacity": 255, "blendMode": "normal" },
+   { "name": "body", "opacity": 255, "blendMode": "normal" },
+   { "name": "hand", "opacity": 255, "blendMode": "normal" },
+   { "name": "head", "opacity": 255, "blendMode": "normal" },
+   { "name": "acessesory", "opacity": 255, "blendMode": "normal" }
+  ],
+  "slices": [
+  ]
+ }
+}

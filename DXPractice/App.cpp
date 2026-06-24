@@ -5,13 +5,15 @@
 #include "Material.h"
 #include "ModelReader.h"
 #include "MonoBehavior.h"
+#include "PlayerController.h"
 #include "SpriteAnimatorComponent.h"
 #include "SpriteRendererComponent.h"
 #include "SpriteVertex.h"
 #include "TextureCache.h"
+#include "WindowSettings.h"
 
 App::App(const std::string& cmdLine) : cmdLine(cmdLine),
-                                       wnd(800, 600, L"DXPractice"),
+                                       wnd(WIN_WIDTH, WIN_HEIGHT, L"DXPractice"),
                                        renderer(wnd.GetRenderer()), renderSystem(RenderSystem(renderer))
 {
 }
@@ -24,6 +26,7 @@ int App::Run()
 {
 	Init();
 
+	timer.Mark();
 	while (true)
 	{
 		if (const auto exitCode = Window::ProcessMessages())
@@ -58,31 +61,34 @@ void App::Init()
 	                                           L"SpritePixelShader.cso");
 	sprite->Init(scriptSystem, animationSystem, renderSystem);
 
-	sprite->GetTransform()->SetScale({6, 6, 1});
-	sprite->GetTransform()->SetPosition({0, 0, 3});
+	sprite->GetTransform()->SetPosition({0, -100, 3});
 
 	sprite->AddComponent<AnimatorComponent>(renderer);
 	sprite->GetComponent<AnimatorComponent>()->SetRenderLayer(RenderLayer::Player);
 	sprite->GetComponent<AnimatorComponent>()->SetSortOrder(0);
 	sprite->GetComponent<AnimatorComponent>()->AddAnimation("CharIdle", L"../../assets/PlayerCharacter.png",
 	                                                        L"../../assets/PlayerCharacter.json");
+	sprite->GetComponent<AnimatorComponent>()->AddAnimation("CharMove", L"../../assets/PlayerCharacterMove.png",
+	                                                        L"../../assets/PlayerCharacterMove.json");
 	sprite->GetComponent<AnimatorComponent>()->SetCurrAnimation("CharIdle");
+
+	sprite->AddComponent<PlayerController>();
+	sprite->GetComponent<PlayerController>()->SetInput(wnd.keyboard, wnd.mouse);
+
 	gameObjects.push_back(std::move(sprite));
 
 	// layer test
 	auto backGround = std::make_unique<GameObject>(renderer, quad.vertices, quad.indices, L"SpriteVertexShader.cso",
-		L"SpritePixelShader.cso");
+	                                               L"SpritePixelShader.cso");
 	backGround->Init(scriptSystem, animationSystem, renderSystem);
 
-	backGround->GetTransform()->SetScale({ 10, 10, 1 });
-	backGround->GetTransform()->SetPosition({ 0, 0, 3 });
+	backGround->GetTransform()->SetPosition({0, 0, 1});
 
 	backGround->AddComponent<AnimatorComponent>(renderer);
 	backGround->GetComponent<AnimatorComponent>()->SetRenderLayer(RenderLayer::BackGround);
 	backGround->GetComponent<AnimatorComponent>()->SetSortOrder(0);
-	backGround->GetComponent<AnimatorComponent>()->AddAnimation("CharIdle", L"../../assets/PlayerCharacter.png",
-		L"../../assets/PlayerCharacter.json");
-	backGround->GetComponent<AnimatorComponent>()->SetCurrAnimation("CharIdle");
+	backGround->GetComponent<AnimatorComponent>()->SetStatic(L"../../assets/bgTest.jpg");
+
 	gameObjects.push_back(std::move(backGround));
 
 	// light 
@@ -105,23 +111,6 @@ void App::Init()
 
 void App::Update(float deltaTime)
 {
-	//LightData light = {};
-	//light.lightPos =
-	//{
-	//	sinf(angle) * 5,
-	//	3,
-	//	cosf(angle) * -5
-	//};
-
-	//light.ambient = { 1, 0.1f, 0.1f };
-	//light.diffuseColor = { 1, 1.0f, 1.0f };
-	//light.diffuseIntensity = 1.0f;
-	//light.attConst = 0.2f;
-	//light.attLin = 0.0045f;
-	//light.attQuad = 0.0075f;
-
-	//lightCBuffer->Update(renderer, light);
-
 	if (wnd.mouse.LeftPressed())
 	{
 		if (const std::optional<Mouse::RawDelta> delta = wnd.mouse.readRawDelta())
@@ -145,7 +134,7 @@ void App::HandleInput(float deltaTime)
 
 void App::Draw(float deltaTime)
 {
-	renderer.BeginFrame(0.3f, 1, 0.3f);
+	renderer.BeginFrame(0, 0, 0);
 
 	if (lightCBuffer != nullptr)
 	{

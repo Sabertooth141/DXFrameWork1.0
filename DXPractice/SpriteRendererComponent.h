@@ -19,12 +19,17 @@ public:
 	void Update(float deltaTime) override;
 	void Bind(Renderer& renderer);
 	void UpdateUV(const UVTransformData& data);
-	void Render();
+	void Render() const;
+
+	Texture& GetTexture() { return texture; }
 
 public:
 	RenderLayer layer = RenderLayer::Default;
 	int sortOrder = 0;
 	bool enabled = true;
+
+	bool flipX = false;
+	bool flipY = false;
 
 private:
 	Renderer& renderer;

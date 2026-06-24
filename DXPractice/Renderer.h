@@ -7,6 +7,13 @@
 
 class Bindable;
 
+struct SpriteData
+{
+	int flipX;
+	int flipY;
+	float padding[2];
+};
+
 class Renderer
 {
 	friend class Bindable;
@@ -28,11 +35,15 @@ public:
 
 	DirectX::XMMATRIX GetProj()
 	{
-		return projMatrix;
+		return activeProj;
 	}
 
 	void SetDepthEnabled(bool enabled);
 	void SetAlphaEnabled(bool enabled);
+	void SetSpriteFlip(bool flipX, bool flipY);
+
+	void Set3DMode();
+	void Set2DMode();
 
 private:
 	Microsoft::WRL::ComPtr<ID3D11Device> pDevice;
@@ -49,6 +60,14 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11BlendState> pBlendOff; // 3D
 	Microsoft::WRL::ComPtr<ID3D11BlendState> pBlendAlpha; // 2D
 
+	// buffer for flipX/Y
+	Microsoft::WRL::ComPtr<ID3D11Buffer> pCBSpriteData;
+
 	DirectX::XMMATRIX viewMatrix;
+
+	// use ortho for 2D and perspective for 3D
 	DirectX::XMMATRIX projMatrix;
+	DirectX::XMMATRIX orthoMatrix;
+
+	DirectX::XMMATRIX activeProj;
 };
