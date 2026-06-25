@@ -3,5 +3,6 @@
 class PhysicsSystem
 {
 public:
+	void Register();
 	
 };

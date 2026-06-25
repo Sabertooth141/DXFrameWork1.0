@@ -170,6 +170,7 @@
     <ClCompile Include="PixelShader.cpp" />
     <ClCompile Include="PlayerController.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="Rigidbody2DComponent.cpp" />
     <ClCompile Include="Sampler.cpp" />
     <ClCompile Include="SpriteAnimatorComponent.cpp" />
     <ClCompile Include="SpriteRendererComponent.cpp" />
@@ -210,6 +211,7 @@
     <ClInclude Include="PlayerController.h" />
     <ClInclude Include="RenderLayer.h" />
     <ClInclude Include="RenderSystem.h" />
+    <ClInclude Include="Rigidbody2DComponent.h" />
     <ClInclude Include="Sampler.h" />
     <ClInclude Include="ScriptSystem.h" />
     <ClInclude Include="SpriteAnimatorComponent.h" />

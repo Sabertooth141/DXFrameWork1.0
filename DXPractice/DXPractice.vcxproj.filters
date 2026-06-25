@@ -188,6 +188,9 @@
     <ClCompile Include="CollisionTests.cpp">
       <Filter>Source Files\Components\Physics</Filter>
     </ClCompile>
+    <ClCompile Include="Rigidbody2DComponent.cpp">
+      <Filter>Source Files\Components\Physics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Win.h">
@@ -344,6 +347,9 @@
       <Filter>Header Files\Components\Physics\Colliders</Filter>
     </ClInclude>
     <ClInclude Include="CollisionTests.h">
+      <Filter>Header Files\Components\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Rigidbody2DComponent.h">
       <Filter>Header Files\Components\Physics</Filter>
     </ClInclude>
   </ItemGroup>
