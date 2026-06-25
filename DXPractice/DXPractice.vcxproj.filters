@@ -186,7 +186,7 @@
       <Filter>Source Files\Components\Physics\Colliders</Filter>
     </ClCompile>
     <ClCompile Include="CollisionTests.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Components\Physics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -344,7 +344,7 @@
       <Filter>Header Files\Components\Physics\Colliders</Filter>
     </ClInclude>
     <ClInclude Include="CollisionTests.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Components\Physics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
