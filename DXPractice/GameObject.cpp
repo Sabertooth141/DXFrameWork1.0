@@ -57,7 +57,7 @@ std::vector<std::unique_ptr<MeshComponent>>& GameObject::GetMeshes()
 
 void GameObject::NotifyColliderEnter2D(const BoxCollider2D& other) const
 {
-	for (const auto comp : components)
+	for (const auto& comp : components)
 	{
 		comp.second->OnCollisionEnter2D(other);
 	}
@@ -65,7 +65,7 @@ void GameObject::NotifyColliderEnter2D(const BoxCollider2D& other) const
 
 void GameObject::NotifyColliderLeave2D(const BoxCollider2D& other) const
 {
-	for (const auto comp : components)
+	for (const auto& comp : components)
 	{
 		comp.second->OnCollisionExit2D(other);
 	}
