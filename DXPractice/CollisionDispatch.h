@@ -15,15 +15,14 @@ public:
 		return instance;
 	}
 
-
 	/**
-	 * register the collision test between two collider types
+	 * registers the collision test between two collider types
 	 * 
 	 * @param typeA collider type for A
 	 * @param typeB collider type for B
 	 * @param test test to be run between the two colliders at narrow phase collision test
 	 */
-	void Register(const ColliderType typeA, const ColliderType typeB, NarrowPhaseTest test)
+	void Register(const ColliderType typeA, const ColliderType typeB, const NarrowPhaseTest& test)
 	{
 		table[{typeA, typeB}] = test;
 

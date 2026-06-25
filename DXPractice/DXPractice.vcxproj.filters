@@ -79,6 +79,12 @@
     <Filter Include="Source Files\Components\Physics">
       <UniqueIdentifier>{8d6cebeb-9715-413f-9185-8a12738c64ff}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Components\Physics\Colliders">
+      <UniqueIdentifier>{a9c90ad5-bce7-4764-b21d-38232aa2f0fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Components\Physics\Colliders">
+      <UniqueIdentifier>{85a7f4cc-99f0-4074-a59a-e973860be7ab}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Image Include="small.ico">
@@ -173,11 +179,14 @@
     <ClCompile Include="MonoBehavior.cpp">
       <Filter>Source Files\Components\ScriptSystem</Filter>
     </ClCompile>
-    <ClCompile Include="BoxCollider2D.cpp">
-      <Filter>Source Files\Components\Physics</Filter>
-    </ClCompile>
     <ClCompile Include="PhysicsSystem.cpp">
       <Filter>Source Files\Components\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="BoxCollider2D.cpp">
+      <Filter>Source Files\Components\Physics\Colliders</Filter>
+    </ClCompile>
+    <ClCompile Include="CollisionTests.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -325,14 +334,17 @@
     <ClInclude Include="PhysicsSystem.h">
       <Filter>Header Files\Components\Physics</Filter>
     </ClInclude>
-    <ClInclude Include="BoxCollider2D.h">
-      <Filter>Header Files\Components\Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="Collider2D.h">
-      <Filter>Header Files\Components\Physics</Filter>
-    </ClInclude>
     <ClInclude Include="CollisionDispatch.h">
       <Filter>Header Files\Components\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="BoxCollider2D.h">
+      <Filter>Header Files\Components\Physics\Colliders</Filter>
+    </ClInclude>
+    <ClInclude Include="Collider2D.h">
+      <Filter>Header Files\Components\Physics\Colliders</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionTests.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

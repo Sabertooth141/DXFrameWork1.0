@@ -153,6 +153,7 @@
     <ClCompile Include="App.cpp" />
     <ClCompile Include="Bindable.cpp" />
     <ClCompile Include="BoxCollider2D.cpp" />
+    <ClCompile Include="CollisionTests.cpp" />
     <ClCompile Include="Drawable.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="IndexBuffer.cpp" />
@@ -188,6 +189,7 @@
     <ClInclude Include="BoxCollider2D.h" />
     <ClInclude Include="Collider2D.h" />
     <ClInclude Include="CollisionDispatch.h" />
+    <ClInclude Include="CollisionTests.h" />
     <ClInclude Include="IComponent.h" />
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="Drawable.h" />
