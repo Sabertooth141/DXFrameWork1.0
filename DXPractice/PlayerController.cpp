@@ -42,6 +42,16 @@ void PlayerController::HandleInput(float deltaTime)
 		owner->GetComponent<AnimatorComponent>()->SetFlipX(true);
 		currSpeedX = std::max(currSpeedX - accX * deltaTime, -maxSpeedX);
 	}
+
+	if (keyboard->KeyIsPressed('W'))
+	{
+		currSpeedY = std::min(currSpeedY + accY * deltaTime, maxSpeedY);
+	}
+
+	if (keyboard->KeyIsPressed('S'))
+	{
+		currSpeedY = std::max(currSpeedY - accY * deltaTime, -maxSpeedY);
+	}
 }
 
 void PlayerController::HandleAnimation(float deltaTime)
@@ -58,10 +68,10 @@ void PlayerController::HandleAnimation(float deltaTime)
 
 void PlayerController::HandleMovement(float deltaTime)
 {
+	float halfSpriteX = owner->GetTransform()->GetScale().x / 2.0f;
+	float halfSpriteY = owner->GetTransform()->GetScale().y / 2.0f;
 
-	float halfSprite = owner->GetTransform()->GetScale().x / 2.0f;
-	float halfW = WIN_WIDTH / 2.0f;
-
+	// X friction
 	if (currSpeedX > 0)
 	{
 		currSpeedX = std::max(0.f, currSpeedX - frictionX * deltaTime);
@@ -70,15 +80,44 @@ void PlayerController::HandleMovement(float deltaTime)
 	{
 		currSpeedX = std::min(0.f, currSpeedX + frictionX * deltaTime);
 	}
-	posX += currSpeedX;
-	if (posX + halfSprite < -WIN_WIDTH / 2)
+
+	// Y friction
+	if (currSpeedY > 0)
 	{
-		posX = halfSprite + WIN_WIDTH / 2;
+		currSpeedY = std::max(0.f, currSpeedY - frictionY * deltaTime);
+	}
+	else if (currSpeedY < 0)
+	{
+		currSpeedY = std::min(0.f, currSpeedY + frictionY * deltaTime);
 	}
 
-	if (posX - halfSprite > WIN_WIDTH / 2)
+	posX += currSpeedX;
+	posY += currSpeedY;
+
+	// X wrap
+	if (posX + halfSpriteX < -WIN_WIDTH / 2)
 	{
-		posX = -halfSprite - WIN_WIDTH / 2;
+		posX = halfSpriteX + WIN_WIDTH / 2;
 	}
+	if (posX - halfSpriteX > WIN_WIDTH / 2)
+	{
+		posX = -halfSpriteX - WIN_WIDTH / 2;
+	}
+
+	// Y wrap
+	if (posY + halfSpriteY < -WIN_HEIGHT / 2)
+	{
+		posY = halfSpriteY + WIN_HEIGHT / 2;
+	}
+	if (posY - halfSpriteY > WIN_HEIGHT / 2)
+	{
+		posY = -halfSpriteY - WIN_HEIGHT / 2;
+	}
+
 	owner->GetTransform()->SetPosition({ posX, posY, 1 });
+}
+
+void PlayerController::OnCollisionEnter2D(const GameObject& other)
+{
+	MonoBehavior::OnCollisionEnter2D(other);
 }

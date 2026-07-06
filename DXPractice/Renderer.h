@@ -17,6 +17,7 @@ struct SpriteData
 class Renderer
 {
 	friend class Bindable;
+	friend class DebugRenderer;
 
 public:
 	Renderer(HWND hWnd, int width, int height);

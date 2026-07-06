@@ -3,6 +3,7 @@
 #include <string>
 
 #include "AnimationSystem.h"
+#include "DebugRenderer.h"
 #include "LightCBuffer.h"
 #include "PhysicsSystem.h"
 #include "RenderSystem.h"
@@ -31,6 +32,7 @@ private:
 
 	Window wnd;
 	Renderer renderer;
+	DebugRenderer debugRenderer;
 	Timer timer;
 	ScriptSystem scriptSystem;
 	AnimationSystem animationSystem;

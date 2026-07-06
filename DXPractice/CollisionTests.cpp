@@ -24,7 +24,7 @@ std::optional<CollisionManifold> TestBoxVsBox(const OBB& a, const OBB& b)
 		for (const auto& corner : cornersA)
 		{
 			// take dot product of corners projected onto normal
-			const float proj = corner.x * axis.x + corner.x * axis.y;
+			const float proj = corner.x * axis.x + corner.y * axis.y;
 			minA = std::min(minA, proj);
 			maxA = std::max(maxA, proj);
 		}
@@ -34,7 +34,7 @@ std::optional<CollisionManifold> TestBoxVsBox(const OBB& a, const OBB& b)
 		for (const auto& corner : cornersB)
 		{
 			// take dot product of corners projected onto normal
-			const float proj = corner.x * axis.x + corner.x * axis.y;
+			const float proj = corner.x * axis.x + corner.y * axis.y;
 			minB = std::min(minB, proj);
 			maxB = std::max(maxB, proj);
 		}
@@ -54,16 +54,26 @@ std::optional<CollisionManifold> TestBoxVsBox(const OBB& a, const OBB& b)
 		}
 	}
 
-	return CollisionManifold{.normal = smallestAxis, .penetration = minOverlap};
+	CollisionManifold manifold{.normal = smallestAxis, .penetration = minOverlap};
+
+	const DirectX::XMFLOAT2 centerToCenter = {b.center.x - a.center.x, b.center.y - a.center.y};
+	if (centerToCenter.x * manifold.normal.x + centerToCenter.y * manifold.normal.y <= 0.0f)
+	{
+		manifold.normal.x = -manifold.normal.x;
+		manifold.normal.y = -manifold.normal.y;
+	}
+
+	return manifold;
 }
 
 void RegisterCollisionTests()
 {
 	CollisionDispatch::GetInstance().Register(ColliderType::Box, ColliderType::Box,
-	                                          [](const Collider2D& a, const Collider2D& b) -> std::optional<CollisionManifold>
+	                                          [](const Collider2D& a,
+	                                             const Collider2D& b) -> std::optional<CollisionManifold>
 	                                          {
 		                                          const auto& boxA = dynamic_cast<const BoxCollider2D&>(a);
 		                                          const auto& boxB = dynamic_cast<const BoxCollider2D&>(b);
-												  return TestBoxVsBox(boxA.GetWorldOBB(), boxB.GetWorldOBB());
+		                                          return TestBoxVsBox(boxA.GetWorldOBB(), boxB.GetWorldOBB());
 	                                          });
 }

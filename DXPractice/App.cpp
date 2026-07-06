@@ -15,7 +15,7 @@
 
 App::App(const std::string& cmdLine) : cmdLine(cmdLine),
                                        wnd(WIN_WIDTH, WIN_HEIGHT, L"DXPractice"),
-                                       renderer(wnd.GetRenderer()), renderSystem(RenderSystem(renderer))
+                                       renderer(wnd.GetRenderer()), debugRenderer(renderer), renderSystem(RenderSystem(renderer))
 {
 }
 
@@ -63,11 +63,11 @@ void App::Init()
 	                                           L"SpritePixelShader.cso");
 	sprite->Init(scriptSystem, animationSystem, renderSystem);
 
-	sprite->GetTransform()->SetPosition({0, -100, 1});
+	sprite->GetTransform()->SetPosition({-128, -100, 1});
 
 	// physics
 	Rigidbody2DComponent* rb = &sprite->AddComponent<Rigidbody2DComponent>(*sprite->GetTransform(), 1.0f, true);
-	BoxCollider2D* col = &sprite->AddComponent<BoxCollider2D>(DirectX::XMFLOAT2(32, 32), DirectX::XMFLOAT2(0, 0), false, *sprite->GetTransform());
+	BoxCollider2D* col = &sprite->AddComponent<BoxCollider2D>(DirectX::XMFLOAT2(1, 1), DirectX::XMFLOAT2(0, 0), false, *sprite->GetTransform());
 	physicsSystem.Register(rb, col, sprite.get());
 
 	// animation
@@ -99,11 +99,12 @@ void App::Init()
 	physicsTest->GetComponent<AnimatorComponent>()->SetRenderLayer(RenderLayer::Enemy);
 	physicsTest->GetComponent<AnimatorComponent>()->SetSortOrder(0);
 	physicsTest->GetComponent<AnimatorComponent>()->SetStatic(L"../../assets/jinx.jpg");
-	physicsTest->GetTransform()->SetScale(0.05);
+	physicsTest->GetTransform()->SetScale(0.05f);
+	physicsTest->GetTransform()->SetRotation(DirectX::XMFLOAT3(0, 0, 0.3));
 
 	// physics
 	Rigidbody2DComponent* testRb = &physicsTest->AddComponent<Rigidbody2DComponent>(*physicsTest->GetTransform(), 1.0f);
-	BoxCollider2D* testCol = &physicsTest->AddComponent<BoxCollider2D>(DirectX::XMFLOAT2(32, 32), DirectX::XMFLOAT2(0, 0), false, *physicsTest->GetTransform());
+	BoxCollider2D* testCol = &physicsTest->AddComponent<BoxCollider2D>(DirectX::XMFLOAT2(1, 1), DirectX::XMFLOAT2(0, 0), false, *physicsTest->GetTransform());
 	physicsSystem.Register(testRb, testCol, physicsTest.get());
 
 	gameObjects.push_back(std::move(physicsTest));
@@ -175,5 +176,10 @@ void App::Draw(float deltaTime)
 	}
 
 	renderSystem.Render();
+	debugRenderer.Begin();
+	for (auto& go : gameObjects)
+		if (auto* col = go->GetComponent<BoxCollider2D>())
+			debugRenderer.DrawBox(col->GetWorldOBB().GetCorners(), { 0, 1, 0, 1 });
+	debugRenderer.Flush(renderer);
 	renderer.EndFrame();
 }

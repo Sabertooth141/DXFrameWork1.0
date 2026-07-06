@@ -194,7 +194,7 @@ void PhysicsSystem::ResolveCollision(Rigidbody2DComponent* a, Rigidbody2DCompone
 	const DirectX::XMFLOAT2 impulse = {impulseMag * normal.x, impulseMag * normal.y};
 
 	a->SetVelocity({velA.x - impulse.x * a->GetInvMass(), velA.y - impulse.y * a->GetInvMass()});
-	b->SetVelocity({velB.x - impulse.x * b->GetInvMass(), velB.y - impulse.y * b->GetInvMass()});
+	b->SetVelocity({velB.x + impulse.x * b->GetInvMass(), velB.y + impulse.y * b->GetInvMass()});
 }
 
 PhysicsSystem::CellCoord PhysicsSystem::GetCellCoord(const DirectX::XMFLOAT2 worldPos)
