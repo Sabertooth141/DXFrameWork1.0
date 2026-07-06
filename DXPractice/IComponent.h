@@ -13,11 +13,15 @@ public:
 	{
 	}
 
-	virtual void OnCollisionEnter2D(const Collider2D& other)
+	virtual void OnCollisionEnter2D(const GameObject& other)
 	{
 	}
 
-	virtual void OnCollisionExit2D(const Collider2D& other)
+	virtual void OnCollisionStay2D(const GameObject& other)
+	{
+	}
+
+	virtual void OnCollisionExit2D(const GameObject& other)
 	{
 	}
 

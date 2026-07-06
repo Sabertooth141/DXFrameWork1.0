@@ -58,8 +58,9 @@ public:
 		return nullptr;
 	}
 
-	void NotifyColliderEnter2D(const BoxCollider2D& other) const;
-	void NotifyColliderLeave2D(const BoxCollider2D& other) const;
+	void NotifyColliderEnter2D(const GameObject& other) const;
+	void NotifyColliderStay2D(const GameObject& other) const;
+	void NotifyColliderLeave2D(const GameObject& other) const;
 
 	TransformComponent* GetTransform();
 	std::vector<std::unique_ptr<MeshComponent>>& GetMeshes();

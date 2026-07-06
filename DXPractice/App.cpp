@@ -1,6 +1,7 @@
 #include "App.h"
 
 #include "AnimatorComponent.h"
+#include "CollisionTests.h"
 #include "GameObject.h"
 #include "Material.h"
 #include "ModelReader.h"
@@ -43,6 +44,7 @@ int App::Run()
 
 void App::Init()
 {
+	RegisterCollisionTests();
 	// cube
 	//std::unique_ptr<ModelReader> model = std::make_unique<ModelReader>(renderer, "../../assets/testCube.fbx");
 
@@ -61,8 +63,14 @@ void App::Init()
 	                                           L"SpritePixelShader.cso");
 	sprite->Init(scriptSystem, animationSystem, renderSystem);
 
-	sprite->GetTransform()->SetPosition({0, -100, 3});
+	sprite->GetTransform()->SetPosition({0, -100, 1});
 
+	// physics
+	Rigidbody2DComponent* rb = &sprite->AddComponent<Rigidbody2DComponent>(*sprite->GetTransform(), 1.0f, true);
+	BoxCollider2D* col = &sprite->AddComponent<BoxCollider2D>(DirectX::XMFLOAT2(32, 32), DirectX::XMFLOAT2(0, 0), false, *sprite->GetTransform());
+	physicsSystem.Register(rb, col, sprite.get());
+
+	// animation
 	sprite->AddComponent<AnimatorComponent>(renderer);
 	sprite->GetComponent<AnimatorComponent>()->SetRenderLayer(RenderLayer::Player);
 	sprite->GetComponent<AnimatorComponent>()->SetSortOrder(0);
@@ -72,10 +80,27 @@ void App::Init()
 	                                                        L"../../assets/PlayerCharacterMove.json");
 	sprite->GetComponent<AnimatorComponent>()->SetCurrAnimation("CharIdle");
 
+	// script
 	sprite->AddComponent<PlayerController>();
 	sprite->GetComponent<PlayerController>()->SetInput(wnd.keyboard, wnd.mouse);
 
 	gameObjects.push_back(std::move(sprite));
+
+	// physics test
+	MeshData physicsQuad = MakeSpriteQuad();
+	auto physicsTest = std::make_unique<GameObject>(renderer, quad.vertices, quad.indices, L"SpriteVertexShader.cso",
+		L"SpritePixelShader.cso");
+	physicsTest->Init(scriptSystem, animationSystem, renderSystem);
+
+	physicsTest->GetTransform()->SetPosition({ 128, -100, 1 });
+
+	// physics
+	Rigidbody2DComponent* testRb = &physicsTest->AddComponent<Rigidbody2DComponent>(*physicsTest->GetTransform(), 1.0f, true);
+	BoxCollider2D* testCol = &physicsTest->AddComponent<BoxCollider2D>(DirectX::XMFLOAT2(32, 32), DirectX::XMFLOAT2(0, 0), false, *physicsTest->GetTransform());
+	physicsSystem.Register(testRb, testCol, sprite.get());
+
+	gameObjects.push_back(std::move(physicsTest));
+
 
 	// layer test
 	auto backGround = std::make_unique<GameObject>(renderer, quad.vertices, quad.indices, L"SpriteVertexShader.cso",
@@ -125,6 +150,7 @@ void App::Update(float deltaTime)
 
 	// systems
 	scriptSystem.Update(deltaTime);
+	physicsSystem.Update(deltaTime);
 	animationSystem.Update(deltaTime);
 }
 
