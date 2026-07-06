@@ -12,6 +12,8 @@ public:
 
 	void Bind(Renderer& renderer) override;
 
+	static ID3D11ShaderResourceView* LoadSolid(Renderer& renderer, uint32_t rgba = 0xFFFFFFFF);
+
 private:
 	static std::unordered_map<std::wstring, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> cache;
 };

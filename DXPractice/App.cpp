@@ -86,18 +86,25 @@ void App::Init()
 
 	gameObjects.push_back(std::move(sprite));
 
+
 	// physics test
 	MeshData physicsQuad = MakeSpriteQuad();
-	auto physicsTest = std::make_unique<GameObject>(renderer, quad.vertices, quad.indices, L"SpriteVertexShader.cso",
+	auto physicsTest = std::make_unique<GameObject>(renderer, physicsQuad.vertices, physicsQuad.indices, L"SpriteVertexShader.cso",
 		L"SpritePixelShader.cso");
 	physicsTest->Init(scriptSystem, animationSystem, renderSystem);
 
 	physicsTest->GetTransform()->SetPosition({ 128, -100, 1 });
 
+	physicsTest->AddComponent<AnimatorComponent>(renderer);
+	physicsTest->GetComponent<AnimatorComponent>()->SetRenderLayer(RenderLayer::Enemy);
+	physicsTest->GetComponent<AnimatorComponent>()->SetSortOrder(0);
+	physicsTest->GetComponent<AnimatorComponent>()->SetStatic(L"../../assets/jinx.jpg");
+	physicsTest->GetTransform()->SetScale(0.05);
+
 	// physics
-	Rigidbody2DComponent* testRb = &physicsTest->AddComponent<Rigidbody2DComponent>(*physicsTest->GetTransform(), 1.0f, true);
+	Rigidbody2DComponent* testRb = &physicsTest->AddComponent<Rigidbody2DComponent>(*physicsTest->GetTransform(), 1.0f);
 	BoxCollider2D* testCol = &physicsTest->AddComponent<BoxCollider2D>(DirectX::XMFLOAT2(32, 32), DirectX::XMFLOAT2(0, 0), false, *physicsTest->GetTransform());
-	physicsSystem.Register(testRb, testCol, sprite.get());
+	physicsSystem.Register(testRb, testCol, physicsTest.get());
 
 	gameObjects.push_back(std::move(physicsTest));
 

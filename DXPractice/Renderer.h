@@ -69,5 +69,5 @@ private:
 	DirectX::XMMATRIX projMatrix;
 	DirectX::XMMATRIX orthoMatrix;
 
-	DirectX::XMMATRIX activeProj;
+	DirectX::XMMATRIX activeProj = {};
 };
