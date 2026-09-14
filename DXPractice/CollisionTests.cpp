@@ -197,7 +197,7 @@ std::optional<CollisionManifold> TestBoxVsBox(const OBB& a, const OBB& b)
 	}
 	else
 	{
-		BuildContacts(a, b, { -manifold.normal.x, -manifold.normal.y }, manifold);
+		BuildContacts(b, a, { -manifold.normal.x, -manifold.normal.y }, manifold);
 	}
 
 	return manifold;

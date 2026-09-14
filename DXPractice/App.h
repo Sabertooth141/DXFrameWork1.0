@@ -13,6 +13,15 @@
 class GameObject;
 class ModelReader;
 
+struct GameContext
+{
+	Renderer& renderer;
+	PhysicsSystem& physicsSys;
+	ScriptSystem& scriptSys;
+	AnimationSystem& animationSys;
+	RenderSystem& renderSys;
+};
+
 class App
 {
 public:
@@ -25,6 +34,7 @@ private:
 	void Update(float deltaTime);
 	void HandleInput(float deltaTime);
 	void Draw(float deltaTime);
+
 private:
 	DirectX::XMFLOAT3 rotation = {};
 
@@ -38,6 +48,8 @@ private:
 	AnimationSystem animationSystem;
 	RenderSystem renderSystem;
 	PhysicsSystem physicsSystem;
+
+	GameContext gameContext;
 
 	std::unique_ptr<LightCBuffer> lightCBuffer;
 

@@ -12,9 +12,19 @@ void PhysicsSystem::Register(Rigidbody2DComponent* rigidbody, Collider2D* collid
 void PhysicsSystem::Unregister(GameObject* gameObject)
 {
 	std::erase_if(entries, [gameObject](const Entry& entry)
-	{
-		return entry.gameObject == gameObject;
-	});
+		{
+			return entry.gameObject == gameObject;
+		});
+
+	const auto matchesPair = [gameObject](const ColliderPair& pair)
+		{
+			return pair.a == gameObject || pair.b == gameObject;
+		};
+
+	std::erase_if(previousOverlaps, matchesPair);
+	std::erase_if(currentOverlaps, matchesPair);
+
+	grid.clear();
 }
 
 void PhysicsSystem::Update(const float deltaTime)
@@ -59,6 +69,11 @@ void PhysicsSystem::RebuildGrid()
 
 	for (Entry& entry : entries)
 	{
+		if (!entry.collider->IsColliderActive())
+		{
+			continue;
+		}
+
 		const AABB box = entry.collider->GetWorldAABB();
 
 		const CellCoord minCell = GetCellCoord(box.min);
@@ -147,7 +162,7 @@ void PhysicsSystem::ProcessPairs(const std::vector<EntryPair>& candidates)
 }
 
 void PhysicsSystem::ResolveCollision(Rigidbody2DComponent* a, Rigidbody2DComponent* b,
-	const CollisionManifold& manifold)
+                                     const CollisionManifold& manifold)
 {
 	const DirectX::XMFLOAT2 normal = manifold.normal;
 	const float invMassSum = a->GetInvMass() + b->GetInvMass();
@@ -172,13 +187,13 @@ void PhysicsSystem::ResolveCollision(Rigidbody2DComponent* a, Rigidbody2DCompone
 		for (int i = 0; i < manifold.contactCount; i++)
 		{
 			const DirectX::XMFLOAT2 contact = manifold.contacts[i];
-			const DirectX::XMFLOAT2 rA = { contact.x - posA.x, contact.y - posA.y };
-			const DirectX::XMFLOAT2 rB = { contact.x - posB.x, contact.y - posB.y };
+			const DirectX::XMFLOAT2 rA = {contact.x - posA.x, contact.y - posA.y};
+			const DirectX::XMFLOAT2 rB = {contact.x - posB.x, contact.y - posB.y};
 
 			// relative velocity at the contact, not at the centers
 			const DirectX::XMFLOAT2 velA = a->GetVelAtPoint(rA);
 			const DirectX::XMFLOAT2 velB = b->GetVelAtPoint(rB);
-			const DirectX::XMFLOAT2 relVel = { velB.x - velA.x, velB.y - velA.y };
+			const DirectX::XMFLOAT2 relVel = {velB.x - velA.x, velB.y - velA.y};
 
 			const float velAlongNormal = relVel.x * normal.x + relVel.y * normal.y;
 			if (velAlongNormal > 0.f)
@@ -194,9 +209,9 @@ void PhysicsSystem::ResolveCollision(Rigidbody2DComponent* a, Rigidbody2DCompone
 				+ rBCrossN * rBCrossN * b->GetInvInertia();
 
 			const float impulseMag = (-(1.0f + restitution) * velAlongNormal / normalMass) * share;
-			const DirectX::XMFLOAT2 impulse = { normal.x * impulseMag, normal.y * impulseMag };
+			const DirectX::XMFLOAT2 impulse = {normal.x * impulseMag, normal.y * impulseMag};
 
-			a->ApplyImpulse({ -impulse.x, -impulse.y }, rA);
+			a->ApplyImpulse({-impulse.x, -impulse.y}, rA);
 			b->ApplyImpulse(impulse, rB);
 
 			// tangential impulse, this is what actually makes bodies tumble
@@ -211,7 +226,7 @@ void PhysicsSystem::ResolveCollision(Rigidbody2DComponent* a, Rigidbody2DCompone
 				continue; // no sliding at this contact
 			}
 
-			tangent = { tangent.x / tangentLen, tangent.y / tangentLen };
+			tangent = {tangent.x / tangentLen, tangent.y / tangentLen};
 
 			const float rACrossT = rA.x * tangent.y - rA.y * tangent.x;
 			const float rBCrossT = rB.x * tangent.y - rB.y * tangent.x;
@@ -225,9 +240,9 @@ void PhysicsSystem::ResolveCollision(Rigidbody2DComponent* a, Rigidbody2DCompone
 			// coulomb clamp
 			frictionMag = std::clamp(frictionMag, -impulseMag * mu, impulseMag * mu);
 
-			const DirectX::XMFLOAT2 frictionImpulse = { tangent.x * frictionMag, tangent.y * frictionMag };
+			const DirectX::XMFLOAT2 frictionImpulse = {tangent.x * frictionMag, tangent.y * frictionMag};
 
-			a->ApplyImpulse({ -frictionImpulse.x, -frictionImpulse.y }, rA);
+			a->ApplyImpulse({-frictionImpulse.x, -frictionImpulse.y}, rA);
 			b->ApplyImpulse(frictionImpulse, rB);
 		}
 	}
@@ -241,13 +256,13 @@ void PhysicsSystem::ResolveCollision(Rigidbody2DComponent* a, Rigidbody2DCompone
 		posA.x - normal.x * correction * a->GetInvMass(),
 		posA.y - normal.y * correction * a->GetInvMass(),
 		posA.z
-		});
+	});
 
 	b->GetTransformComp().SetPosition({
 		posB.x + normal.x * correction * b->GetInvMass(),
 		posB.y + normal.y * correction * b->GetInvMass(),
 		posB.z
-		});
+	});
 }
 
 PhysicsSystem::CellCoord PhysicsSystem::GetCellCoord(const DirectX::XMFLOAT2 worldPos) const
@@ -272,8 +287,8 @@ PhysicsSystem::ColliderPair PhysicsSystem::MakeCanonicalColliderPair(GameObject*
 {
 	if (a < b)
 	{
-		return ColliderPair{ .a = a, .b = b };
+		return ColliderPair{.a = a, .b = b};
 	}
 
-	return ColliderPair{ .a = b, .b = a };
+	return ColliderPair{.a = b, .b = a};
 }

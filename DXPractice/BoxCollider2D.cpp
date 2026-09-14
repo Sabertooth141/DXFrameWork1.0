@@ -8,6 +8,7 @@ BoxCollider2D::BoxCollider2D(const DirectX::XMFLOAT2 inHalfExtents, const Direct
 	halfExtents(inHalfExtents),
 	offset(inOffset)
 {
+	isTrigger = inIsTrigger;
 }
 
 AABB BoxCollider2D::GetWorldAABB() const

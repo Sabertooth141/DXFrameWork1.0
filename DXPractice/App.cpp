@@ -16,7 +16,9 @@
 
 App::App(const std::string& cmdLine) : cmdLine(cmdLine),
                                        wnd(WIN_WIDTH, WIN_HEIGHT, L"DXPractice"),
-                                       renderer(wnd.GetRenderer()), debugRenderer(renderer), renderSystem(RenderSystem(renderer))
+                                       renderer(wnd.GetRenderer()), debugRenderer(renderer),
+                                       renderSystem(RenderSystem(renderer)),
+                                       gameContext{renderer, physicsSystem, scriptSystem, animationSystem, renderSystem}
 {
 }
 
@@ -58,7 +60,7 @@ void App::Init()
 
 	//gameObjects.push_back(std::move(cube));
 
-	// sprite
+	// player
 	MeshData quad = MakeSpriteQuad();
 	auto sprite = std::make_unique<GameObject>(renderer, quad.vertices, quad.indices, L"SpriteVertexShader.cso",
 	                                           L"SpritePixelShader.cso");
@@ -68,7 +70,8 @@ void App::Init()
 
 	// physics
 	Rigidbody2DComponent* rb = &sprite->AddComponent<Rigidbody2DComponent>(*sprite->GetTransform(), 1.0f);
-	BoxCollider2D* col = &sprite->AddComponent<BoxCollider2D>(DirectX::XMFLOAT2(1, 1), DirectX::XMFLOAT2(0, 0), false, *sprite->GetTransform());
+	BoxCollider2D* col = &sprite->AddComponent<BoxCollider2D>(DirectX::XMFLOAT2(1, 1), DirectX::XMFLOAT2(0, 0), true,
+	                                                          *sprite->GetTransform());
 	physicsSystem.Register(rb, col, sprite.get());
 	rb->SetFreezeRotation(true);
 
@@ -91,31 +94,34 @@ void App::Init()
 
 	// physics test
 	MeshData physicsQuad = MakeSpriteQuad();
-	auto physicsTest = std::make_unique<GameObject>(renderer, physicsQuad.vertices, physicsQuad.indices, L"SpriteVertexShader.cso",
-		L"SpritePixelShader.cso");
+	auto physicsTest = std::make_unique<GameObject>(renderer, physicsQuad.vertices, physicsQuad.indices,
+	                                                L"SpriteVertexShader.cso",
+	                                                L"SpritePixelShader.cso");
 	physicsTest->Init(scriptSystem, animationSystem, renderSystem);
 
-	physicsTest->GetTransform()->SetPosition({ 128, 0, 1 });
+	physicsTest->GetTransform()->SetPosition({128, 0, 1});
 
 	physicsTest->AddComponent<AnimatorComponent>(renderer);
 	physicsTest->GetComponent<AnimatorComponent>()->SetRenderLayer(RenderLayer::Enemy);
 	physicsTest->GetComponent<AnimatorComponent>()->SetSortOrder(0);
 	physicsTest->GetComponent<AnimatorComponent>()->SetStatic(L"../../assets/jinx.jpg");
 	physicsTest->GetTransform()->SetScale(0.05f);
-	//physicsTest->GetTransform()->SetRotation(DirectX::XMFLOAT3(0, 0, 0.3));
+	physicsTest->GetTransform()->SetRotation(DirectX::XMFLOAT3(0, 0, 0.3));
 
 	physicsTest->AddComponent<PhysicsTest>();
 
 	// physics
 	Rigidbody2DComponent* testRb = &physicsTest->AddComponent<Rigidbody2DComponent>(*physicsTest->GetTransform(), 1.0f);
-	BoxCollider2D* testCol = &physicsTest->AddComponent<BoxCollider2D>(DirectX::XMFLOAT2(0.5, 0.5), DirectX::XMFLOAT2(0, 0), false, *physicsTest->GetTransform());
+	BoxCollider2D* testCol = &physicsTest->AddComponent<BoxCollider2D>(DirectX::XMFLOAT2(0.5, 0.5),
+	                                                                   DirectX::XMFLOAT2(0, 0), false,
+	                                                                   *physicsTest->GetTransform());
 	physicsSystem.Register(testRb, testCol, physicsTest.get());
 	testRb->SetGravity(300.f);
-	//testRb->SetAngularVel(0.4f);
+	testRb->SetAngularVel(0.4f);
+	testRb->SetRestitution(1.f);
 	//testRb->SetIsStatic(true);
 
 	gameObjects.push_back(std::move(physicsTest));
-
 
 	// layer test
 	auto backGround = std::make_unique<GameObject>(renderer, quad.vertices, quad.indices, L"SpriteVertexShader.cso",
@@ -134,11 +140,12 @@ void App::Init()
 	// ground
 	// physics test
 	MeshData groundQuad = MakeSpriteQuad();
-	auto groundObj = std::make_unique<GameObject>(renderer, groundQuad.vertices, groundQuad.indices, L"SpriteVertexShader.cso",
-		L"SpritePixelShader.cso");
+	auto groundObj = std::make_unique<GameObject>(renderer, groundQuad.vertices, groundQuad.indices,
+	                                              L"SpriteVertexShader.cso",
+	                                              L"SpritePixelShader.cso");
 	groundObj->Init(scriptSystem, animationSystem, renderSystem);
 
-	groundObj->GetTransform()->SetPosition({ 0, -300, 1 });
+	groundObj->GetTransform()->SetPosition({0, -300, 1});
 
 	groundObj->AddComponent<AnimatorComponent>(renderer);
 	groundObj->GetComponent<AnimatorComponent>()->SetRenderLayer(RenderLayer::Default);
@@ -150,7 +157,8 @@ void App::Init()
 
 	// physics
 	Rigidbody2DComponent* groundRb = &groundObj->AddComponent<Rigidbody2DComponent>(*groundObj->GetTransform(), 1.0f);
-	BoxCollider2D* groundCol = &groundObj->AddComponent<BoxCollider2D>(DirectX::XMFLOAT2(1, 1), DirectX::XMFLOAT2(0, 0), false, *groundObj->GetTransform());
+	BoxCollider2D* groundCol = &groundObj->AddComponent<BoxCollider2D>(DirectX::XMFLOAT2(1, 1), DirectX::XMFLOAT2(0, 0),
+	                                                                   false, *groundObj->GetTransform());
 	physicsSystem.Register(groundRb, groundCol, groundObj.get());
 	groundRb->SetIsStatic(true);
 
@@ -196,7 +204,7 @@ void App::Draw(float deltaTime)
 	debugRenderer.Begin();
 	for (auto& go : gameObjects)
 		if (auto* col = go->GetComponent<BoxCollider2D>())
-			debugRenderer.DrawBox(col->GetWorldOBB().GetCorners(), { 0, 1, 0, 1 });
+			debugRenderer.DrawBox(col->GetWorldOBB().GetCorners(), {0, 1, 0, 1});
 	debugRenderer.Flush(renderer);
 	renderer.EndFrame();
 }
