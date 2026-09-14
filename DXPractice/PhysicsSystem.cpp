@@ -16,7 +16,7 @@ void PhysicsSystem::Unregister(GameObject* gameObject)
 	});
 }
 
-void PhysicsSystem::Update(float deltaTime)
+void PhysicsSystem::Update(const float deltaTime)
 {
 	IntegrateForces(deltaTime);
 
@@ -44,7 +44,7 @@ void PhysicsSystem::Update(float deltaTime)
 	}
 }
 
-void PhysicsSystem::IntegrateForces(float deltaTime)
+void PhysicsSystem::IntegrateForces(const float deltaTime)
 {
 	for (Entry& entry : entries)
 	{
@@ -197,7 +197,7 @@ void PhysicsSystem::ResolveCollision(Rigidbody2DComponent* a, Rigidbody2DCompone
 	b->SetVelocity({velB.x + impulse.x * b->GetInvMass(), velB.y + impulse.y * b->GetInvMass()});
 }
 
-PhysicsSystem::CellCoord PhysicsSystem::GetCellCoord(const DirectX::XMFLOAT2 worldPos)
+PhysicsSystem::CellCoord PhysicsSystem::GetCellCoord(const DirectX::XMFLOAT2 worldPos) const
 {
 	return CellCoord{
 		.x = static_cast<int>(std::floor(worldPos.x / cellSize)),

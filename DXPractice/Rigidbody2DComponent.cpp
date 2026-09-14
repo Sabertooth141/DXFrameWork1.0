@@ -1,5 +1,7 @@
 #include "Rigidbody2DComponent.h"
 
+#include <cmath>
+
 #include "TransformComponent.h"
 
 Rigidbody2DComponent::Rigidbody2DComponent(TransformComponent& inTransformComp, float inMass, bool inIsStatic) :
@@ -39,11 +41,24 @@ void Rigidbody2DComponent::Integrate(const float deltaTime)
 
 	// a = F / m
 	velocity.x += accumulatedForce.x * invMass * deltaTime;
-	velocity.y += accumulatedForce.y * invMass * deltaTime;
+	velocity.y += accumulatedForce.y * invMass * deltaTime - gravity * deltaTime;
 
 	// lin dampening
-	velocity.x *= (1.0f - linearDampening);
-	velocity.y *= (1.0f - linearDampening);
+	const float damp = 1.0f / (1.0f + linearDampening * deltaTime);
+	velocity.x *= damp;
+	velocity.y *= damp;
+
+	// threshold to 0
+	constexpr float sleepEpsilon = 1.f;
+	if (std::abs(velocity.x) < sleepEpsilon)
+	{
+		velocity.x = 0;
+	}
+
+	if (std::abs(velocity.y) < sleepEpsilon)
+	{
+		velocity.y = 0;
+	}
 
 	//TODO: WIP angular vel
 	angularVel += accumulatedTorque * invMass * deltaTime;

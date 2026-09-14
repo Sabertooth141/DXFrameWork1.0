@@ -2,6 +2,8 @@
 #include "IComponent.h"
 #include "MonoBehavior.h"
 
+class Rigidbody2DComponent;
+
 class PlayerController : public MonoBehavior
 {
 public:
@@ -20,12 +22,19 @@ public:
 private:
 	float accX = 10;
 	float currSpeedX = 0;
-	float maxSpeedX = 100;
+	float maxSpeedX = 1000;
 	float posX = 0, posY = 0;
-	float frictionX = 8;
+	float frictionX = 800;
 	float currSpeedY = 0.0f;
 	float accY = 10;
 	float maxSpeedY = 100;
 	float frictionY = 8;
+
+	float moveForce = 1000.f;
+
+	Rigidbody2DComponent* rb = nullptr;
+
+	float inputX = 0;
+	float inputY = 0;
 };
 

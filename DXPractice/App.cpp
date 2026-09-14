@@ -6,6 +6,7 @@
 #include "Material.h"
 #include "ModelReader.h"
 #include "MonoBehavior.h"
+#include "PhysicsTest.h"
 #include "PlayerController.h"
 #include "SpriteAnimatorComponent.h"
 #include "SpriteRendererComponent.h"
@@ -66,7 +67,7 @@ void App::Init()
 	sprite->GetTransform()->SetPosition({-128, -100, 1});
 
 	// physics
-	Rigidbody2DComponent* rb = &sprite->AddComponent<Rigidbody2DComponent>(*sprite->GetTransform(), 1.0f, true);
+	Rigidbody2DComponent* rb = &sprite->AddComponent<Rigidbody2DComponent>(*sprite->GetTransform(), 1.0f);
 	BoxCollider2D* col = &sprite->AddComponent<BoxCollider2D>(DirectX::XMFLOAT2(1, 1), DirectX::XMFLOAT2(0, 0), false, *sprite->GetTransform());
 	physicsSystem.Register(rb, col, sprite.get());
 
@@ -100,12 +101,16 @@ void App::Init()
 	physicsTest->GetComponent<AnimatorComponent>()->SetSortOrder(0);
 	physicsTest->GetComponent<AnimatorComponent>()->SetStatic(L"../../assets/jinx.jpg");
 	physicsTest->GetTransform()->SetScale(0.05f);
-	physicsTest->GetTransform()->SetRotation(DirectX::XMFLOAT3(0, 0, 0.3));
+	//physicsTest->GetTransform()->SetRotation(DirectX::XMFLOAT3(0, 0, 0.3));
+
+	physicsTest->AddComponent<PhysicsTest>();
 
 	// physics
 	Rigidbody2DComponent* testRb = &physicsTest->AddComponent<Rigidbody2DComponent>(*physicsTest->GetTransform(), 1.0f);
 	BoxCollider2D* testCol = &physicsTest->AddComponent<BoxCollider2D>(DirectX::XMFLOAT2(1, 1), DirectX::XMFLOAT2(0, 0), false, *physicsTest->GetTransform());
 	physicsSystem.Register(testRb, testCol, physicsTest.get());
+	testRb->SetGravity(500.f);
+	testRb->SetIsStatic(true);
 
 	gameObjects.push_back(std::move(physicsTest));
 

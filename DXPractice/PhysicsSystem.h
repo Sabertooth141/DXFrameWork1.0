@@ -95,7 +95,7 @@ private:
 
 	// helpers
 
-	CellCoord GetCellCoord(const DirectX::XMFLOAT2 worldPos);
+	CellCoord GetCellCoord(const DirectX::XMFLOAT2 worldPos) const;
 
 	static EntryPair MakeCanonicalEntryPair(Entry* a, Entry* b);
 	static ColliderPair MakeCanonicalColliderPair(GameObject* a, GameObject* b);

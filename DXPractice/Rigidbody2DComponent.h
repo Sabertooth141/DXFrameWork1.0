@@ -12,6 +12,11 @@ public:
 	void AddForce(DirectX::XMFLOAT2 force);
 	void AddTorque(float inTorque);
 
+	void SetGravity(const float inGrav)
+	{
+		gravity = inGrav;
+	}
+
 	void SetVelocity(const DirectX::XMFLOAT2 vel)
 	{
 		velocity = vel;
@@ -25,6 +30,11 @@ public:
 	void SetRestitution(const float inRes)
 	{
 		restitution = inRes;
+	}
+
+	void SetIsStatic(const bool inStatic)
+	{
+		isStatic = inStatic;
 	}
 
 	DirectX::XMFLOAT2 GetVelocity() const
@@ -63,6 +73,9 @@ public:
 
 private:
 	TransformComponent& transformComp;
+
+	// property
+	float gravity = 200.f;
 
 	// velocities
 	DirectX::XMFLOAT2 velocity = {0, 0};

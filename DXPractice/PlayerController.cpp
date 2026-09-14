@@ -2,6 +2,7 @@
 
 #include "GameObject.h"
 #include "Keyboard.h"
+#include "Rigidbody2DComponent.h"
 #include "WindowSettings.h"
 
 void PlayerController::Start()
@@ -14,14 +15,17 @@ void PlayerController::Start()
 void PlayerController::Update(float deltaTime)
 {
 	MonoBehavior::Update(deltaTime);
+
 	HandleInput(deltaTime);
-	HandleAnimation(deltaTime);
 	HandleMovement(deltaTime);
+	HandleAnimation(deltaTime);
 }
 
 void PlayerController::Awake()
 {
 	MonoBehavior::Awake();
+
+	rb = owner->GetComponent<Rigidbody2DComponent>();
 }
 
 void PlayerController::OnDestroy()
@@ -31,36 +35,40 @@ void PlayerController::OnDestroy()
 
 void PlayerController::HandleInput(float deltaTime)
 {
+	inputX = 0;
+	inputY = 0;
 	if (keyboard->KeyIsPressed('D'))
 	{
 		owner->GetComponent<AnimatorComponent>()->SetFlipX(false);
-		currSpeedX = std::min(currSpeedX + accX * deltaTime, maxSpeedX);
+		inputX += 1.f;
 	}
-
 	if (keyboard->KeyIsPressed('A'))
 	{
 		owner->GetComponent<AnimatorComponent>()->SetFlipX(true);
-		currSpeedX = std::max(currSpeedX - accX * deltaTime, -maxSpeedX);
+		inputX -= 1.f;
 	}
 
 	if (keyboard->KeyIsPressed('W'))
 	{
-		currSpeedY = std::min(currSpeedY + accY * deltaTime, maxSpeedY);
+		inputY += 1.f;
 	}
-
 	if (keyboard->KeyIsPressed('S'))
 	{
-		currSpeedY = std::max(currSpeedY - accY * deltaTime, -maxSpeedY);
+		inputY -= 1.f;
 	}
+
+	rb->AddForce({moveForce * inputX, moveForce * inputY});
 }
 
 void PlayerController::HandleAnimation(float deltaTime)
 {
-	if (currSpeedX == 0 && owner->GetComponent<AnimatorComponent>()->GetCurrAnimName() != "CharIdle")
+	DirectX::XMFLOAT2 v = rb->GetVelocity();
+	const bool moving = std::abs(v.x) > 1.f;
+	if (!moving && owner->GetComponent<AnimatorComponent>()->GetCurrAnimName() != "CharIdle")
 	{
 		owner->GetComponent<AnimatorComponent>()->SetCurrAnimation("CharIdle");
 	}
-	else if (currSpeedX != 0 && owner->GetComponent<AnimatorComponent>()->GetCurrAnimName() != "CharMove")
+	else if (moving && owner->GetComponent<AnimatorComponent>()->GetCurrAnimName() != "CharMove")
 	{
 		owner->GetComponent<AnimatorComponent>()->SetCurrAnimation("CharMove");
 	}
@@ -68,53 +76,63 @@ void PlayerController::HandleAnimation(float deltaTime)
 
 void PlayerController::HandleMovement(float deltaTime)
 {
-	float halfSpriteX = owner->GetTransform()->GetScale().x / 2.0f;
-	float halfSpriteY = owner->GetTransform()->GetScale().y / 2.0f;
+	DirectX::XMFLOAT2 v = rb->GetVelocity();
 
-	// X friction
-	if (currSpeedX > 0)
-	{
-		currSpeedX = std::max(0.f, currSpeedX - frictionX * deltaTime);
-	}
-	else if (currSpeedX < 0)
-	{
-		currSpeedX = std::min(0.f, currSpeedX + frictionX * deltaTime);
-	}
+	const float decel = frictionX * deltaTime;
 
-	// Y friction
-	if (currSpeedY > 0)
+	if (inputX == 0.f)
 	{
-		currSpeedY = std::max(0.f, currSpeedY - frictionY * deltaTime);
-	}
-	else if (currSpeedY < 0)
-	{
-		currSpeedY = std::min(0.f, currSpeedY + frictionY * deltaTime);
+		if (v.x > 0.f)
+		{
+			v.x = std::max(0.f, v.x - decel);
+		}
+		else if (v.x < 0.f)
+		{
+			v.x = std::min(0.f, v.x + decel);
+		}
 	}
 
-	posX += currSpeedX;
-	posY += currSpeedY;
-
-	// X wrap
-	if (posX + halfSpriteX < -WIN_WIDTH / 2)
+	if (inputY == 0.f)
 	{
-		posX = halfSpriteX + WIN_WIDTH / 2;
-	}
-	if (posX - halfSpriteX > WIN_WIDTH / 2)
-	{
-		posX = -halfSpriteX - WIN_WIDTH / 2;
-	}
-
-	// Y wrap
-	if (posY + halfSpriteY < -WIN_HEIGHT / 2)
-	{
-		posY = halfSpriteY + WIN_HEIGHT / 2;
-	}
-	if (posY - halfSpriteY > WIN_HEIGHT / 2)
-	{
-		posY = -halfSpriteY - WIN_HEIGHT / 2;
+		if (v.y > 0.f)
+		{
+			v.y = std::max(0.f, v.y - decel);
+		}
+		else if (v.y < 0.f)
+		{
+			v.y = std::min(0.f, v.y + decel);
+		}
 	}
 
-	owner->GetTransform()->SetPosition({ posX, posY, 1 });
+	// clamp speed
+	v.x = std::clamp(v.x, -maxSpeedX, maxSpeedX);
+	v.y = std::clamp(v.y, -maxSpeedX, maxSpeedX);
+	rb->SetVelocity(v);
+
+	const float halfSprite = owner->GetTransform()->GetScale().x * 0.5f;
+	DirectX::XMFLOAT3 pos = owner->GetTransform()->GetPosition();
+	if (pos.x + halfSprite < -WIN_WIDTH / 2.f)
+	{
+		pos.x = halfSprite + WIN_WIDTH / 2.f;
+	}
+	else if (pos.x - halfSprite > WIN_WIDTH / 2.f)
+	{
+		pos.x = -halfSprite - WIN_WIDTH / 2.f;
+	}
+	else if (pos.y + halfSprite < -WIN_HEIGHT/ 2.f)
+	{
+		pos.y = halfSprite + WIN_HEIGHT / 2.f;
+	}
+	else if (pos.y - halfSprite > WIN_HEIGHT / 2.f)
+	{
+		pos.y = -halfSprite - WIN_HEIGHT / 2.f;
+	}
+	else
+	{
+		return;
+	}
+
+	owner->GetTransform()->SetPosition(pos);
 }
 
 void PlayerController::OnCollisionEnter2D(const GameObject& other)
