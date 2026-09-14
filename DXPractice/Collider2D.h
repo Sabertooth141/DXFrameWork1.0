@@ -1,4 +1,6 @@
 #pragma once
+#include <array>
+
 #include "IComponent.h"
 
 enum class ColliderType
@@ -22,6 +24,10 @@ struct CollisionManifold
 {
 	DirectX::XMFLOAT2 normal;
 	float penetration;
+
+	// for rotation on contact
+	std::array<DirectX::XMFLOAT2, 2> contacts{};
+	int contactCount;
 };
 
 class Collider2D : public IComponent
@@ -29,6 +35,7 @@ class Collider2D : public IComponent
 public:
 	virtual ColliderType GetType() const = 0;
 	virtual AABB GetWorldAABB() const = 0;
+	virtual float ComputeInertia(const float mass) const = 0;
 
 	bool IsTrigger() const
 	{

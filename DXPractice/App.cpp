@@ -70,6 +70,7 @@ void App::Init()
 	Rigidbody2DComponent* rb = &sprite->AddComponent<Rigidbody2DComponent>(*sprite->GetTransform(), 1.0f);
 	BoxCollider2D* col = &sprite->AddComponent<BoxCollider2D>(DirectX::XMFLOAT2(1, 1), DirectX::XMFLOAT2(0, 0), false, *sprite->GetTransform());
 	physicsSystem.Register(rb, col, sprite.get());
+	rb->SetFreezeRotation(true);
 
 	// animation
 	sprite->AddComponent<AnimatorComponent>(renderer);
@@ -94,7 +95,7 @@ void App::Init()
 		L"SpritePixelShader.cso");
 	physicsTest->Init(scriptSystem, animationSystem, renderSystem);
 
-	physicsTest->GetTransform()->SetPosition({ 128, -100, 1 });
+	physicsTest->GetTransform()->SetPosition({ 128, 0, 1 });
 
 	physicsTest->AddComponent<AnimatorComponent>(renderer);
 	physicsTest->GetComponent<AnimatorComponent>()->SetRenderLayer(RenderLayer::Enemy);
@@ -107,10 +108,11 @@ void App::Init()
 
 	// physics
 	Rigidbody2DComponent* testRb = &physicsTest->AddComponent<Rigidbody2DComponent>(*physicsTest->GetTransform(), 1.0f);
-	BoxCollider2D* testCol = &physicsTest->AddComponent<BoxCollider2D>(DirectX::XMFLOAT2(1, 1), DirectX::XMFLOAT2(0, 0), false, *physicsTest->GetTransform());
+	BoxCollider2D* testCol = &physicsTest->AddComponent<BoxCollider2D>(DirectX::XMFLOAT2(0.5, 0.5), DirectX::XMFLOAT2(0, 0), false, *physicsTest->GetTransform());
 	physicsSystem.Register(testRb, testCol, physicsTest.get());
-	testRb->SetGravity(500.f);
-	testRb->SetIsStatic(true);
+	testRb->SetGravity(300.f);
+	//testRb->SetAngularVel(0.4f);
+	//testRb->SetIsStatic(true);
 
 	gameObjects.push_back(std::move(physicsTest));
 
@@ -129,20 +131,30 @@ void App::Init()
 
 	gameObjects.push_back(std::move(backGround));
 
-	// light 
-	LightData light = {};
-	light.lightPos = {0.0f, 3.0f, -5.0f};
-	light.ambient = {0.1f, 0.1f, 0.1f};
-	light.diffuseColor = {1.0f, 1.0f, 1.0f};
-	light.diffuseIntensity = 1.0f;
-	light.attConst = 1.0f;
-	light.attLin = 0.045f;
-	light.attQuad = 0.0075f;
+	// ground
+	// physics test
+	MeshData groundQuad = MakeSpriteQuad();
+	auto groundObj = std::make_unique<GameObject>(renderer, groundQuad.vertices, groundQuad.indices, L"SpriteVertexShader.cso",
+		L"SpritePixelShader.cso");
+	groundObj->Init(scriptSystem, animationSystem, renderSystem);
 
-	lightCBuffer = std::make_unique<LightCBuffer>(renderer, light);
-	for (auto& gameObject : gameObjects)
-	{
-	}
+	groundObj->GetTransform()->SetPosition({ 0, -300, 1 });
+
+	groundObj->AddComponent<AnimatorComponent>(renderer);
+	groundObj->GetComponent<AnimatorComponent>()->SetRenderLayer(RenderLayer::Default);
+	groundObj->GetComponent<AnimatorComponent>()->SetSortOrder(0);
+	groundObj->GetComponent<AnimatorComponent>()->SetStatic(L"../../assets/bgTest.jpg");
+	groundObj->GetTransform()->SetScale({1000, 100, 1});
+
+	groundObj->AddComponent<PhysicsTest>();
+
+	// physics
+	Rigidbody2DComponent* groundRb = &groundObj->AddComponent<Rigidbody2DComponent>(*groundObj->GetTransform(), 1.0f);
+	BoxCollider2D* groundCol = &groundObj->AddComponent<BoxCollider2D>(DirectX::XMFLOAT2(1, 1), DirectX::XMFLOAT2(0, 0), false, *groundObj->GetTransform());
+	physicsSystem.Register(groundRb, groundCol, groundObj.get());
+	groundRb->SetIsStatic(true);
+
+	gameObjects.push_back(std::move(groundObj));
 
 	wnd.mouse.EnableRaw();
 }

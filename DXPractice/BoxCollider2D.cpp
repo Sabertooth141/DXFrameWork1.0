@@ -51,3 +51,12 @@ OBB BoxCollider2D::GetWorldOBB() const
 		.rotation = rotation.z
 	};
 }
+
+float BoxCollider2D::ComputeInertia(const float mass) const
+{
+	const OBB obb = GetWorldOBB();
+	const float w = obb.halfExtents.x * 2.f;
+	const float h = obb.halfExtents.y * 2.f;
+
+	return mass * (w * w + h * h) / 12.0f;
+}

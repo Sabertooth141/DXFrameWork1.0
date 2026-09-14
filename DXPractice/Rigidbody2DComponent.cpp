@@ -6,9 +6,10 @@
 
 Rigidbody2DComponent::Rigidbody2DComponent(TransformComponent& inTransformComp, float inMass, bool inIsStatic) :
 	transformComp(inTransformComp),
-	invMass(inIsStatic ? 0 : 1.0f / inMass),
+	mass(inMass),
 	isStatic(inIsStatic)
 {
+	RefreshInv();
 }
 
 void Rigidbody2DComponent::AddForce(DirectX::XMFLOAT2 force)
@@ -24,12 +25,25 @@ void Rigidbody2DComponent::AddForce(DirectX::XMFLOAT2 force)
 
 void Rigidbody2DComponent::AddTorque(float inTorque)
 {
-	if (isStatic)
+	if (invInertia <= 0)
 	{
 		return;
 	}
 
 	accumulatedTorque += inTorque;
+}
+
+void Rigidbody2DComponent::ApplyImpulse(DirectX::XMFLOAT2 impulse, DirectX::XMFLOAT2 contactVector)
+{
+	if (isStatic)
+	{
+		return;
+	}
+
+	velocity.x += impulse.x * invMass;
+	velocity.y += impulse.y * invMass;
+
+	angularVel += (contactVector.x * impulse.y - contactVector.y * impulse.x) * invInertia;
 }
 
 void Rigidbody2DComponent::Integrate(const float deltaTime)
@@ -48,6 +62,9 @@ void Rigidbody2DComponent::Integrate(const float deltaTime)
 	velocity.x *= damp;
 	velocity.y *= damp;
 
+	// apply angular velocity
+	angularVel += accumulatedTorque * invInertia * deltaTime;
+
 	// threshold to 0
 	constexpr float sleepEpsilon = 1.f;
 	if (std::abs(velocity.x) < sleepEpsilon)
@@ -60,8 +77,23 @@ void Rigidbody2DComponent::Integrate(const float deltaTime)
 		velocity.y = 0;
 	}
 
-	//TODO: WIP angular vel
-	angularVel += accumulatedTorque * invMass * deltaTime;
+	// angular threshold to 0
+	constexpr float angularSleepEpsilon = 0.10f;
+	if (std::abs(angularVel) < angularSleepEpsilon)
+	{
+		angularVel = 0;
+	}
+
+	const float speedSq = velocity.x * velocity.x + velocity.y * velocity.y;
+	if (speedSq < sleepEpsilon * sleepEpsilon && std::abs(angularVel) < angularSleepEpsilon)
+	{
+		sleepTimer += deltaTime;
+		if (sleepTimer > 0.3f) { velocity = { 0, 0 }; angularVel = 0.f; }
+	}
+	else
+	{
+		sleepTimer = 0.f;
+	}
 
 	const DirectX::XMFLOAT3 currPos = transformComp.GetPosition();
 	const DirectX::XMFLOAT3 currRot = transformComp.GetRotation();
@@ -84,4 +116,25 @@ void Rigidbody2DComponent::ClearAccumulator()
 {
 	accumulatedForce = {0, 0};
 	accumulatedTorque = 0.f;
+}
+
+void Rigidbody2DComponent::RefreshInv()
+{
+	if (isStatic)
+	{
+		invMass = 0;
+	}
+	else
+	{
+		invMass = 1.f / mass;
+	}
+	
+	if (isStatic || freezeRotation || inertia <= 0.f)
+	{
+		invInertia = 0.f;
+	}
+	else
+	{
+		invInertia = 1.f / inertia;
+	}
 }

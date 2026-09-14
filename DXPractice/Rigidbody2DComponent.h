@@ -11,6 +11,7 @@ public:
 
 	void AddForce(DirectX::XMFLOAT2 force);
 	void AddTorque(float inTorque);
+	void ApplyImpulse(DirectX::XMFLOAT2 impulse, DirectX::XMFLOAT2 contactVector);
 
 	void SetGravity(const float inGrav)
 	{
@@ -35,6 +36,34 @@ public:
 	void SetIsStatic(const bool inStatic)
 	{
 		isStatic = inStatic;
+		if (isStatic)
+		{
+			velocity = {0, 0};
+			angularVel = 0.f;
+		}
+		RefreshInv();
+	}
+
+	void SetFreezeRotation(const bool inFreezeRot)
+	{
+		freezeRotation = inFreezeRot;
+		if (freezeRotation)
+		{
+			angularVel = 0.f;
+		}
+		RefreshInv();
+	}
+
+	void SetInertia(const float inInertia)
+	{
+		inertia = inInertia;
+		RefreshInv();
+	}
+
+	void SetMass(const float inMass)
+	{
+		mass = inMass;
+		RefreshInv();
 	}
 
 	DirectX::XMFLOAT2 GetVelocity() const
@@ -57,6 +86,26 @@ public:
 		return restitution;
 	}
 
+	float GetMass() const
+	{
+		return mass;
+	}
+
+	float GetInvInertia() const
+	{
+		return invInertia;
+	}
+
+	float GetFriction() const
+	{
+		return friction;
+	}
+
+	DirectX::XMFLOAT2 GetVelAtPoint(const DirectX::XMFLOAT2 r) const
+	{
+		return { velocity.x - angularVel * r.y, velocity.y + angularVel * r.x };
+	}
+
 	bool IsStatic() const
 	{
 		return isStatic;
@@ -71,11 +120,10 @@ public:
 	void Integrate(float deltaTime);
 	void ClearAccumulator();
 
+	void RefreshInv();
+
 private:
 	TransformComponent& transformComp;
-
-	// property
-	float gravity = 200.f;
 
 	// velocities
 	DirectX::XMFLOAT2 velocity = {0, 0};
@@ -86,9 +134,18 @@ private:
 	float accumulatedTorque = 0.f;
 
 	// properties
-	float invMass; // inverted mass for acceleration calculation F = ma
-	bool isStatic;
+	float gravity = 200.f;
+	float invMass = 1.f; // inverted mass for acceleration calculation F = ma
+	bool isStatic = false;
+	float mass = 1.f;
+	float inertia = 1.f;
+	float invInertia = 0.f;
+	bool freezeRotation = false;
+	float friction = 0.4f;
 
 	float restitution = 0.2f; // bounciness of body
 	float linearDampening = 0.1f;
+	float angularDampening = 0.1f;
+
+	float sleepTimer = 0.f;
 };

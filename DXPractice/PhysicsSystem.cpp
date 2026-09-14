@@ -5,6 +5,7 @@
 
 void PhysicsSystem::Register(Rigidbody2DComponent* rigidbody, Collider2D* collider, GameObject* gameObject)
 {
+	rigidbody->SetInertia(collider->ComputeInertia(rigidbody->GetMass()));
 	entries.emplace_back(rigidbody, collider, gameObject);
 }
 
@@ -146,14 +147,12 @@ void PhysicsSystem::ProcessPairs(const std::vector<EntryPair>& candidates)
 }
 
 void PhysicsSystem::ResolveCollision(Rigidbody2DComponent* a, Rigidbody2DComponent* b,
-                                     const CollisionManifold& manifold)
+	const CollisionManifold& manifold)
 {
 	const DirectX::XMFLOAT2 normal = manifold.normal;
-	const float penetration = manifold.penetration;
-
 	const float invMassSum = a->GetInvMass() + b->GetInvMass();
 
-	// if both mass are 0
+	// if both masses are 0
 	if (invMassSum <= 0.f)
 	{
 		return;
@@ -162,39 +161,93 @@ void PhysicsSystem::ResolveCollision(Rigidbody2DComponent* a, Rigidbody2DCompone
 	const DirectX::XMFLOAT3 posA = a->GetTransformComp().GetPosition();
 	const DirectX::XMFLOAT3 posB = b->GetTransformComp().GetPosition();
 
-	const float correctionA = penetration * (a->GetInvMass() / invMassSum);
-	const float correctionB = penetration * (b->GetInvMass() / invMassSum);
-
-	a->GetTransformComp().SetPosition({
-		posA.x - normal.x * correctionA,
-		posA.y - normal.y * correctionA,
-		posA.z
-	});
-
-	b->GetTransformComp().SetPosition({
-		posB.x + normal.x * correctionB,
-		posB.y + normal.y * correctionB,
-		posB.z
-	});
-
-	// separate along normal
-	const DirectX::XMFLOAT2 velA = a->GetVelocity();
-	const DirectX::XMFLOAT2 velB = b->GetVelocity();
-	const DirectX::XMFLOAT2 velDiff = {velB.x - velA.x, velB.y - velA.y};
-
-	const float velAlongNormal = velDiff.x * normal.x + velDiff.y * normal.y;
-	if (velAlongNormal > 0.f)
+	if (manifold.contactCount > 0)
 	{
-		return; // alrdy separating
+		const float restitution = std::min(a->GetRestitution(), b->GetRestitution());
+		const float mu = std::sqrt(a->GetFriction() * b->GetFriction());
+
+		// naive split so a two-point contact doesn't apply double the impulse
+		const float share = 1.0f / static_cast<float>(manifold.contactCount);
+
+		for (int i = 0; i < manifold.contactCount; i++)
+		{
+			const DirectX::XMFLOAT2 contact = manifold.contacts[i];
+			const DirectX::XMFLOAT2 rA = { contact.x - posA.x, contact.y - posA.y };
+			const DirectX::XMFLOAT2 rB = { contact.x - posB.x, contact.y - posB.y };
+
+			// relative velocity at the contact, not at the centers
+			const DirectX::XMFLOAT2 velA = a->GetVelAtPoint(rA);
+			const DirectX::XMFLOAT2 velB = b->GetVelAtPoint(rB);
+			const DirectX::XMFLOAT2 relVel = { velB.x - velA.x, velB.y - velA.y };
+
+			const float velAlongNormal = relVel.x * normal.x + relVel.y * normal.y;
+			if (velAlongNormal > 0.f)
+			{
+				continue; // alrdy separating at this contact
+			}
+
+			// effective mass along the normal, including the angular term (r x n)^2 * invI
+			const float rACrossN = rA.x * normal.y - rA.y * normal.x;
+			const float rBCrossN = rB.x * normal.y - rB.y * normal.x;
+			const float normalMass = invMassSum
+				+ rACrossN * rACrossN * a->GetInvInertia()
+				+ rBCrossN * rBCrossN * b->GetInvInertia();
+
+			const float impulseMag = (-(1.0f + restitution) * velAlongNormal / normalMass) * share;
+			const DirectX::XMFLOAT2 impulse = { normal.x * impulseMag, normal.y * impulseMag };
+
+			a->ApplyImpulse({ -impulse.x, -impulse.y }, rA);
+			b->ApplyImpulse(impulse, rB);
+
+			// tangential impulse, this is what actually makes bodies tumble
+			DirectX::XMFLOAT2 tangent = {
+				relVel.x - normal.x * velAlongNormal,
+				relVel.y - normal.y * velAlongNormal
+			};
+
+			const float tangentLen = std::sqrt(tangent.x * tangent.x + tangent.y * tangent.y);
+			if (tangentLen < 1e-6f)
+			{
+				continue; // no sliding at this contact
+			}
+
+			tangent = { tangent.x / tangentLen, tangent.y / tangentLen };
+
+			const float rACrossT = rA.x * tangent.y - rA.y * tangent.x;
+			const float rBCrossT = rB.x * tangent.y - rB.y * tangent.x;
+			const float tangentMass = invMassSum
+				+ rACrossT * rACrossT * a->GetInvInertia()
+				+ rBCrossT * rBCrossT * b->GetInvInertia();
+
+			const float relAlongTangent = relVel.x * tangent.x + relVel.y * tangent.y;
+			float frictionMag = (-relAlongTangent / tangentMass) * share;
+
+			// coulomb clamp
+			frictionMag = std::clamp(frictionMag, -impulseMag * mu, impulseMag * mu);
+
+			const DirectX::XMFLOAT2 frictionImpulse = { tangent.x * frictionMag, tangent.y * frictionMag };
+
+			a->ApplyImpulse({ -frictionImpulse.x, -frictionImpulse.y }, rA);
+			b->ApplyImpulse(frictionImpulse, rB);
+		}
 	}
 
-	const float restitution = std::min(a->GetRestitution(), b->GetRestitution());
-	const float impulseMag = -(1.0f + restitution) * velAlongNormal / invMassSum;
+	// positional correction once, with slop so resting bodies don't jitter
+	constexpr float slop = 0.05f;
+	constexpr float percent = 0.8f;
+	const float correction = std::max(manifold.penetration - slop, 0.f) / invMassSum * percent;
 
-	const DirectX::XMFLOAT2 impulse = {impulseMag * normal.x, impulseMag * normal.y};
+	a->GetTransformComp().SetPosition({
+		posA.x - normal.x * correction * a->GetInvMass(),
+		posA.y - normal.y * correction * a->GetInvMass(),
+		posA.z
+		});
 
-	a->SetVelocity({velA.x - impulse.x * a->GetInvMass(), velA.y - impulse.y * a->GetInvMass()});
-	b->SetVelocity({velB.x + impulse.x * b->GetInvMass(), velB.y + impulse.y * b->GetInvMass()});
+	b->GetTransformComp().SetPosition({
+		posB.x + normal.x * correction * b->GetInvMass(),
+		posB.y + normal.y * correction * b->GetInvMass(),
+		posB.z
+		});
 }
 
 PhysicsSystem::CellCoord PhysicsSystem::GetCellCoord(const DirectX::XMFLOAT2 worldPos) const

@@ -61,6 +61,7 @@ public:
 
 	AABB GetWorldAABB() const override;
 	OBB GetWorldOBB() const;
+	float ComputeInertia(const float mass) const override;
 
 	DirectX::XMFLOAT2 GetHalfExtents() const
 	{
