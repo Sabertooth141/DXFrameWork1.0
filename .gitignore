@@ -9,6 +9,9 @@
 *.VC.db
 *.VC.opendb
 
+vcpkg_installed/
+x64/
+
 # ========================
 #  Build Output
 # ========================

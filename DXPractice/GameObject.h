@@ -11,19 +11,22 @@
 #include "ScriptSystem.h"
 #include "RenderSystem.h"
 
+class PhysicsSystem;
+struct GameContext;
 class ModelReader;
 class Renderer;
 
 class GameObject
 {
 public:
-	GameObject(Renderer& renderer, const MaterialData& matData, const ModelReader& modelReader,
+	// for 3d
+	GameObject(const MaterialData& matData, const ModelReader& modelReader, GameContext& context,
 	           const std::wstring& vsPath = L"VertexShader.cso", const std::wstring& psPath = L"PixelShader.cso");
-	GameObject(Renderer& renderer, const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices,
-	           const std::wstring& vsPath = L"VertexShader.cso", const std::wstring& psPath = L"PixelShader.cso");
+	// for 2d
+	GameObject(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, GameContext& context,
+	           const std::wstring& vsPath = L"SpriteVertexShader.cso", const std::wstring& psPath = L"SpritePixelShader.cso");
 	GameObject(Renderer& renderer);
 
-	void Init(ScriptSystem& inScriptSystem, AnimationSystem& inAnimationSystem, RenderSystem& inRenderSystem);
 	void Update(float deltaTime);
 
 	template <typename T, typename... Args>
@@ -69,7 +72,9 @@ private:
 	std::unordered_map<std::type_index, std::unique_ptr<IComponent>> components;
 	std::vector<std::unique_ptr<MeshComponent>> meshes;
 
+	Renderer* renderer = nullptr;
 	ScriptSystem* scriptSystem = nullptr;
 	AnimationSystem* animationSystem = nullptr;
 	RenderSystem* renderSystem = nullptr;
+	PhysicsSystem* physicsSystem = nullptr;
 };

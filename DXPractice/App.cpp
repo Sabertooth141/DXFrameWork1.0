@@ -62,9 +62,7 @@ void App::Init()
 
 	// player
 	MeshData quad = MakeSpriteQuad();
-	auto sprite = std::make_unique<GameObject>(renderer, quad.vertices, quad.indices, L"SpriteVertexShader.cso",
-	                                           L"SpritePixelShader.cso");
-	sprite->Init(scriptSystem, animationSystem, renderSystem);
+	auto sprite = std::make_unique<GameObject>(quad.vertices, quad.indices, gameContext);
 
 	sprite->GetTransform()->SetPosition({-128, -100, 1});
 
@@ -94,10 +92,7 @@ void App::Init()
 
 	// physics test
 	MeshData physicsQuad = MakeSpriteQuad();
-	auto physicsTest = std::make_unique<GameObject>(renderer, physicsQuad.vertices, physicsQuad.indices,
-	                                                L"SpriteVertexShader.cso",
-	                                                L"SpritePixelShader.cso");
-	physicsTest->Init(scriptSystem, animationSystem, renderSystem);
+	auto physicsTest = std::make_unique<GameObject>(physicsQuad.vertices, physicsQuad.indices, gameContext);
 
 	physicsTest->GetTransform()->SetPosition({128, 0, 1});
 
@@ -124,9 +119,7 @@ void App::Init()
 	gameObjects.push_back(std::move(physicsTest));
 
 	// layer test
-	auto backGround = std::make_unique<GameObject>(renderer, quad.vertices, quad.indices, L"SpriteVertexShader.cso",
-	                                               L"SpritePixelShader.cso");
-	backGround->Init(scriptSystem, animationSystem, renderSystem);
+	auto backGround = std::make_unique<GameObject>(quad.vertices, quad.indices, gameContext);
 
 	backGround->GetTransform()->SetPosition({0, 0, 1});
 
@@ -140,10 +133,7 @@ void App::Init()
 	// ground
 	// physics test
 	MeshData groundQuad = MakeSpriteQuad();
-	auto groundObj = std::make_unique<GameObject>(renderer, groundQuad.vertices, groundQuad.indices,
-	                                              L"SpriteVertexShader.cso",
-	                                              L"SpritePixelShader.cso");
-	groundObj->Init(scriptSystem, animationSystem, renderSystem);
+	auto groundObj = std::make_unique<GameObject>(groundQuad.vertices, groundQuad.indices, gameContext);
 
 	groundObj->GetTransform()->SetPosition({0, -300, 1});
 
