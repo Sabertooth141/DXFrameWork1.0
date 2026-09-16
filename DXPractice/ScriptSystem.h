@@ -42,6 +42,18 @@ public:
 		destroyQueue.push_back(script);
 	}
 
+	void Unregister(GameObject* object)
+	{
+		for (MonoBehavior* script : activeScripts)
+		{
+			if (script->owner == object)
+			{
+				script->OnDestroy();
+				destroyQueue.push_back(script);
+			}
+		}
+	}
+
 private:
 	void FlushDestroyed()
 	{

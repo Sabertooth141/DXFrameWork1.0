@@ -122,6 +122,12 @@ public:
 
 	void RefreshInv();
 
+	void Wake();
+	void UpdateSleep(float deltaTime);
+	bool IsSleeping() const { return isSleeping; }
+	void MarkSupported() { hasSupport = true; }
+
+
 private:
 	TransformComponent& transformComp;
 
@@ -142,10 +148,16 @@ private:
 	float invInertia = 0.f;
 	bool freezeRotation = false;
 	float friction = 0.4f;
+	bool isSleeping = false;
+	bool hasSupport = false;
+	float sleepTimer = 0.f;
 
 	float restitution = 0.2f; // bounciness of body
 	float linearDampening = 0.1f;
 	float angularDampening = 0.1f;
 
-	float sleepTimer = 0.f;
+	static constexpr float snapEpsilon = 0.05f;
+	static constexpr float sleepLinearThreshold = 8.f;
+	static constexpr float sleepAngularThreshold = 0.25f;
+	static constexpr float sleepDelay = 0.5f;
 };

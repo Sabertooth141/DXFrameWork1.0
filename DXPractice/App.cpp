@@ -8,6 +8,7 @@
 #include "MonoBehavior.h"
 #include "PhysicsTest.h"
 #include "PlayerController.h"
+#include "PrefabRegistry.h"
 #include "SpriteAnimatorComponent.h"
 #include "SpriteRendererComponent.h"
 #include "SpriteVertex.h"
@@ -18,7 +19,10 @@ App::App(const std::string& cmdLine) : cmdLine(cmdLine),
                                        wnd(WIN_WIDTH, WIN_HEIGHT, L"DXPractice"),
                                        renderer(wnd.GetRenderer()), debugRenderer(renderer),
                                        renderSystem(RenderSystem(renderer)),
-                                       gameContext{renderer, physicsSystem, scriptSystem, animationSystem, renderSystem}
+                                       gameContext{
+	                                       renderer, physicsSystem, scriptSystem, animationSystem, renderSystem
+                                       },
+                                       scene(gameContext)
 {
 }
 
@@ -47,6 +51,7 @@ int App::Run()
 
 void App::Init()
 {
+	RegisterPrefabs();
 	RegisterCollisionTests();
 	// cube
 	//std::unique_ptr<ModelReader> model = std::make_unique<ModelReader>(renderer, "../../assets/testCube.fbx");
@@ -62,7 +67,7 @@ void App::Init()
 
 	// player
 	MeshData quad = MakeSpriteQuad();
-	auto sprite = std::make_unique<GameObject>(quad.vertices, quad.indices, gameContext);
+	auto sprite = scene.Add2DObject();
 
 	sprite->GetTransform()->SetPosition({-128, -100, 1});
 
@@ -70,8 +75,8 @@ void App::Init()
 	Rigidbody2DComponent* rb = &sprite->AddComponent<Rigidbody2DComponent>(*sprite->GetTransform(), 1.0f);
 	BoxCollider2D* col = &sprite->AddComponent<BoxCollider2D>(DirectX::XMFLOAT2(1, 1), DirectX::XMFLOAT2(0, 0), true,
 	                                                          *sprite->GetTransform());
-	physicsSystem.Register(rb, col, sprite.get());
 	rb->SetFreezeRotation(true);
+	rb->SetGravity(0.f);
 
 	// animation
 	sprite->AddComponent<AnimatorComponent>(renderer);
@@ -87,53 +92,21 @@ void App::Init()
 	sprite->AddComponent<PlayerController>();
 	sprite->GetComponent<PlayerController>()->SetInput(wnd.keyboard, wnd.mouse);
 
-	gameObjects.push_back(std::move(sprite));
 
+	//// layer test
+	//auto backGround = std::make_unique<GameObject>(quad.vertices, quad.indices, gameContext);
 
-	// physics test
-	MeshData physicsQuad = MakeSpriteQuad();
-	auto physicsTest = std::make_unique<GameObject>(physicsQuad.vertices, physicsQuad.indices, gameContext);
+	//backGround->GetTransform()->SetPosition({0, 0, 1});
 
-	physicsTest->GetTransform()->SetPosition({128, 0, 1});
-
-	physicsTest->AddComponent<AnimatorComponent>(renderer);
-	physicsTest->GetComponent<AnimatorComponent>()->SetRenderLayer(RenderLayer::Enemy);
-	physicsTest->GetComponent<AnimatorComponent>()->SetSortOrder(0);
-	physicsTest->GetComponent<AnimatorComponent>()->SetStatic(L"../../assets/jinx.jpg");
-	physicsTest->GetTransform()->SetScale(0.05f);
-	physicsTest->GetTransform()->SetRotation(DirectX::XMFLOAT3(0, 0, 0.3));
-
-	physicsTest->AddComponent<PhysicsTest>();
-
-	// physics
-	Rigidbody2DComponent* testRb = &physicsTest->AddComponent<Rigidbody2DComponent>(*physicsTest->GetTransform(), 1.0f);
-	BoxCollider2D* testCol = &physicsTest->AddComponent<BoxCollider2D>(DirectX::XMFLOAT2(0.5, 0.5),
-	                                                                   DirectX::XMFLOAT2(0, 0), false,
-	                                                                   *physicsTest->GetTransform());
-	physicsSystem.Register(testRb, testCol, physicsTest.get());
-	testRb->SetGravity(300.f);
-	testRb->SetAngularVel(0.4f);
-	testRb->SetRestitution(1.f);
-	//testRb->SetIsStatic(true);
-
-	gameObjects.push_back(std::move(physicsTest));
-
-	// layer test
-	auto backGround = std::make_unique<GameObject>(quad.vertices, quad.indices, gameContext);
-
-	backGround->GetTransform()->SetPosition({0, 0, 1});
-
-	backGround->AddComponent<AnimatorComponent>(renderer);
-	backGround->GetComponent<AnimatorComponent>()->SetRenderLayer(RenderLayer::BackGround);
-	backGround->GetComponent<AnimatorComponent>()->SetSortOrder(0);
-	backGround->GetComponent<AnimatorComponent>()->SetStatic(L"../../assets/bgTest.jpg");
-
-	gameObjects.push_back(std::move(backGround));
+	//backGround->AddComponent<AnimatorComponent>(renderer);
+	//backGround->GetComponent<AnimatorComponent>()->SetRenderLayer(RenderLayer::BackGround);
+	//backGround->GetComponent<AnimatorComponent>()->SetSortOrder(0);
+	//backGround->GetComponent<AnimatorComponent>()->SetStatic(L"../../assets/bgTest.jpg");
 
 	// ground
 	// physics test
 	MeshData groundQuad = MakeSpriteQuad();
-	auto groundObj = std::make_unique<GameObject>(groundQuad.vertices, groundQuad.indices, gameContext);
+	auto groundObj = scene.Add2DObject();
 
 	groundObj->GetTransform()->SetPosition({0, -300, 1});
 
@@ -149,15 +122,29 @@ void App::Init()
 	Rigidbody2DComponent* groundRb = &groundObj->AddComponent<Rigidbody2DComponent>(*groundObj->GetTransform(), 1.0f);
 	BoxCollider2D* groundCol = &groundObj->AddComponent<BoxCollider2D>(DirectX::XMFLOAT2(1, 1), DirectX::XMFLOAT2(0, 0),
 	                                                                   false, *groundObj->GetTransform());
-	physicsSystem.Register(groundRb, groundCol, groundObj.get());
 	groundRb->SetIsStatic(true);
 
-	gameObjects.push_back(std::move(groundObj));
+	auto block = scene.Instantiate("block", DirectX::XMFLOAT3(200, 200, 1));
+	scene.Instantiate("block", DirectX::XMFLOAT3(120, 0, 1));
+	//block->GetComponent<Rigidbody2DComponent>()->SetFreezeRotation(true);
 
 	wnd.mouse.EnableRaw();
 }
 
 void App::Update(float deltaTime)
+{
+	HandleInput(deltaTime);
+
+	scene.Update(deltaTime);
+
+	// systems
+	scriptSystem.Update(deltaTime);
+	physicsSystem.Update(deltaTime);
+	animationSystem.Update(deltaTime);
+	scene.FlushPending();
+}
+
+void App::HandleInput(float deltaTime)
 {
 	if (wnd.mouse.LeftPressed())
 	{
@@ -170,15 +157,6 @@ void App::Update(float deltaTime)
 			rotation.y += delta.value().x * sensitivity;
 		}
 	}
-
-	// systems
-	scriptSystem.Update(deltaTime);
-	physicsSystem.Update(deltaTime);
-	animationSystem.Update(deltaTime);
-}
-
-void App::HandleInput(float deltaTime)
-{
 }
 
 void App::Draw(float deltaTime)
@@ -192,7 +170,7 @@ void App::Draw(float deltaTime)
 
 	renderSystem.Render();
 	debugRenderer.Begin();
-	for (auto& go : gameObjects)
+	for (auto& go : scene.GetObjects())
 		if (auto* col = go->GetComponent<BoxCollider2D>())
 			debugRenderer.DrawBox(col->GetWorldOBB().GetCorners(), {0, 1, 0, 1});
 	debugRenderer.Flush(renderer);

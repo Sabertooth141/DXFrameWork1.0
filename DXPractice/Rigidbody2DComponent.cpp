@@ -1,7 +1,5 @@
 #include "Rigidbody2DComponent.h"
 
-#include <cmath>
-
 #include "TransformComponent.h"
 
 Rigidbody2DComponent::Rigidbody2DComponent(TransformComponent& inTransformComp, float inMass, bool inIsStatic) :
@@ -48,68 +46,78 @@ void Rigidbody2DComponent::ApplyImpulse(DirectX::XMFLOAT2 impulse, DirectX::XMFL
 
 void Rigidbody2DComponent::Integrate(const float deltaTime)
 {
+	if (isStatic || isSleeping)
+	{
+		return;
+	}
+
+	// integrate forces
+	velocity.x += accumulatedForce.x * invMass * deltaTime;
+	velocity.y += (accumulatedForce.y * invMass - gravity) * deltaTime;
+	angularVel += accumulatedTorque * invInertia * deltaTime;
+
+	// framerate-independent damping
+	const float linDamp = 1.0f / (1.0f + linearDampening * deltaTime);
+	const float angDamp = 1.0f / (1.0f + angularDampening * deltaTime);
+	velocity.x *= linDamp;
+	velocity.y *= linDamp;
+	angularVel *= angDamp;
+
+	// tiny snap, only to kill drift — NOT a sleep threshold
+	if (std::abs(velocity.x) < snapEpsilon) velocity.x = 0.f;
+	if (std::abs(velocity.y) < snapEpsilon) velocity.y = 0.f;
+	if (std::abs(angularVel) < snapEpsilon) angularVel = 0.f;
+
+	const DirectX::XMFLOAT3 currPos = transformComp.GetPosition();
+	const DirectX::XMFLOAT3 currRot = transformComp.GetRotation();
+
+	transformComp.SetPosition({
+		currPos.x + velocity.x * deltaTime,
+		currPos.y + velocity.y * deltaTime,
+		currPos.z
+		});
+
+	transformComp.SetRotation({
+		currRot.x,
+		currRot.y,
+		currRot.z + angularVel * deltaTime
+		});
+}
+
+void Rigidbody2DComponent::UpdateSleep(const float deltaTime)
+{
 	if (isStatic)
 	{
 		return;
 	}
 
-	// a = F / m
-	velocity.x += accumulatedForce.x * invMass * deltaTime;
-	velocity.y += accumulatedForce.y * invMass * deltaTime - gravity * deltaTime;
-
-	// lin dampening
-	const float damp = 1.0f / (1.0f + linearDampening * deltaTime);
-	velocity.x *= damp;
-	velocity.y *= damp;
-
-	// apply angular velocity
-	angularVel += accumulatedTorque * invInertia * deltaTime;
-
-	// threshold to 0
-	constexpr float sleepEpsilon = 1.f;
-	if (std::abs(velocity.x) < sleepEpsilon)
-	{
-		velocity.x = 0;
-	}
-
-	if (std::abs(velocity.y) < sleepEpsilon)
-	{
-		velocity.y = 0;
-	}
-
-	// angular threshold to 0
-	constexpr float angularSleepEpsilon = 0.10f;
-	if (std::abs(angularVel) < angularSleepEpsilon)
-	{
-		angularVel = 0;
-	}
-
 	const float speedSq = velocity.x * velocity.x + velocity.y * velocity.y;
-	if (speedSq < sleepEpsilon * sleepEpsilon && std::abs(angularVel) < angularSleepEpsilon)
+
+	const bool slow = speedSq < sleepLinearThreshold * sleepLinearThreshold
+		&& std::abs(angularVel) < sleepAngularThreshold;
+
+	if (slow && hasSupport)
 	{
 		sleepTimer += deltaTime;
-		if (sleepTimer > 0.3f) { velocity = { 0, 0 }; angularVel = 0.f; }
+		if (sleepTimer > sleepDelay)
+		{
+			isSleeping = true;
+			velocity = { 0.f, 0.f };
+			angularVel = 0.f;
+		}
 	}
 	else
 	{
 		sleepTimer = 0.f;
 	}
 
-	const DirectX::XMFLOAT3 currPos = transformComp.GetPosition();
-	const DirectX::XMFLOAT3 currRot = transformComp.GetRotation();
+	hasSupport = false; // resolver re-sets this each frame
+}
 
-	// update pos and rot
-	transformComp.SetPosition({
-		currPos.x + velocity.x * deltaTime,
-		currPos.y + velocity.y * deltaTime,
-		currPos.z
-	});
-
-	transformComp.SetRotation({
-		currRot.x,
-		currRot.y,
-		currRot.z + angularVel * deltaTime
-	});
+void Rigidbody2DComponent::Wake()
+{
+	isSleeping = false;
+	sleepTimer = 0.f;
 }
 
 void Rigidbody2DComponent::ClearAccumulator()

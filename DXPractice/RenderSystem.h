@@ -14,6 +14,11 @@ public:
 		spriteSystem.Register(sprite);
 	}
 
+	void Unregister(GameObject* object)
+	{
+		spriteSystem.Unregister(object);
+	}
+
 	void Render()
 	{
 		Render2DPass();

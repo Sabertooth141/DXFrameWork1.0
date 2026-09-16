@@ -8,6 +8,7 @@
 GameObject::GameObject(const MaterialData& matData, const ModelReader& modelReader, GameContext& context,
                        const std::wstring& vsPath, const std::wstring& psPath)
 {
+	this->context = &context;
 	scriptSystem = &context.scriptSys;
 	animationSystem = &context.animationSys;
 	renderSystem = &context.renderSys;
@@ -24,6 +25,7 @@ GameObject::GameObject(const MaterialData& matData, const ModelReader& modelRead
 GameObject::GameObject(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, GameContext& context,
                        const std::wstring& vsPath, const std::wstring& psPath)
 {
+	this->context = &context;
 	scriptSystem = &context.scriptSys;
 	animationSystem = &context.animationSys;
 	renderSystem = &context.renderSys;

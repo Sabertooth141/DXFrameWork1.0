@@ -9,6 +9,28 @@ void PhysicsSystem::Register(Rigidbody2DComponent* rigidbody, Collider2D* collid
 	entries.emplace_back(rigidbody, collider, gameObject);
 }
 
+void PhysicsSystem::AttachRBToEntry(GameObject* object, Rigidbody2DComponent* rb)
+{
+	Entry& entry = GetOrCreate(object);
+	entry.rigidbody = rb;
+
+	if (entry.collider)
+	{
+		rb->SetInertia(entry.collider->ComputeInertia(rb->GetMass()));
+	}
+}
+
+void PhysicsSystem::AttachColliderToEntry(GameObject* object, Collider2D* col)
+{
+	Entry& entry = GetOrCreate(object);
+	entry.collider = col;
+
+	if (entry.rigidbody)
+	{
+		entry.rigidbody->SetInertia(col->ComputeInertia(entry.rigidbody->GetMass()));
+	}
+}
+
 void PhysicsSystem::Unregister(GameObject* gameObject)
 {
 	std::erase_if(entries, [gameObject](const Entry& entry)
@@ -51,6 +73,11 @@ void PhysicsSystem::Update(const float deltaTime)
 
 	for (Entry& entry : entries)
 	{
+		if (!entry.rigidbody)
+		{
+			continue;
+		}
+
 		entry.rigidbody->ClearAccumulator();
 	}
 }
@@ -59,7 +86,14 @@ void PhysicsSystem::IntegrateForces(const float deltaTime)
 {
 	for (Entry& entry : entries)
 	{
+		if (!entry.rigidbody)
+		{
+			continue;
+		}
+
 		entry.rigidbody->Integrate(deltaTime);
+
+		entry.rigidbody->UpdateSleep(deltaTime);
 	}
 }
 
@@ -69,6 +103,11 @@ void PhysicsSystem::RebuildGrid()
 
 	for (Entry& entry : entries)
 	{
+		if (!entry.collider || !entry.rigidbody)
+		{
+			continue;
+		}
+
 		if (!entry.collider->IsColliderActive())
 		{
 			continue;
@@ -181,7 +220,7 @@ void PhysicsSystem::ResolveCollision(Rigidbody2DComponent* a, Rigidbody2DCompone
 		const float restitution = std::min(a->GetRestitution(), b->GetRestitution());
 		const float mu = std::sqrt(a->GetFriction() * b->GetFriction());
 
-		// naive split so a two-point contact doesn't apply double the impulse
+		// naive split
 		const float share = 1.0f / static_cast<float>(manifold.contactCount);
 
 		for (int i = 0; i < manifold.contactCount; i++)
@@ -190,7 +229,6 @@ void PhysicsSystem::ResolveCollision(Rigidbody2DComponent* a, Rigidbody2DCompone
 			const DirectX::XMFLOAT2 rA = {contact.x - posA.x, contact.y - posA.y};
 			const DirectX::XMFLOAT2 rB = {contact.x - posB.x, contact.y - posB.y};
 
-			// relative velocity at the contact, not at the centers
 			const DirectX::XMFLOAT2 velA = a->GetVelAtPoint(rA);
 			const DirectX::XMFLOAT2 velB = b->GetVelAtPoint(rB);
 			const DirectX::XMFLOAT2 relVel = {velB.x - velA.x, velB.y - velA.y};
@@ -201,7 +239,7 @@ void PhysicsSystem::ResolveCollision(Rigidbody2DComponent* a, Rigidbody2DCompone
 				continue; // alrdy separating at this contact
 			}
 
-			// effective mass along the normal, including the angular term (r x n)^2 * invI
+			// effective mass along the normal
 			const float rACrossN = rA.x * normal.y - rA.y * normal.x;
 			const float rBCrossN = rB.x * normal.y - rB.y * normal.x;
 			const float normalMass = invMassSum
@@ -214,19 +252,8 @@ void PhysicsSystem::ResolveCollision(Rigidbody2DComponent* a, Rigidbody2DCompone
 			a->ApplyImpulse({-impulse.x, -impulse.y}, rA);
 			b->ApplyImpulse(impulse, rB);
 
-			// tangential impulse, this is what actually makes bodies tumble
-			DirectX::XMFLOAT2 tangent = {
-				relVel.x - normal.x * velAlongNormal,
-				relVel.y - normal.y * velAlongNormal
-			};
-
-			const float tangentLen = std::sqrt(tangent.x * tangent.x + tangent.y * tangent.y);
-			if (tangentLen < 1e-6f)
-			{
-				continue; // no sliding at this contact
-			}
-
-			tangent = {tangent.x / tangentLen, tangent.y / tangentLen};
+			// tangential impulse
+			const DirectX::XMFLOAT2 tangent = { -normal.y, normal.x };
 
 			const float rACrossT = rA.x * tangent.y - rA.y * tangent.x;
 			const float rBCrossT = rB.x * tangent.y - rB.y * tangent.x;
@@ -291,4 +318,18 @@ PhysicsSystem::ColliderPair PhysicsSystem::MakeCanonicalColliderPair(GameObject*
 	}
 
 	return ColliderPair{.a = b, .b = a};
+}
+
+PhysicsSystem::Entry& PhysicsSystem::GetOrCreate(GameObject* object)
+{
+	for (auto& entry : entries)
+	{
+		if (entry.gameObject == object)
+		{
+			return entry;
+		}
+	}
+
+	entries.push_back(Entry{ nullptr, nullptr, object });
+	return entries.back();
 }

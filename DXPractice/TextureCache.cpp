@@ -1,9 +1,30 @@
+#define STBI_WINDOWS_UTF8
 #define STB_IMAGE_IMPLEMENTATION
 
 #include "TextureCache.h"
 #include "stb_image.h"
 
 std::unordered_map<std::wstring, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> TextureCache::cache;
+
+namespace
+{
+	std::string ToUtf8(const std::wstring& w)
+	{
+		if (w.empty()) return {};
+		const int len = WideCharToMultiByte(CP_UTF8, 0, w.data(), static_cast<int>(w.size()),
+			nullptr, 0, nullptr, nullptr);
+		std::string out(len, '\0');
+		WideCharToMultiByte(CP_UTF8, 0, w.data(), static_cast<int>(w.size()),
+			out.data(), len, nullptr, nullptr);
+		return out;
+	}
+
+	struct StbiBuffer
+	{
+		void* data = nullptr;
+		~StbiBuffer() { if (data) stbi_image_free(data); }
+	};
+}
 
 ID3D11ShaderResourceView* TextureCache::Load(Renderer& renderer, const std::wstring& path)
 {
@@ -13,37 +34,40 @@ ID3D11ShaderResourceView* TextureCache::Load(Renderer& renderer, const std::wstr
 		return it->second.Get();
 	}
 
-	std::string narrowPath(path.begin(), path.end());
+	const std::string narrowPath = ToUtf8(path);
 
 	int width, height, channels;
-	void* pixels = nullptr;
+	StbiBuffer pixels;
 	DXGI_FORMAT fmt;
 	UINT bytesPerPixel;
-
 
 	if (stbi_is_hdr(narrowPath.c_str()))
 	{
 		// --- HDR / float ---
-		pixels = stbi_loadf(narrowPath.c_str(), &width, &height, &channels, 4);
+		pixels.data = stbi_loadf(narrowPath.c_str(), &width, &height, &channels, 4);
 		fmt = DXGI_FORMAT_R32G32B32A32_FLOAT;
 		bytesPerPixel = 16;
 	}
 	else if (stbi_is_16_bit(narrowPath.c_str()))
 	{
 		// --- 16-bit ---
-		pixels = stbi_load_16(narrowPath.c_str(), &width, &height, &channels, 4);
+		pixels.data = stbi_load_16(narrowPath.c_str(), &width, &height, &channels, 4);
 		fmt = DXGI_FORMAT_R16G16B16A16_UNORM;
 		bytesPerPixel = 8;
 	}
 	else
 	{
 		// --- 8-bit (default) ---
-		pixels = stbi_load(narrowPath.c_str(), &width, &height, &channels, 4);
+		pixels.data = stbi_load(narrowPath.c_str(), &width, &height, &channels, 4);
 		fmt = DXGI_FORMAT_R8G8B8A8_UNORM;
 		bytesPerPixel = 4;
 	}
 
-	assert(pixels && "TextureCache: stbi_load failed");
+	assert(pixels.data && "TextureCache: stbi_load failed");
+	if (!pixels.data)
+	{
+		return nullptr;
+	}
 
 	D3D11_TEXTURE2D_DESC td = {};
 	td.Width = static_cast<UINT>(width);
@@ -57,12 +81,16 @@ ID3D11ShaderResourceView* TextureCache::Load(Renderer& renderer, const std::wstr
 	td.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 
 	D3D11_SUBRESOURCE_DATA sd = {};
-	sd.pSysMem = pixels;
-	sd.SysMemPitch = width * 4;
+	sd.pSysMem = pixels.data;
+	sd.SysMemPitch = static_cast<UINT>(width) * bytesPerPixel;
 
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> pTexture;
 	HRESULT hr = GetDevice(renderer)->CreateTexture2D(&td, &sd, &pTexture);
 	assert(SUCCEEDED(hr) && "TextureCache: CreateTexture2D failed");
+	if (FAILED(hr))
+	{
+		return nullptr;
+	}
 
 	// create SRV
 	D3D11_SHADER_RESOURCE_VIEW_DESC srvd = {};
@@ -74,9 +102,13 @@ ID3D11ShaderResourceView* TextureCache::Load(Renderer& renderer, const std::wstr
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv;
 	hr = GetDevice(renderer)->CreateShaderResourceView(pTexture.Get(), &srvd, &srv);
 	assert(SUCCEEDED(hr) && "TextureCache: CreateShaderResourceView failed");
+	if (FAILED(hr))
+	{
+		return nullptr;
+	}
 
-	cache[path] = std::move(srv);
-	return cache[path].Get();
+	auto [pos, inserted] = cache.emplace(path, std::move(srv));
+	return pos->second.Get();
 }
 
 void TextureCache::Clear()
@@ -120,6 +152,10 @@ ID3D11ShaderResourceView* TextureCache::LoadSolid(Renderer& renderer, uint32_t r
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> tex;
 	HRESULT hr = GetDevice(renderer)->CreateTexture2D(&td, &sd, &tex);
 	assert(SUCCEEDED(hr) && "TextureCache: solid CreateTexture2D failed");
+	if (FAILED(hr))
+	{
+		return nullptr;
+	}
 
 	D3D11_SHADER_RESOURCE_VIEW_DESC srvd = {};
 	srvd.Format = td.Format;
@@ -130,7 +166,11 @@ ID3D11ShaderResourceView* TextureCache::LoadSolid(Renderer& renderer, uint32_t r
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv;
 	hr = GetDevice(renderer)->CreateShaderResourceView(tex.Get(), &srvd, &srv);
 	assert(SUCCEEDED(hr) && "TextureCache: solid CreateShaderResourceView failed");
+	if (FAILED(hr))
+	{
+		return nullptr;
+	}
 
-	cache[key] = std::move(srv);
-	return cache[key].Get();
+	auto [pos, inserted] = cache.emplace(key, std::move(srv));
+	return pos->second.Get();
 }

@@ -127,7 +127,8 @@
       <AdditionalDependencies>$(CoreLibraryDependencies);assimp-vc145-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D "$(SolutionDir)vcpkg_installed\x64-windows\debug\bin\*.dll" "$(OutDir)"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -148,7 +149,8 @@
       <AdditionalDependencies>$(CoreLibraryDependencies);assimp-vc145-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D "$(SolutionDir)vcpkg_installed\x64-windows\bin\*.dll" "$(OutDir)"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -178,9 +180,11 @@
     <ClCompile Include="PhysicsTest.cpp" />
     <ClCompile Include="PixelShader.cpp" />
     <ClCompile Include="PlayerController.cpp" />
+    <ClCompile Include="PrefabRegistry.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Rigidbody2DComponent.cpp" />
     <ClCompile Include="Sampler.cpp" />
+    <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SpriteAnimatorComponent.cpp" />
     <ClCompile Include="SpriteRendererComponent.cpp" />
     <ClCompile Include="TextureCache.cpp" />
@@ -201,6 +205,7 @@
     <ClInclude Include="CollisionDispatch.h" />
     <ClInclude Include="CollisionTests.h" />
     <ClInclude Include="DebugRenderer.h" />
+    <ClInclude Include="GameContext.h" />
     <ClInclude Include="IComponent.h" />
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="Drawable.h" />
@@ -220,10 +225,12 @@
     <ClInclude Include="PhysicsSystem.h" />
     <ClInclude Include="PhysicsTest.h" />
     <ClInclude Include="PlayerController.h" />
+    <ClInclude Include="PrefabRegistry.h" />
     <ClInclude Include="RenderLayer.h" />
     <ClInclude Include="RenderSystem.h" />
     <ClInclude Include="Rigidbody2DComponent.h" />
     <ClInclude Include="Sampler.h" />
+    <ClInclude Include="Scene.h" />
     <ClInclude Include="ScriptSystem.h" />
     <ClInclude Include="SpriteAnimatorComponent.h" />
     <ClInclude Include="SpriteRendererComponent.h" />

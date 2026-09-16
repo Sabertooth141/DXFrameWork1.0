@@ -6,15 +6,26 @@
 #include "BoxCollider2D.h"
 #include "MaterialComponent.h"
 #include "MeshComponent.h"
-#include "TransformComponent.h"
 #include "MonoBehavior.h"
+#include "PhysicsSystem.h"
 #include "ScriptSystem.h"
 #include "RenderSystem.h"
+#include "GameContext.h"
 
+class Rigidbody2DComponent;
 class PhysicsSystem;
 struct GameContext;
 class ModelReader;
 class Renderer;
+
+enum class ObjectTag : uint8_t
+{
+	Default,
+	Enemy,
+	Player,
+	Block,
+	Ground
+};
 
 class GameObject
 {
@@ -45,6 +56,14 @@ public:
 			animationSystem->Register(&ref);
 			renderSystem->Register(&ref);
 		}
+		else if constexpr (std::is_base_of_v<Rigidbody2DComponent, T>)
+		{
+			physicsSystem->AttachRBToEntry(this, &ref);
+		}
+		else if constexpr (std::is_base_of_v<Collider2D, T>)
+		{
+			physicsSystem->AttachColliderToEntry(this, &ref);
+		}
 
 		components[typeid(T)] = std::move(comp);
 		return ref;
@@ -65,13 +84,35 @@ public:
 	void NotifyColliderStay2D(const GameObject& other) const;
 	void NotifyColliderLeave2D(const GameObject& other) const;
 
+	Renderer& GetRenderer() const
+	{
+		return *renderer;
+	}
+
+	GameContext& GetContext() const
+	{
+		return *context;
+	}
+
 	TransformComponent* GetTransform();
 	std::vector<std::unique_ptr<MeshComponent>>& GetMeshes();
 
+	ObjectTag GetTag() const
+	{
+		return tag;
+	}
+
+	void SetTag(ObjectTag inTag)
+	{
+		tag = inTag;
+	}
+
 private:
+	ObjectTag tag;
 	std::unordered_map<std::type_index, std::unique_ptr<IComponent>> components;
 	std::vector<std::unique_ptr<MeshComponent>> meshes;
 
+	GameContext* context;
 	Renderer* renderer = nullptr;
 	ScriptSystem* scriptSystem = nullptr;
 	AnimationSystem* animationSystem = nullptr;

@@ -13,6 +13,9 @@ class PhysicsSystem
 public:
 	void Register(Rigidbody2DComponent* rigidbody, Collider2D* collider, GameObject* gameObject);
 
+	void AttachRBToEntry(GameObject* object, Rigidbody2DComponent* rb);
+	void AttachColliderToEntry(GameObject* object, Collider2D* col);
+
 	void Unregister(GameObject* gameObject);
 
 	void Update(float deltaTime);
@@ -21,9 +24,9 @@ private:
 	// for spatial partitioning
 	struct Entry
 	{
-		Rigidbody2DComponent* rigidbody;
-		Collider2D* collider;
-		GameObject* gameObject;
+		Rigidbody2DComponent* rigidbody = nullptr;
+		Collider2D* collider = nullptr;
+		GameObject* gameObject = nullptr;
 	};
 
 	// grid 
@@ -94,11 +97,13 @@ private:
 	void ResolveCollision(Rigidbody2DComponent* a, Rigidbody2DComponent* b, const CollisionManifold& manifold);
 
 	// helpers
-
 	CellCoord GetCellCoord(const DirectX::XMFLOAT2 worldPos) const;
 
 	static EntryPair MakeCanonicalEntryPair(Entry* a, Entry* b);
 	static ColliderPair MakeCanonicalColliderPair(GameObject* a, GameObject* b);
+
+private:
+	Entry& GetOrCreate(GameObject* object);
 
 private:
 	std::vector<Entry> entries;

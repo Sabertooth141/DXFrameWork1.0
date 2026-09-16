@@ -85,6 +85,12 @@
     <Filter Include="Source Files\Components\Physics\Colliders">
       <UniqueIdentifier>{85a7f4cc-99f0-4074-a59a-e973860be7ab}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\World">
+      <UniqueIdentifier>{8a4af3b5-9734-4e8d-a44c-39dbeec53121}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\World">
+      <UniqueIdentifier>{20089f77-a4f2-45bb-9d57-52a844f1d3c7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Image Include="small.ico">
@@ -196,6 +202,12 @@
     </ClCompile>
     <ClCompile Include="PhysicsTest.cpp">
       <Filter>Source Files\Scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="PrefabRegistry.cpp">
+      <Filter>Source Files\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>Source Files\World</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -363,6 +375,15 @@
     </ClInclude>
     <ClInclude Include="PhysicsTest.h">
       <Filter>Header Files\Scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="PrefabRegistry.h">
+      <Filter>Header Files\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>Header Files\World</Filter>
+    </ClInclude>
+    <ClInclude Include="GameContext.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

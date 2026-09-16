@@ -36,9 +36,12 @@ public:
 	void SetFlipX(bool inFlip) const;
 	void SetFlipY(bool inFlip) const;
 
+public:
+	GameObject* parent = nullptr;
+
 private:
 	Renderer& renderer;
-	GameObject* parent = nullptr;
+	
 	std::unordered_map<std::string, AnimationEntry> animations;
 	AnimationEntry* currAnimation;
 

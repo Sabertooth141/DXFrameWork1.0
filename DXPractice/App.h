@@ -7,20 +7,13 @@
 #include "LightCBuffer.h"
 #include "PhysicsSystem.h"
 #include "RenderSystem.h"
+#include "Scene.h"
 #include "ScriptSystem.h"
 #include "Timer.h"
+#include "GameContext.h"
 
 class GameObject;
 class ModelReader;
-
-struct GameContext
-{
-	Renderer& renderer;
-	PhysicsSystem& physicsSys;
-	ScriptSystem& scriptSys;
-	AnimationSystem& animationSys;
-	RenderSystem& renderSys;
-};
 
 class App
 {
@@ -50,10 +43,9 @@ private:
 	PhysicsSystem physicsSystem;
 
 	GameContext gameContext;
+	Scene scene;
 
 	std::unique_ptr<LightCBuffer> lightCBuffer;
-
-	std::vector<std::unique_ptr<GameObject>> gameObjects;
 
 	float sensitivity = 0.004f;
 };

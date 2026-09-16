@@ -14,6 +14,11 @@ public:
 		isDirty = true;
 	}
 
+	void Unregister(GameObject* object)
+	{
+		std::erase_if(renderers, [object](const AnimatorComponent* a) { return a->parent == object; });
+	}
+
 	void Render()
 	{
 		SortIfDirty();
@@ -32,13 +37,16 @@ private:
 			return;
 		}
 		std::ranges::stable_sort(renderers,
-		                         [] (const AnimatorComponent* a, const AnimatorComponent* b)
+		                         [](const AnimatorComponent* a, const AnimatorComponent* b)
 		                         {
-			                         if (a->GetCurrAnimation().spriteRenderer->layer != b->GetCurrAnimation().spriteRenderer->layer)
+			                         if (a->GetCurrAnimation().spriteRenderer->layer != b->GetCurrAnimation().
+				                         spriteRenderer->layer)
 			                         {
-				                         return static_cast<int>(a->GetCurrAnimation().spriteRenderer->layer) < static_cast<int>(b->GetCurrAnimation().spriteRenderer->layer);
+				                         return static_cast<int>(a->GetCurrAnimation().spriteRenderer->layer) <
+					                         static_cast<int>(b->GetCurrAnimation().spriteRenderer->layer);
 			                         }
-			                         return a->GetCurrAnimation().spriteRenderer->sortOrder < b->GetCurrAnimation().spriteRenderer->sortOrder;
+			                         return a->GetCurrAnimation().spriteRenderer->sortOrder < b->GetCurrAnimation().
+				                         spriteRenderer->sortOrder;
 		                         }
 		);
 		isDirty = false;
