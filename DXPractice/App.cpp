@@ -111,7 +111,7 @@ void App::Init()
 	MeshData groundQuad = MakeSpriteQuad();
 	auto groundObj = scene.Add2DObject();
 
-	groundObj->GetTransform()->SetPosition({0, -300, 1});
+	groundObj->GetTransform()->SetPosition({0, -200, 1});
 
 	groundObj->AddComponent<AnimatorComponent>(renderer);
 	groundObj->GetComponent<AnimatorComponent>()->SetRenderLayer(RenderLayer::Default);
@@ -123,9 +123,11 @@ void App::Init()
 
 	// physics
 	Rigidbody2DComponent* groundRb = &groundObj->AddComponent<Rigidbody2DComponent>(*groundObj->GetTransform(), 1.0f);
-	BoxCollider2D* groundCol = &groundObj->AddComponent<BoxCollider2D>(DirectX::XMFLOAT2(1, 1), DirectX::XMFLOAT2(0, 0),
+	BoxCollider2D* groundCol = &groundObj->AddComponent<BoxCollider2D>(DirectX::XMFLOAT2(0.5f, 0.5f), DirectX::XMFLOAT2(0, 0),
 	                                                                   false, *groundObj->GetTransform());
 	groundRb->SetIsStatic(true);
+
+	playerObj->GetComponent<CameraController>()->SetGroundTop(groundObj->GetTransform()->GetPosition().y);
 
 	//block->GetComponent<Rigidbody2DComponent>()->SetFreezeRotation(true);
 

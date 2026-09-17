@@ -80,6 +80,11 @@ void AnimatorComponent::Update(float deltaTime)
 
 void AnimatorComponent::Render()
 {
+	if (currAnimation->spriteRenderer.get() == nullptr)
+	{
+		return;
+	}
+
 	currAnimation->spriteRenderer->Bind(renderer); // b1 UV, t0 texture, s0 sampler
 	currAnimation->spriteRenderer->Render();
 }

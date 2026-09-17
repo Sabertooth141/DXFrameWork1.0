@@ -1,5 +1,6 @@
 #pragma once
 #include <array>
+#include <DirectXMath.h>
 
 #include "IComponent.h"
 

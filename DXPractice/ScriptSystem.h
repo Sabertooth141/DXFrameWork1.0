@@ -55,14 +55,17 @@ public:
 
 	void Unregister(GameObject* object)
 	{
-		for (MonoBehavior* script : activeScripts)
+		const auto kill = [&](std::vector<MonoBehavior*>& v)
 		{
-			if (script->owner == object)
+			std::erase_if(v, [&](MonoBehavior* s)
 			{
-				script->OnDestroy();
-				destroyQueue.push_back(script);
-			}
-		}
+				if (s->owner != object) return false;
+				s->OnDestroy();
+				return true;
+			});
+		};
+		kill(activeScripts);
+		kill(pendingScripts); // a script destroyed on its spawn frame is still only in pending
 	}
 
 private:

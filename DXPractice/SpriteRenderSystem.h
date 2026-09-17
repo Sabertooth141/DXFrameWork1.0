@@ -16,7 +16,8 @@ public:
 
 	void Unregister(GameObject* object)
 	{
-		std::erase_if(renderers, [object](const AnimatorComponent* a) { return a->parent == object; });
+		std::erase_if(renderers, [object](const AnimatorComponent* a) { return a->owner == object; });
+		isDirty = true;
 	}
 
 	void Render()

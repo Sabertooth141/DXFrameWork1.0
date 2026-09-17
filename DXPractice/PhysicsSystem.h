@@ -1,12 +1,13 @@
 #pragma once
 #include <functional>
+#include <unordered_map>
 #include <unordered_set>
+#include <vector>
 
+#include "Collider2D.h"
 #include "Rigidbody2DComponent.h"
 
-struct CollisionManifold;
 class GameObject;
-class Collider2D;
 
 class PhysicsSystem
 {
@@ -20,6 +21,17 @@ public:
 
 	void Update(float deltaTime);
 
+	// tuning
+	void SetVelocityIterations(const int inIterations)
+	{
+		velocityIterations = inIterations;
+	}
+
+	void SetRestitutionSlop(const float inSlop)
+	{
+		restitutionSlop = inSlop;
+	}
+
 private:
 	// for spatial partitioning
 	struct Entry
@@ -29,7 +41,7 @@ private:
 		GameObject* gameObject = nullptr;
 	};
 
-	// grid 
+	// grid
 	struct CellCoord
 	{
 		int x, y;
@@ -68,7 +80,7 @@ private:
 		}
 	};
 
-	// persistent pairs 
+	// persistent pairs
 	struct ColliderPair
 	{
 		GameObject* a;
@@ -88,16 +100,48 @@ private:
 		}
 	};
 
-	// logic 
+	// One solvable contact pair. Built once per frame, then relaxed over several
+	// iterations. The accumulated impulses are what make multi-point manifolds
+	// stable: each iteration applies only the *delta* needed to reach the clamped
+	// total, so the two contact points stop undoing each other's work.
+	struct ContactConstraint
+	{
+		Rigidbody2DComponent* a = nullptr;
+		Rigidbody2DComponent* b = nullptr;
+
+		CollisionManifold manifold;
+
+		// contact offsets from each body's center, cached (positions don't move
+		// during velocity iterations)
+		DirectX::XMFLOAT2 rA[2]{};
+		DirectX::XMFLOAT2 rB[2]{};
+
+		// effective masses along normal / tangent, cached
+		float normalMass[2]{};
+		float tangentMass[2]{};
+
+		// accumulated impulses across iterations
+		float normalImpulse[2]{};
+		float tangentImpulse[2]{};
+
+		float restitution = 0.f;
+		float friction = 0.f;
+	};
+
+	// logic
 
 	void IntegrateForces(float deltaTime);
 	void RebuildGrid();
 	std::vector<EntryPair> GenerateCandidatePairs();
 	void ProcessPairs(const std::vector<EntryPair>& candidates);
-	void ResolveCollision(Rigidbody2DComponent* a, Rigidbody2DComponent* b, const CollisionManifold& manifold);
+
+	void BuildConstraint(Entry* entryA, Entry* entryB, const CollisionManifold& manifold);
+	void SolveVelocityConstraint(ContactConstraint& constraint) const;
+	void CorrectPositions(const ContactConstraint& constraint) const;
 
 	// helpers
-	CellCoord GetCellCoord(const DirectX::XMFLOAT2 worldPos) const;
+
+	CellCoord GetCellCoord(DirectX::XMFLOAT2 worldPos) const;
 
 	static EntryPair MakeCanonicalEntryPair(Entry* a, Entry* b);
 	static ColliderPair MakeCanonicalColliderPair(GameObject* a, GameObject* b);
@@ -113,4 +157,21 @@ private:
 
 	std::unordered_set<ColliderPair, ColliderPairHash> currentOverlaps;
 	std::unordered_set<ColliderPair, ColliderPairHash> previousOverlaps;
+
+	std::vector<ContactConstraint> contacts;
+
+	// solver tuning
+	int velocityIterations = 8;
+
+	// Below this approach speed, restitution is forced to 0. Without this, the
+	// -gravity * dt that integration injects every frame gets bounced back as
+	// +restitution * gravity * dt and a resting body never settles.
+	// Rule of thumb: ~2 * gravity * fixedDeltaTime.
+	float restitutionSlop = 8.f;
+
+	float positionSlop = 0.05f;
+	float positionPercent = 0.8f;
+
+	// normal.y beyond this counts as "supported" for sleep purposes (~45 degrees)
+	float supportNormalThreshold = 0.7f;
 };

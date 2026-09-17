@@ -9,47 +9,76 @@ void CameraController::Awake()
 	MonoBehavior::Awake();
 	camera = &owner->GetContext().camera;
 	ownerRb = owner->GetComponent<Rigidbody2DComponent>();
+	stackTopY = groundTopY;
 }
 
 void CameraController::LateUpdate(float deltaTime)
 {
-	float highestY = groundTopY;
+    float highestY = groundTopY;
+    bool  foundSettled = false;
 
-	for (auto& obj : owner->GetContext().gameScene->GetObjects())
-	{
-		if (obj->GetTag() != ObjectTag::Block)
-		{
-			continue;
-		}
+    for (auto& obj : owner->GetContext().gameScene->GetObjects())
+    {
+        if (obj.get() == owner)                continue;
+        if (obj->GetTag() != ObjectTag::Block) continue;
 
-		const auto* rb = obj->GetComponent<Rigidbody2DComponent>();
-		if (rb && abs(rb->GetVelocity().y) > settleSpeed)
-		{
-			continue;
-		}
+        const auto* rb = obj->GetComponent<Rigidbody2DComponent>();
+        if (rb && !rb->IsSleeping() && std::abs(rb->GetVelocity().y) > settleSpeed)
+        {
+            continue;
+        }
 
-		if (const auto* collider = obj->GetComponent<BoxCollider2D>())
-		{
-			highestY = std::max(highestY, collider->GetWorldAABB().max.y);
-		}
-	}
+        if (const auto* collider = obj->GetComponent<BoxCollider2D>())
+        {
+            highestY = std::max(highestY, collider->GetWorldAABB().max.y);
+            foundSettled = true;
+        }
+    }
 
-	float targetY = highestY + stackOffset;
-	targetY = std::max(targetY, camera->GetPosition().y);
+    // whole tower airborne -> keep the last height instead of collapsing to the ground
+    if (foundSettled)
+    {
+        stackTopY = highestY;
+    }
 
-	const float t = 1.f - exp(-followLambda * deltaTime);
-	DirectX::XMFLOAT2 camPos = camera->GetPosition();
-	camPos.y += (targetY - camPos.y) * t;
-	camera->SetPosition(camPos);
+    const float camY = camera->GetPosition().y;
+    const float target = stackTopY + stackOffset;
+    const float delta = target - camY;
 
-	DirectX::XMFLOAT3 playerPos = owner->GetTransform()->GetPosition();
-	playerPos.y = camPos.y + playerOffset;
-	owner->GetTransform()->SetPosition(playerPos);
+    float lambda = 0.f;
+    if (delta > deadZone)
+    {
+        lambda = riseLambda;
+        fallTimer = 0.f;
+    }
+    else if (delta < -deadZone)
+    {
+        fallTimer += deltaTime;
+        if (fallTimer >= fallDelay)
+        {
+            lambda = fallLambda;
+        }
+    }
+    else
+    {
+        fallTimer = 0.f;
+    }
 
-	if (ownerRb)
-	{
-		ownerRb->SetVelocity({ ownerRb->GetVelocity().x, 0.f });
-	}
+    DirectX::XMFLOAT2 camPos = camera->GetPosition();
+    if (lambda > 0.f)
+    {
+        camPos.y += delta * (1.f - std::exp(-lambda * deltaTime));
+        camera->SetPosition(camPos);
+    }
+
+    DirectX::XMFLOAT3 playerPos = owner->GetTransform()->GetPosition();
+    playerPos.y = camPos.y + playerOffset;
+    owner->GetTransform()->SetPosition(playerPos);
+
+    if (ownerRb)
+    {
+        ownerRb->SetVelocity({ ownerRb->GetVelocity().x, 0.f });
+    }
 }
 
 

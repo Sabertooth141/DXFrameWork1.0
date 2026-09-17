@@ -14,7 +14,7 @@ public:
 
     GameObject* Instantiate(const std::string& prefab, const DirectX::XMFLOAT3& pos);
     GameObject* Add2DObject();
-    void Destroy(GameObject* go);
+    void Destroy(GameObject* object);
 
     void Update(float deltaTime);
     void FlushPending();

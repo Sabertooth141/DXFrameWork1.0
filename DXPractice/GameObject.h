@@ -108,7 +108,7 @@ public:
 	}
 
 private:
-	ObjectTag tag;
+	ObjectTag tag = ObjectTag::Default;
 	std::unordered_map<std::type_index, std::unique_ptr<IComponent>> components;
 	std::vector<std::unique_ptr<MeshComponent>> meshes;
 
