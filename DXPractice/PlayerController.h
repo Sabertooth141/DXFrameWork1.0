@@ -20,6 +20,8 @@ public:
 
 	void OnCollisionEnter2D(const GameObject& other) override;
 
+	bool GetHasSpawned() const;
+
 private:
 	float accX = 10;
 	float currSpeedX = 0;
@@ -30,6 +32,7 @@ private:
 	float accY = 10;
 	float maxSpeedY = 100;
 	float frictionY = 8;
+	float bounceBackDsit = 300.f;
 
 	float moveForce = 1000.f;
 

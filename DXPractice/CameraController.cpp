@@ -2,6 +2,7 @@
 
 #include "Camera2D.h"
 #include "GameObject.h"
+#include "PlayerController.h"
 #include "Scene.h"
 
 void CameraController::Awake()
@@ -9,11 +10,17 @@ void CameraController::Awake()
 	MonoBehavior::Awake();
 	camera = &owner->GetContext().camera;
 	ownerRb = owner->GetComponent<Rigidbody2DComponent>();
+    ownerController = owner->GetComponent<PlayerController>();
 	stackTopY = groundTopY;
 }
 
 void CameraController::LateUpdate(float deltaTime)
 {
+    if (ownerController->GetHasSpawned())
+    {
+        return;
+    }
+
     float highestY = groundTopY;
     bool  foundSettled = false;
 

@@ -10,6 +10,8 @@ void PlayerController::Start()
 	MonoBehavior::Start();
 	posX = owner->GetTransform()->GetPosition().x;
 	posY = owner->GetTransform()->GetPosition().y;
+
+	inputX = 1.f;
 }
 
 void PlayerController::Update(float deltaTime)
@@ -36,33 +38,42 @@ void PlayerController::OnDestroy()
 
 void PlayerController::HandleInput(float deltaTime)
 {
-	inputX = 0;
-	inputY = 0;
-	if (keyboard->KeyIsPressed('D'))
-	{
-		owner->GetComponent<AnimatorComponent>()->SetFlipX(false);
-		inputX += 1.f;
-	}
-	if (keyboard->KeyIsPressed('A'))
-	{
-		owner->GetComponent<AnimatorComponent>()->SetFlipX(true);
-		inputX -= 1.f;
-	}
+	//inputX = 0;
+	//inputY = 0;
+	//if (keyboard->KeyIsPressed('D'))
+	//{
+	//	owner->GetComponent<AnimatorComponent>()->SetFlipX(false);
+	//	inputX += 1.f;
+	//}
+	//if (keyboard->KeyIsPressed('A'))
+	//{
+	//	owner->GetComponent<AnimatorComponent>()->SetFlipX(true);
+	//	inputX -= 1.f;
+	//}
 
-	if (keyboard->KeyIsPressed('W'))
-	{
-		inputY += 1.f;
-	}
-	if (keyboard->KeyIsPressed('S'))
-	{
-		inputY -= 1.f;
-	}
+	//if (keyboard->KeyIsPressed('W'))
+	//{
+	//	inputY += 1.f;
+	//}
+	//if (keyboard->KeyIsPressed('S'))
+	//{
+	//	inputY -= 1.f;
+	//}
 
-	rb->AddForce({moveForce * inputX, moveForce * inputY});
+	//
 }
 
 void PlayerController::HandleAnimation(float deltaTime)
 {
+	if (inputX > 0.f)
+	{
+		owner->GetComponent<AnimatorComponent>()->SetFlipX(false);
+	}
+	else if (inputX < 0.f)
+	{
+		owner->GetComponent<AnimatorComponent>()->SetFlipX(true);
+	}
+
 	DirectX::XMFLOAT2 v = rb->GetVelocity();
 	const bool moving = std::abs(v.x) > 1.f;
 	if (!moving && owner->GetComponent<AnimatorComponent>()->GetCurrAnimName() != "CharIdle")
@@ -100,20 +111,16 @@ void PlayerController::HandleMovement(float deltaTime)
 
 	const float halfSprite = owner->GetTransform()->GetScale().x * 0.5f;
 	DirectX::XMFLOAT3 pos = owner->GetTransform()->GetPosition();
-	if (pos.x + halfSprite < -WIN_WIDTH / 2.f)
+	if (pos.x + halfSprite < -WIN_WIDTH / 2.f + bounceBackDsit)
 	{
-		pos.x = halfSprite + WIN_WIDTH / 2.f;
+		inputX = 1.f;
 	}
-	else if (pos.x - halfSprite > WIN_WIDTH / 2.f)
+	else if (pos.x - halfSprite > WIN_WIDTH / 2.f - bounceBackDsit)
 	{
-		pos.x = -halfSprite - WIN_WIDTH / 2.f;
-	}
-	else
-	{
-		return;
+		inputX = -1.f;
 	}
 
-
+	rb->AddForce({ moveForce * inputX, moveForce * inputY });
 	owner->GetTransform()->SetPosition(pos);
 }
 
@@ -137,4 +144,9 @@ void PlayerController::HandleBlockSpawn()
 void PlayerController::OnCollisionEnter2D(const GameObject& other)
 {
 	MonoBehavior::OnCollisionEnter2D(other);
+}
+
+bool PlayerController::GetHasSpawned() const
+{
+	return hasSpawned;
 }

@@ -26,7 +26,7 @@ void PhysicsTest::Update(float deltaTime)
 
 	owner->GetTransform()->SetPosition(pos);
 
-	if (owner->GetTransform()->GetPosition().y > 800.f)
+	if (owner->GetTransform()->GetPosition().y < -800.f)
 	{
 		DestroySelf();
 	}

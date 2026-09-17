@@ -39,6 +39,16 @@ public:
 		return activeProj;
 	}
 
+	Microsoft::WRL::ComPtr<ID3D11Device> GetDevice()
+	{
+		return pDevice;
+	}
+
+	Microsoft::WRL::ComPtr<ID3D11DeviceContext> GetContext()
+	{
+		return pContext;
+	}
+
 	void SetDepthEnabled(bool enabled);
 	void SetAlphaEnabled(bool enabled);
 	void SetSpriteFlip(bool flipX, bool flipY);

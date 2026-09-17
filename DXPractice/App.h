@@ -12,6 +12,7 @@
 #include "ScriptSystem.h"
 #include "Timer.h"
 #include "GameContext.h"
+#include "TextRenderer.h"
 
 class GameObject;
 class ModelReader;
@@ -23,11 +24,14 @@ public:
 	~App();
 
 	int Run();
+
 private:
 	void Init();
 	void Update(float deltaTime);
 	void HandleInput(float deltaTime);
 	void Draw(float deltaTime);
+	void DebugRender(float deltaTime);
+	void DebugTextRender(float deltaTime);
 
 private:
 	DirectX::XMFLOAT3 rotation = {};
@@ -37,6 +41,8 @@ private:
 	Window wnd;
 	Renderer renderer;
 	DebugRenderer debugRenderer;
+	TextRenderer textRenderer;
+
 	Timer timer;
 	ScriptSystem scriptSystem;
 	AnimationSystem animationSystem;
@@ -49,6 +55,11 @@ private:
 
 	std::unique_ptr<LightCBuffer> lightCBuffer;
 
+	bool gameRunning = true;
+
 	float sensitivity = 0.004f;
+
+	float playTime = 25.f;
+	float playTimer = playTime;
 };
 
