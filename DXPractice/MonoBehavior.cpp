@@ -16,8 +16,10 @@ GameObject* MonoBehavior::Instantiate(const std::string& prefab, const DirectX::
 
 void MonoBehavior::Destroy(GameObject* object) const
 {
+	owner->GetContext().gameScene->Destroy(object);
 }
 
 void MonoBehavior::DestroySelf() const
 {
+	Destroy(owner);
 }

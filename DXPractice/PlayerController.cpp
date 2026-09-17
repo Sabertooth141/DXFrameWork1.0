@@ -93,18 +93,6 @@ void PlayerController::HandleMovement(float deltaTime)
 		}
 	}
 
-	if (inputY == 0.f)
-	{
-		if (v.y > 0.f)
-		{
-			v.y = std::max(0.f, v.y - decel);
-		}
-		else if (v.y < 0.f)
-		{
-			v.y = std::min(0.f, v.y + decel);
-		}
-	}
-
 	// clamp speed
 	v.x = std::clamp(v.x, -maxSpeedX, maxSpeedX);
 	v.y = std::clamp(v.y, -maxSpeedX, maxSpeedX);
@@ -119,14 +107,6 @@ void PlayerController::HandleMovement(float deltaTime)
 	else if (pos.x - halfSprite > WIN_WIDTH / 2.f)
 	{
 		pos.x = -halfSprite - WIN_WIDTH / 2.f;
-	}
-	else if (pos.y + halfSprite < -WIN_HEIGHT / 2.f)
-	{
-		pos.y = halfSprite + WIN_HEIGHT / 2.f;
-	}
-	else if (pos.y - halfSprite > WIN_HEIGHT / 2.f)
-	{
-		pos.y = -halfSprite - WIN_HEIGHT / 2.f;
 	}
 	else
 	{

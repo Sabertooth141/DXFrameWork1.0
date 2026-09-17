@@ -15,7 +15,7 @@ struct GameContext
     ScriptSystem& scriptSys;
     AnimationSystem& animationSys;
     RenderSystem& renderSys;
+    Camera2D& camera;
 
     Scene* gameScene = nullptr;
-    Camera2D* camera = nullptr;
 };

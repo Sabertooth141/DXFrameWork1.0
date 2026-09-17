@@ -1,6 +1,7 @@
 #include "App.h"
 
 #include "AnimatorComponent.h"
+#include "CameraController.h"
 #include "CollisionTests.h"
 #include "GameObject.h"
 #include "Material.h"
@@ -9,10 +10,8 @@
 #include "PhysicsTest.h"
 #include "PlayerController.h"
 #include "PrefabRegistry.h"
-#include "SpriteAnimatorComponent.h"
 #include "SpriteRendererComponent.h"
 #include "SpriteVertex.h"
-#include "TextureCache.h"
 #include "WindowSettings.h"
 
 App::App(const std::string& cmdLine) : cmdLine(cmdLine),
@@ -20,7 +19,7 @@ App::App(const std::string& cmdLine) : cmdLine(cmdLine),
                                        renderer(wnd.GetRenderer()), debugRenderer(renderer),
                                        renderSystem(RenderSystem(renderer)),
                                        gameContext{
-	                                       renderer, physicsSystem, scriptSystem, animationSystem, renderSystem
+	                                       renderer, physicsSystem, scriptSystem, animationSystem, renderSystem, camera
                                        },
                                        scene(gameContext)
 {
@@ -70,30 +69,31 @@ void App::Init()
 
 	// player
 	MeshData quad = MakeSpriteQuad();
-	auto sprite = scene.Add2DObject();
+	auto playerObj = scene.Add2DObject();
 
-	sprite->GetTransform()->SetPosition({-128, -100, 1});
+	playerObj->GetTransform()->SetPosition({-128, -100, 1});
 
 	// physics
-	Rigidbody2DComponent* rb = &sprite->AddComponent<Rigidbody2DComponent>(*sprite->GetTransform(), 1.0f);
-	BoxCollider2D* col = &sprite->AddComponent<BoxCollider2D>(DirectX::XMFLOAT2(1, 1), DirectX::XMFLOAT2(0, 0), true,
-	                                                          *sprite->GetTransform());
-	rb->SetFreezeRotation(true);
-	rb->SetGravity(0.f);
+	Rigidbody2DComponent* playerRb = &playerObj->AddComponent<Rigidbody2DComponent>(*playerObj->GetTransform(), 1.0f);
+	BoxCollider2D* col = &playerObj->AddComponent<BoxCollider2D>(DirectX::XMFLOAT2(1, 1), DirectX::XMFLOAT2(0, 0), true,
+	                                                          *playerObj->GetTransform());
+	playerRb->SetFreezeRotation(true);
+	playerRb->SetGravity(0.f);
 
 	// animation
-	sprite->AddComponent<AnimatorComponent>(renderer);
-	sprite->GetComponent<AnimatorComponent>()->SetRenderLayer(RenderLayer::Player);
-	sprite->GetComponent<AnimatorComponent>()->SetSortOrder(0);
-	sprite->GetComponent<AnimatorComponent>()->AddAnimation("CharIdle", L"../../assets/PlayerCharacter.png",
+	playerObj->AddComponent<AnimatorComponent>(renderer);
+	playerObj->GetComponent<AnimatorComponent>()->SetRenderLayer(RenderLayer::Player);
+	playerObj->GetComponent<AnimatorComponent>()->SetSortOrder(0);
+	playerObj->GetComponent<AnimatorComponent>()->AddAnimation("CharIdle", L"../../assets/PlayerCharacter.png",
 	                                                        L"../../assets/PlayerCharacter.json");
-	sprite->GetComponent<AnimatorComponent>()->AddAnimation("CharMove", L"../../assets/PlayerCharacterMove.png",
+	playerObj->GetComponent<AnimatorComponent>()->AddAnimation("CharMove", L"../../assets/PlayerCharacterMove.png",
 	                                                        L"../../assets/PlayerCharacterMove.json");
-	sprite->GetComponent<AnimatorComponent>()->SetCurrAnimation("CharIdle");
+	playerObj->GetComponent<AnimatorComponent>()->SetCurrAnimation("CharIdle");
 
 	// script
-	sprite->AddComponent<PlayerController>();
-	sprite->GetComponent<PlayerController>()->SetInput(wnd.keyboard, wnd.mouse);
+	playerObj->AddComponent<PlayerController>();
+	playerObj->GetComponent<PlayerController>()->SetInput(wnd.keyboard, wnd.mouse);
+	playerObj->AddComponent<CameraController>();
 
 
 	//// layer test
@@ -127,8 +127,6 @@ void App::Init()
 	                                                                   false, *groundObj->GetTransform());
 	groundRb->SetIsStatic(true);
 
-	auto block = scene.Instantiate("block", DirectX::XMFLOAT3(200, 200, 1));
-	scene.Instantiate("block", DirectX::XMFLOAT3(120, 0, 1));
 	//block->GetComponent<Rigidbody2DComponent>()->SetFreezeRotation(true);
 
 	wnd.mouse.EnableRaw();
@@ -162,6 +160,9 @@ void App::Draw(float deltaTime)
 	{
 		lightCBuffer->Bind(renderer);
 	}
+
+	renderer.SetView(camera.GetView());
+	renderer.Set2DMode();
 
 	renderSystem.Render();
 	debugRenderer.Begin();

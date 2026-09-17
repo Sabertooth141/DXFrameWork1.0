@@ -3,6 +3,7 @@
 #include <string>
 
 #include "AnimationSystem.h"
+#include "Camera2D.h"
 #include "DebugRenderer.h"
 #include "LightCBuffer.h"
 #include "PhysicsSystem.h"
@@ -41,6 +42,7 @@ private:
 	AnimationSystem animationSystem;
 	RenderSystem renderSystem;
 	PhysicsSystem physicsSystem;
+	Camera2D camera;
 
 	GameContext gameContext;
 	Scene scene;
