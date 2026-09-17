@@ -46,7 +46,11 @@ public:
 	Keyboard& operator = (const Keyboard&) = delete;
 
 	// key events
-	bool KeyIsPressed(unsigned char keycode) const;
+	bool KeyIsPressed(unsigned char keycode) const;    // held
+	bool KeyIsTriggered(unsigned char keycode) const;  // went down this frame
+	bool KeyIsReleased(unsigned char keycode) const;   // came up this frame
+	void EndFrame();                                   // once per frame, after all Update()s
+
 	std::optional<Event> ReadKey();
 	bool KeyIsEmpty() const;
 	void FlushKey();
@@ -74,6 +78,8 @@ private:
 	static constexpr unsigned int bufferSize = 16;
 	bool autorepeatEnabled = false;
 	std::bitset<nKeys> keyStates;
+	std::bitset<nKeys> keyTriggered;
+	std::bitset<nKeys> keyReleasedFlags;
 	std::queue<Event> keyBuffer;
 	std::queue<unsigned char> charBuffer;
 };

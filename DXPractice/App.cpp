@@ -34,6 +34,7 @@ int App::Run()
 {
 	Init();
 
+	gameContext.gameScene = &scene;
 	timer.Mark();
 	while (true)
 	{
@@ -46,6 +47,8 @@ int App::Run()
 		HandleInput(deltaTime);
 		Update(deltaTime);
 		Draw(deltaTime);
+
+		wnd.keyboard.EndFrame();
 	}
 }
 
@@ -140,23 +143,15 @@ void App::Update(float deltaTime)
 	// systems
 	scriptSystem.Update(deltaTime);
 	physicsSystem.Update(deltaTime);
+	scriptSystem.LateUpdate(deltaTime);
 	animationSystem.Update(deltaTime);
+
+	// at the end for GC
 	scene.FlushPending();
 }
 
 void App::HandleInput(float deltaTime)
 {
-	if (wnd.mouse.LeftPressed())
-	{
-		if (const std::optional<Mouse::RawDelta> delta = wnd.mouse.readRawDelta())
-		{
-			//char buf[64];
-			//sprintf_s(buf, "raw x: %f, y: %f \n", delta.value().x, delta.value().y);
-			//OutputDebugStringA(buf);
-			rotation.x += delta.value().y * sensitivity;
-			rotation.y += delta.value().x * sensitivity;
-		}
-	}
 }
 
 void App::Draw(float deltaTime)

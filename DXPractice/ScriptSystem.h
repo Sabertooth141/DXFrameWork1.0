@@ -36,6 +36,17 @@ public:
 		FlushDestroyed();
 	}
 
+	void LateUpdate(float deltaTime)
+	{
+		for (const auto& script : activeScripts)
+		{
+			if (script->IsEnabled())
+			{
+				script->LateUpdate(deltaTime);
+			}
+		}
+	}
+
 	void UnregisterScript(MonoBehavior* script)
 	{
 		script->OnDestroy();
@@ -59,8 +70,8 @@ private:
 	{
 		for (auto* destroyed : destroyQueue)
 		{
-			delete destroyed;
 			std::erase(activeScripts, destroyed);
+			std::erase(pendingScripts, destroyed);
 		}
 		destroyQueue.clear();
 	}

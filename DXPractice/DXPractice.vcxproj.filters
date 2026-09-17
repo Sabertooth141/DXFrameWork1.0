@@ -385,6 +385,9 @@
     <ClInclude Include="GameContext.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Camera2D.h">
+      <Filter>Header Files\GameObject</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="PixelShader.hlsl">

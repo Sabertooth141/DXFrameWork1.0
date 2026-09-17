@@ -188,6 +188,11 @@ void Renderer::SetSpriteFlip(bool flipX, bool flipY)
 	pContext->Unmap(pCBSpriteData.Get(), 0);
 }
 
+void Renderer::SetView(DirectX::XMMATRIX inView)
+{
+	viewMatrix = inView;
+}
+
 void Renderer::Set3DMode()
 {
 	SetDepthEnabled(true);

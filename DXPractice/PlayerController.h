@@ -16,6 +16,7 @@ public:
 	void HandleInput(float deltaTime);
 	void HandleAnimation(float deltaTime);
 	void HandleMovement(float deltaTime);
+	void HandleBlockSpawn();
 
 	void OnCollisionEnter2D(const GameObject& other) override;
 
@@ -36,5 +37,7 @@ private:
 
 	float inputX = 0;
 	float inputY = 0;
+
+	bool hasSpawned = false;
 };
 

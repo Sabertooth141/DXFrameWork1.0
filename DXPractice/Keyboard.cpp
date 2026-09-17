@@ -5,6 +5,22 @@ bool Keyboard::KeyIsPressed(unsigned char keycode) const
 	return keyStates[keycode];
 }
 
+bool Keyboard::KeyIsTriggered(unsigned char keycode) const
+{
+	return keyTriggered[keycode];
+}
+
+bool Keyboard::KeyIsReleased(unsigned char keycode) const
+{
+	return keyReleasedFlags[keycode];
+}
+
+void Keyboard::EndFrame()
+{
+	keyTriggered.reset();
+	keyReleasedFlags.reset();
+}
+
 std::optional<Keyboard::Event> Keyboard::ReadKey()
 {
 	if (keyBuffer.empty())
@@ -65,6 +81,10 @@ bool Keyboard::AutorepeatIsEnabled() const
 
 void Keyboard::OnKeyPressed(unsigned char keycode)
 {
+	if (!keyStates[keycode])           // ignores autorepeat
+	{
+		keyTriggered[keycode] = true;
+	}
 	keyStates[keycode] = true;
 	keyBuffer.emplace(Keyboard::Event::Type::Pressed, keycode);
 	TrimBuffer(keyBuffer);
@@ -72,6 +92,10 @@ void Keyboard::OnKeyPressed(unsigned char keycode)
 
 void Keyboard::OnKeyReleased(unsigned char keycode)
 {
+	if (keyStates[keycode])
+	{
+		keyReleasedFlags[keycode] = true;
+	}
 	keyStates[keycode] = false;
 	keyBuffer.emplace(Keyboard::Event::Type::Released, keycode);
 	TrimBuffer(keyBuffer);
@@ -86,6 +110,8 @@ void Keyboard::OnChar(unsigned char character)
 void Keyboard::ClearState()
 {
 	keyStates.reset();
+	keyTriggered.reset();
+	keyReleasedFlags.reset();
 }
 
 template <typename T>

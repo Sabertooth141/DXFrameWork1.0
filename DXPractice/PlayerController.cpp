@@ -19,6 +19,7 @@ void PlayerController::Update(float deltaTime)
 	HandleInput(deltaTime);
 	HandleMovement(deltaTime);
 	HandleAnimation(deltaTime);
+	HandleBlockSpawn();
 }
 
 void PlayerController::Awake()
@@ -119,7 +120,7 @@ void PlayerController::HandleMovement(float deltaTime)
 	{
 		pos.x = -halfSprite - WIN_WIDTH / 2.f;
 	}
-	else if (pos.y + halfSprite < -WIN_HEIGHT/ 2.f)
+	else if (pos.y + halfSprite < -WIN_HEIGHT / 2.f)
 	{
 		pos.y = halfSprite + WIN_HEIGHT / 2.f;
 	}
@@ -132,7 +133,25 @@ void PlayerController::HandleMovement(float deltaTime)
 		return;
 	}
 
+
 	owner->GetTransform()->SetPosition(pos);
+}
+
+void PlayerController::HandleBlockSpawn()
+{
+	if (keyboard->KeyIsTriggered(' '))
+	{
+		if (hasSpawned)
+		{
+			return;
+		}
+		hasSpawned = true;
+		Instantiate("block", owner->GetTransform()->GetPosition());
+	}
+	if (keyboard->KeyIsReleased(' '))
+	{
+		hasSpawned = false;
+	}
 }
 
 void PlayerController::OnCollisionEnter2D(const GameObject& other)

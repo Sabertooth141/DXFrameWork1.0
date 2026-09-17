@@ -42,6 +42,7 @@ public:
 	void SetDepthEnabled(bool enabled);
 	void SetAlphaEnabled(bool enabled);
 	void SetSpriteFlip(bool flipX, bool flipY);
+	void SetView(DirectX::XMMATRIX inView);
 
 	void Set3DMode();
 	void Set2DMode();

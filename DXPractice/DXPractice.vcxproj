@@ -82,6 +82,7 @@
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg">
     <VcpkgEnableManifest>true</VcpkgEnableManifest>
+    <VcpkgAdditionalInstallOptions>--overlay-triplets=$(SolutionDir)triplets</VcpkgAdditionalInstallOptions>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -201,6 +202,7 @@
     <ClInclude Include="App.h" />
     <ClInclude Include="Bindable.h" />
     <ClInclude Include="BoxCollider2D.h" />
+    <ClInclude Include="Camera2D.h" />
     <ClInclude Include="Collider2D.h" />
     <ClInclude Include="CollisionDispatch.h" />
     <ClInclude Include="CollisionTests.h" />
