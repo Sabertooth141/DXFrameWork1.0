@@ -88,4 +88,14 @@ void CameraController::LateUpdate(float deltaTime)
     }
 }
 
+float CameraController::GetStackTopY()
+{
+    return stackTopY;
+}
+
+float CameraController::GetGroundTop()
+{
+    return groundTopY;
+}
+
 

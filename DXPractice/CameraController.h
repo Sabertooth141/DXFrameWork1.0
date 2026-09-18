@@ -12,10 +12,14 @@ public:
 	void Awake() override;
 	void LateUpdate(float deltaTime) override;
 
+    float GetStackTopY();
+
 	void SetGroundTop(float y)
 	{
 		groundTopY = y;
 	}
+
+    float GetGroundTop();
 
 private:
 	Camera2D* camera = nullptr;

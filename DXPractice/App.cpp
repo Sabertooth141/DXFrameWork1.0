@@ -69,7 +69,7 @@ void App::Init()
 
 	// player
 	MeshData quad = MakeSpriteQuad();
-	auto playerObj = scene.Add2DObject();
+	playerObj = scene.Add2DObject();
 
 	playerObj->GetTransform()->SetPosition({-128, -100, 1});
 
@@ -170,16 +170,25 @@ void App::HandleInput(float deltaTime)
 void App::Draw(float deltaTime)
 {
 	renderer.BeginFrame(0, 0, 0);
+	textRenderer.Begin();
 
-	if (!gameRunning)
+	if (gameRunning)
 	{
-		return;
+		DebugRender(deltaTime);
+		DebugTextRender(deltaTime);
+		debugRenderer.Flush(renderer);
+	}
+	else
+	{
+		textRenderer.DrawScreen("ゲームオーバー", {WIN_WIDTH * 0.5f, 150.f},
+		                        TextColor::Yellow, 3.f, TextAlign::Center);
+		CameraController* camera = playerObj->GetComponent<CameraController>();
+
+		textRenderer.DrawScreen(
+			std::format("タワーの高さ: {:.2f}", camera->GetStackTopY() - camera->GetGroundTop()),
+			{WIN_WIDTH * 0.5f, 200.f}, TextColor::Yellow, 1.f, TextAlign::Center);
 	}
 
-	DebugRender(deltaTime);
-	DebugTextRender(deltaTime);
-
-	debugRenderer.Flush(renderer);
 	textRenderer.Flush(renderer);
 	renderer.EndFrame();
 }
@@ -207,7 +216,10 @@ void App::DebugTextRender(float deltaTime)
 	textRenderer.DebugLine("objects %zu", scene.GetObjects().size());
 	textRenderer.DebugLine(TextColor::Cyan, "cam y %.0f", camera.GetPosition().y);
 
-	textRenderer.DrawScreen("タワー", {WIN_WIDTH * 0.5f, 24.f}, TextColor::Yellow, 1.f, TextAlign::Center);
+	CameraController* camera = playerObj->GetComponent<CameraController>();
+
+	textRenderer.DrawScreen(std::format("タワーの高さ: {:.2f}", camera->GetStackTopY() + camera->GetGroundTop()),
+	                        {WIN_WIDTH * 0.5f, 24.f}, TextColor::Yellow, 1.f, TextAlign::Center);
 
 	textRenderer.DrawScreen(std::format("残り時間: {:.2f}", playTimer), {WIN_WIDTH * 0.5f, 40.f}, TextColor::Yellow, 1.f,
 	                        TextAlign::Center);

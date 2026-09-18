@@ -61,5 +61,7 @@ private:
 
 	float playTime = 25.f;
 	float playTimer = playTime;
+
+	GameObject* playerObj = nullptr;
 };
 
