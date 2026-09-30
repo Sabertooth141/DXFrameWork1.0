@@ -186,7 +186,7 @@ void App::Draw(float deltaTime)
 
 		textRenderer.DrawScreen(
 			std::format("タワーの高さ: {:.2f}", camera->GetStackTopY() - camera->GetGroundTop()),
-			{WIN_WIDTH * 0.5f, 200.f}, TextColor::Yellow, 1.f, TextAlign::Center);
+			{WIN_WIDTH * 0.5f, 300.f}, TextColor::Yellow, 1.f, TextAlign::Center);
 	}
 
 	textRenderer.Flush(renderer);
@@ -218,7 +218,7 @@ void App::DebugTextRender(float deltaTime)
 
 	CameraController* camera = playerObj->GetComponent<CameraController>();
 
-	textRenderer.DrawScreen(std::format("タワーの高さ: {:.2f}", camera->GetStackTopY() + camera->GetGroundTop()),
+	textRenderer.DrawScreen(std::format("タワーの高さ: {:.2f}", camera->GetStackTopY() - camera->GetGroundTop()),
 	                        {WIN_WIDTH * 0.5f, 24.f}, TextColor::Yellow, 1.f, TextAlign::Center);
 
 	textRenderer.DrawScreen(std::format("残り時間: {:.2f}", playTimer), {WIN_WIDTH * 0.5f, 40.f}, TextColor::Yellow, 1.f,

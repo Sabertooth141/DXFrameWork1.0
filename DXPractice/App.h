@@ -59,7 +59,7 @@ private:
 
 	float sensitivity = 0.004f;
 
-	float playTime = 25.f;
+	float playTime = 30.f;
 	float playTimer = playTime;
 
 	GameObject* playerObj = nullptr;
