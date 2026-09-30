@@ -67,17 +67,18 @@ void Scene::FlushPending()
 		}
 
 		context.renderSys.Unregister(object);
-
-		std::erase_if(objects, [this](const std::unique_ptr<GameObject>& p)
-		{
-			return std::ranges::find(pendingDestroy, p.get()) != pendingDestroy.end();
-		});
 	}
+
+	std::erase_if(objects, [this](const std::unique_ptr<GameObject>& p)
+	{
+		return std::ranges::find(pendingDestroy, p.get()) != pendingDestroy.end();
+	});
 	pendingDestroy.clear();
 
 	for (auto& object : pendingSpawn)
 	{
 		objects.push_back(std::move(object));
 	}
+
 	pendingSpawn.clear();
 }
