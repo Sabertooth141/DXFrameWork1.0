@@ -1,5 +1,6 @@
 #pragma once
 
+class SceneManager;
 class Camera2D;
 class Renderer;
 class PhysicsSystem;
@@ -7,15 +8,26 @@ class ScriptSystem;
 class AnimationSystem;
 class RenderSystem;
 class Scene;
+class Keyboard;
+class Mouse;
+
+struct GlobalContext
+{
+};
 
 struct GameContext
 {
-    Renderer& renderer;
-    PhysicsSystem& physicsSys;
-    ScriptSystem& scriptSys;
-    AnimationSystem& animationSys;
-    RenderSystem& renderSys;
-    Camera2D& camera;
+	Renderer& renderer;
+	PhysicsSystem& physicsSys;
+	ScriptSystem& scriptSys;
+	AnimationSystem& animationSys;
+	RenderSystem& renderSys;
+	Camera2D& camera;
 
-    Scene* gameScene = nullptr;
+	Keyboard& keyboard;
+	Mouse& mouse;
+
+	Scene* gameScene = nullptr;
+	SceneManager* sceneManager = nullptr;
+	GlobalContext globalContext;
 };

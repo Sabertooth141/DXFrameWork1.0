@@ -4,6 +4,9 @@
 
 Renderer::Renderer(HWND hWnd, int width, int height)
 {
+	screenWidth = width;
+	screenHeight = height;
+
 	// device & swap chain
 	DXGI_SWAP_CHAIN_DESC sd = {};
 	sd.BufferDesc.Width = width;
@@ -54,7 +57,7 @@ Renderer::Renderer(HWND hWnd, int width, int height)
 	pDevice->CreateDepthStencilState(&dsOn, &pDSStateOn);
 
 	// depth OFF for 2D
-	D3D11_DEPTH_STENCIL_DESC dsOff= {};
+	D3D11_DEPTH_STENCIL_DESC dsOff = {};
 	dsOff.DepthEnable = FALSE;
 	dsOff.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
 	pDevice->CreateDepthStencilState(&dsOff, &pDSStateOff);
@@ -129,9 +132,9 @@ Renderer::Renderer(HWND hWnd, int width, int height)
 	// view and proj / ortho matrices
 	viewMatrix = DirectX::XMMatrixLookAtLH(
 
-		{0, 0, -5}, // camera position
-		{0, 0, 0}, // look target
-		{0, 1, 0} // up
+		{ 0, 0, -5 }, // camera position
+		{ 0, 0, 0 }, // look target
+		{ 0, 1, 0 } // up
 
 	);
 
@@ -144,6 +147,13 @@ Renderer::Renderer(HWND hWnd, int width, int height)
 	);
 
 	orthoMatrix = DirectX::XMMatrixOrthographicLH(
+		static_cast<float>(width),
+		static_cast<float>(height),
+		0.1f,
+		100.0f
+	);
+
+	uiOrthoMatrix = DirectX::XMMatrixOrthographicLH(
 		static_cast<float>(width),
 		static_cast<float>(height),
 		0.1f,
@@ -207,9 +217,11 @@ void Renderer::Set2DMode()
 	activeProj = orthoMatrix;
 }
 
+
+
 void Renderer::BeginFrame(float r, float g, float b)
 {
-	const float color[] = {r, g, b, 1};
+	const float color[] = { r, g, b, 1 };
 	pContext->ClearRenderTargetView(pRTV.Get(), color);
 	pContext->ClearDepthStencilView(pDSV.Get(), D3D11_CLEAR_DEPTH, 1, 0);
 }
@@ -222,4 +234,15 @@ void Renderer::EndFrame()
 void Renderer::DrawIndexed(UINT count)
 {
 	pContext->DrawIndexed(count, 0, 0);
+}
+
+
+void Renderer::Set2DViewRange(float range)  //視野の拡大
+{
+	orthoMatrix = DirectX::XMMatrixOrthographicLH(
+		static_cast<float>(screenWidth) * range,
+		static_cast<float>(screenHeight) * range,
+		0.1f,
+		100.0f
+	);
 }

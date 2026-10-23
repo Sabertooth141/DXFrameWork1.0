@@ -2,7 +2,9 @@
   "name": "dxpractice",
   "version": "0.1.0",
   "dependencies": [
-    "assimp"
+    "assimp",
+    { "name": "imgui", "features": ["dx11-binding", "win32-binding"] },
+    "nlohmann-json"
   ],
   "builtin-baseline": "9849e070ad4c3383890fb1c80ae0c54325e2484a"
 }

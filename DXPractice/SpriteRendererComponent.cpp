@@ -38,4 +38,8 @@ void SpriteRendererComponent::Render() const
     {
         mesh->Draw(renderer);
     }
+
+    renderer.SetEnableScreenSpace(isInScreenSpace);
+    for (auto& mesh : owner->GetMeshes()) mesh->Draw(renderer);
+    renderer.SetEnableScreenSpace(false);
 }

@@ -103,7 +103,7 @@ public:
 
 	DirectX::XMFLOAT2 GetVelAtPoint(const DirectX::XMFLOAT2 r) const
 	{
-		return { velocity.x - angularVel * r.y, velocity.y + angularVel * r.x };
+		return {velocity.x - angularVel * r.y, velocity.y + angularVel * r.x};
 	}
 
 	bool IsStatic() const
@@ -116,6 +116,16 @@ public:
 		return transformComp;
 	}
 
+	float GetGravity() const
+	{
+		return gravity;
+	}
+
+	bool IsFreezeRotation() const
+	{
+		return freezeRotation;
+	}
+
 	// physics sys
 	void Integrate(float deltaTime);
 	void ClearAccumulator();
@@ -124,9 +134,16 @@ public:
 
 	void Wake();
 	void UpdateSleep(float deltaTime);
-	bool IsSleeping() const { return isSleeping; }
-	void MarkSupported() { hasSupport = true; }
 
+	bool IsSleeping() const
+	{
+		return isSleeping;
+	}
+
+	void MarkSupported()
+	{
+		hasSupport = true;
+	}
 
 private:
 	TransformComponent& transformComp;

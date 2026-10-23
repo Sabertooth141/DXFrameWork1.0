@@ -8,11 +8,13 @@
 #include "LightCBuffer.h"
 #include "PhysicsSystem.h"
 #include "RenderSystem.h"
-#include "Scene.h"
 #include "ScriptSystem.h"
 #include "Timer.h"
 #include "GameContext.h"
 #include "TextRenderer.h"
+#include "EditorUI.h"
+#include "ImGuiLayer.h"
+#include "SceneManager.h"
 
 class GameObject;
 class ModelReader;
@@ -30,8 +32,9 @@ private:
 	void Update(float deltaTime);
 	void HandleInput(float deltaTime);
 	void Draw(float deltaTime);
-	void DebugRender(float deltaTime);
-	void DebugTextRender(float deltaTime);
+	void DebugRender(Scene& scene);
+	void DebugTextRender(Scene& scene, float deltaTime);
+	void DrawTextLabels(Scene& scene);
 
 private:
 	DirectX::XMFLOAT3 rotation = {};
@@ -51,17 +54,12 @@ private:
 	Camera2D camera;
 
 	GameContext gameContext;
-	Scene scene;
+	SceneManager sceneManager;
+	ImGuiLayer imGui;
+	EditorUI editor;
 
 	std::unique_ptr<LightCBuffer> lightCBuffer;
 
-	bool gameRunning = true;
-
 	float sensitivity = 0.004f;
-
-	float playTime = 30.f;
-	float playTimer = playTime;
-
-	GameObject* playerObj = nullptr;
 };
 

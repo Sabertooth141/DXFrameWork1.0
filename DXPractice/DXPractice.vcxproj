@@ -169,7 +169,9 @@
     <ClCompile Include="CollisionTests.cpp" />
     <ClCompile Include="DebugRenderer.cpp" />
     <ClCompile Include="Drawable.cpp" />
+    <ClCompile Include="EditorUI.cpp" />
     <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="ImGuiLayer.cpp" />
     <ClCompile Include="IndexBuffer.cpp" />
     <ClCompile Include="InputLayout.cpp" />
     <ClCompile Include="Keyboard.cpp" />
@@ -189,6 +191,8 @@
     <ClCompile Include="Rigidbody2DComponent.cpp" />
     <ClCompile Include="Sampler.cpp" />
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="SceneLayout.cpp" />
+    <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="SpriteAnimatorComponent.cpp" />
     <ClCompile Include="SpriteRendererComponent.cpp" />
     <ClCompile Include="TextRenderer.cpp" />
@@ -213,12 +217,14 @@
     <ClInclude Include="CollisionDispatch.h" />
     <ClInclude Include="CollisionTests.h" />
     <ClInclude Include="DebugRenderer.h" />
+    <ClInclude Include="EditorUI.h" />
     <ClInclude Include="GameContext.h" />
     <ClInclude Include="IComponent.h" />
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="Drawable.h" />
     <ClInclude Include="DrawableBase.h" />
     <ClInclude Include="GameObject.h" />
+    <ClInclude Include="ImGuiLayer.h" />
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="LightCBuffer.h" />
@@ -230,6 +236,7 @@
     <ClInclude Include="ModelReader.h" />
     <ClInclude Include="MonoBehavior.h" />
     <ClInclude Include="Mouse.h" />
+    <ClInclude Include="ObjectTags.h" />
     <ClInclude Include="PhysicsSystem.h" />
     <ClInclude Include="PhysicsTest.h" />
     <ClInclude Include="PlayerController.h" />
@@ -239,12 +246,15 @@
     <ClInclude Include="Rigidbody2DComponent.h" />
     <ClInclude Include="Sampler.h" />
     <ClInclude Include="Scene.h" />
+    <ClInclude Include="SceneLayout.h" />
+    <ClInclude Include="SceneManager.h" />
     <ClInclude Include="ScriptSystem.h" />
     <ClInclude Include="SpriteAnimatorComponent.h" />
     <ClInclude Include="SpriteRendererComponent.h" />
     <ClInclude Include="SpriteRenderSystem.h" />
     <ClInclude Include="SpriteVertex.h" />
     <ClInclude Include="stb_image.h" />
+    <ClInclude Include="TextLabel.h" />
     <ClInclude Include="TextRenderer.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TextureCache.h" />
@@ -265,13 +275,13 @@
     <ClInclude Include="WindowSettings.h" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="DebugPixelShader.hlsl">
+    <FxCompile Include="ColorPixelShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
-    <FxCompile Include="DebugVertexShader.hlsl">
+    <FxCompile Include="ColorVertexShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>

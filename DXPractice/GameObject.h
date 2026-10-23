@@ -11,21 +11,13 @@
 #include "ScriptSystem.h"
 #include "RenderSystem.h"
 #include "GameContext.h"
+#include "ObjectTags.h"
 
 class Rigidbody2DComponent;
 class PhysicsSystem;
 struct GameContext;
 class ModelReader;
 class Renderer;
-
-enum class ObjectTag : uint8_t
-{
-	Default,
-	Enemy,
-	Player,
-	Block,
-	Ground
-};
 
 class GameObject
 {
@@ -80,6 +72,23 @@ public:
 		return nullptr;
 	}
 
+	template <typename T>
+	const T* GetComponent() const
+	{
+		auto it = components.find(typeid(T));
+		if (it == components.end()) return nullptr;
+		return static_cast<const T*>(it->second.get());
+	}
+
+	const TransformComponent* GetTransform() const { return GetComponent<TransformComponent>(); }
+
+	const std::string& GetName() const { return objName; }
+	void SetName(const std::string& n) { objName = n; }
+	std::string GetPrefabName() const { return prefabName; }
+	void SetPrefabName(const std::string& n) { prefabName = n; }
+	bool IsLayoutObject() const { return isLayoutObject; }
+	void SetLayoutObject(bool b) { isLayoutObject = b; }
+
 	void NotifyColliderEnter2D(const GameObject& other) const;
 	void NotifyColliderStay2D(const GameObject& other) const;
 	void NotifyColliderLeave2D(const GameObject& other) const;
@@ -108,7 +117,7 @@ public:
 	}
 
 private:
-	ObjectTag tag = ObjectTag::Default;
+	ObjectTag tag = ObjectTag::DEFAULT;
 	std::unordered_map<std::type_index, std::unique_ptr<IComponent>> components;
 	std::vector<std::unique_ptr<MeshComponent>> meshes;
 
@@ -118,4 +127,8 @@ private:
 	AnimationSystem* animationSystem = nullptr;
 	RenderSystem* renderSystem = nullptr;
 	PhysicsSystem* physicsSystem = nullptr;
+
+	std::string objName = "GameObject";
+	std::string prefabName;
+	bool isLayoutObject = false;
 };

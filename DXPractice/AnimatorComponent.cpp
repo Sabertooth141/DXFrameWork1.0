@@ -12,7 +12,7 @@ AnimatorComponent::AnimatorComponent(Renderer& renderer) : renderer(renderer), c
 }
 
 void AnimatorComponent::AddAnimation(const std::string& animName, const std::wstring& spritePath,
-                                     const std::wstring& spriteJson)
+	const std::wstring& spriteJson)
 {
 	auto it = animations.find(animName);
 	// stop if animation name already exists
@@ -25,13 +25,14 @@ void AnimatorComponent::AddAnimation(const std::string& animName, const std::wst
 	auto spriteRenderer = std::make_unique<SpriteRendererComponent>(renderer, srv.Get());
 	spriteRenderer->layer = renderLayer;
 	spriteRenderer->sortOrder = sortOrder;
+	spriteRenderer->isInScreenSpace = isInScreenSpace;
 
 	spriteRenderer->owner = owner;
 	auto spriteAnimator = std::make_unique<SpriteAnimatorComponent>(*spriteRenderer, spriteJson);
 	spriteAnimator->owner = owner;
 
-	owner->GetTransform()->SetScale({spriteAnimator->GetFrameSize().x, spriteAnimator->GetFrameSize().y, 1});
-	animations[animName] = {animName, std::move(spriteRenderer), std::move(spriteAnimator)};
+	owner->GetTransform()->SetScale({ spriteAnimator->GetFrameSize().x, spriteAnimator->GetFrameSize().y, 1 });
+	animations[animName] = { animName, std::move(spriteRenderer), std::move(spriteAnimator) };
 }
 
 void AnimatorComponent::SetStatic(const std::wstring& spritePath)
@@ -40,12 +41,14 @@ void AnimatorComponent::SetStatic(const std::wstring& spritePath)
 	auto spriteRenderer = std::make_unique<SpriteRendererComponent>(renderer, srv.Get());
 	spriteRenderer->layer = renderLayer;
 	spriteRenderer->sortOrder = sortOrder;
+	spriteRenderer->isInScreenSpace = isInScreenSpace;
+
 	spriteRenderer->owner = owner;
 	auto spriteAnimator = std::make_unique<SpriteAnimatorComponent>(*spriteRenderer, 1, 1, 1);
 	spriteAnimator->owner = owner;
 
-	owner->GetTransform()->SetScale({spriteAnimator->GetFrameSize().x, spriteAnimator->GetFrameSize().y, 1});
-	animations["Static"] = {"Static", std::move(spriteRenderer), std::move(spriteAnimator)};
+	owner->GetTransform()->SetScale({ spriteAnimator->GetFrameSize().x, spriteAnimator->GetFrameSize().y, 1 });
+	animations["Static"] = { "Static", std::move(spriteRenderer), std::move(spriteAnimator) };
 
 	SetCurrAnimation("Static");
 }
@@ -80,6 +83,12 @@ void AnimatorComponent::Update(float deltaTime)
 
 void AnimatorComponent::Render()
 {
+	if (!enabled)
+	{
+		return;
+	}
+
+
 	if (currAnimation->spriteRenderer.get() == nullptr)
 	{
 		return;
@@ -125,5 +134,15 @@ void AnimatorComponent::SetFlipY(const bool inFlip) const
 	for (auto& entry : animations)
 	{
 		entry.second.spriteRenderer->flipY = inFlip;
+	}
+}
+
+void AnimatorComponent::SetEnableScreenSpace(const bool enabled)
+{
+	isInScreenSpace = enabled;
+
+	for (auto& [name, entry] : animations)
+	{
+		entry.spriteRenderer->isInScreenSpace = isInScreenSpace;
 	}
 }
