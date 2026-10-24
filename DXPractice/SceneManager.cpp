@@ -126,7 +126,7 @@ void SceneManager::SwitchToScene(const std::string& inSceneName)
 		currScene.reset();
 	}
 
-	context.camera.SetPosition({0.f, 0.f});
+	context.cam2D.SetPosition({0.f, 0.f});
 
 	currScene = factories.at(inSceneName)(context);
 	currName = inSceneName;

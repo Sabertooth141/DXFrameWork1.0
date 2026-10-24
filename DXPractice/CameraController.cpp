@@ -8,7 +8,7 @@
 void CameraController::Awake()
 {
 	MonoBehavior::Awake();
-	camera = &owner->GetContext().camera;
+	camera = &owner->GetContext().cam2D;
 }
 
 void CameraController::LateUpdate(float deltaTime)

@@ -30,6 +30,11 @@ public:
 		}
 	}
 
+	bool IsEmpty() const
+	{
+		return renderers.empty();
+	}
+
 private:
 	void SortIfDirty()
 	{

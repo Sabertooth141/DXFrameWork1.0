@@ -16,4 +16,7 @@ struct LightData
 	float attLin;
 	float attQuad;
 	float padding2;
+
+	DirectX::XMFLOAT3 camPos;	// for specualr highlight
+	float padding3;
 };

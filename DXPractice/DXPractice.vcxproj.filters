@@ -109,6 +109,21 @@
     <Filter Include="Header Files\Scene">
       <UniqueIdentifier>{cf69b3a6-96c6-40bb-8eac-2e3fe8ff4920}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Camera">
+      <UniqueIdentifier>{f3e8b9db-4786-4607-8eef-7bca398ffd3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Components\Mesh">
+      <UniqueIdentifier>{39526969-50fb-4252-a2fc-f9a5651d6955}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Components\Mesh">
+      <UniqueIdentifier>{18a7ab2b-a4c7-4772-ab5c-ab8b0ebe9e7c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Scene\GameScenes">
+      <UniqueIdentifier>{c0cdbee5-b233-4b98-9415-d312db4bc3da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Scene\GameScenes">
+      <UniqueIdentifier>{d562d34a-4c96-4603-ba9d-c860ad0eb9d4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Image Include="small.ico">
@@ -163,9 +178,6 @@
     </ClCompile>
     <ClCompile Include="MaterialCBuffer.cpp">
       <Filter>Source Files\Graphics\Bindable</Filter>
-    </ClCompile>
-    <ClCompile Include="MeshComponent.cpp">
-      <Filter>Source Files\Components</Filter>
     </ClCompile>
     <ClCompile Include="MaterialComponent.cpp">
       <Filter>Source Files\Components</Filter>
@@ -248,6 +260,18 @@
     <ClCompile Include="SceneManager.cpp">
       <Filter>Source Files\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="MeshComponent.cpp">
+      <Filter>Source Files\Components\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshRenderSystem.cpp">
+      <Filter>Source Files\Components\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshRendererComponent.cpp">
+      <Filter>Source Files\Components\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="GameScene.cpp">
+      <Filter>Source Files\Scene\GameScenes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Win.h">
@@ -308,9 +332,6 @@
       <Filter>Header Files\Graphics\Bindable</Filter>
     </ClInclude>
     <ClInclude Include="IComponent.h">
-      <Filter>Header Files\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="MeshComponent.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
     <ClInclude Include="MaterialComponent.h">
@@ -424,9 +445,6 @@
     <ClInclude Include="GameContext.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Camera2D.h">
-      <Filter>Header Files\GameObject</Filter>
-    </ClInclude>
     <ClInclude Include="CameraController.h">
       <Filter>Header Files\Scripts</Filter>
     </ClInclude>
@@ -453,6 +471,24 @@
     </ClInclude>
     <ClInclude Include="ObjectTags.h">
       <Filter>Header Files\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera2D.h">
+      <Filter>Header Files\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera3D.h">
+      <Filter>Header Files\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshComponent.h">
+      <Filter>Header Files\Components\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshRenderSystem.h">
+      <Filter>Header Files\Components\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshRendererComponent.h">
+      <Filter>Header Files\Components\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="GameScene.h">
+      <Filter>Header Files\Scene\GameScenes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

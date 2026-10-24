@@ -171,6 +171,7 @@
     <ClCompile Include="Drawable.cpp" />
     <ClCompile Include="EditorUI.cpp" />
     <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="GameScene.cpp" />
     <ClCompile Include="ImGuiLayer.cpp" />
     <ClCompile Include="IndexBuffer.cpp" />
     <ClCompile Include="InputLayout.cpp" />
@@ -179,6 +180,8 @@
     <ClCompile Include="MaterialCBuffer.cpp" />
     <ClCompile Include="MaterialComponent.cpp" />
     <ClCompile Include="MeshComponent.cpp" />
+    <ClCompile Include="MeshRendererComponent.cpp" />
+    <ClCompile Include="MeshRenderSystem.cpp" />
     <ClCompile Include="ModelReader.cpp" />
     <ClCompile Include="MonoBehavior.cpp" />
     <ClCompile Include="Mouse.cpp" />
@@ -212,6 +215,7 @@
     <ClInclude Include="BitmapFont.h" />
     <ClInclude Include="BoxCollider2D.h" />
     <ClInclude Include="Camera2D.h" />
+    <ClInclude Include="Camera3D.h" />
     <ClInclude Include="CameraController.h" />
     <ClInclude Include="Collider2D.h" />
     <ClInclude Include="CollisionDispatch.h" />
@@ -219,6 +223,7 @@
     <ClInclude Include="DebugRenderer.h" />
     <ClInclude Include="EditorUI.h" />
     <ClInclude Include="GameContext.h" />
+    <ClInclude Include="GameScene.h" />
     <ClInclude Include="IComponent.h" />
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="Drawable.h" />
@@ -233,6 +238,8 @@
     <ClInclude Include="MaterialComponent.h" />
     <ClInclude Include="MeshComponent.h" />
     <ClInclude Include="MeshData.h" />
+    <ClInclude Include="MeshRendererComponent.h" />
+    <ClInclude Include="MeshRenderSystem.h" />
     <ClInclude Include="ModelReader.h" />
     <ClInclude Include="MonoBehavior.h" />
     <ClInclude Include="Mouse.h" />

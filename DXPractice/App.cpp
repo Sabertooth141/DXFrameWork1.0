@@ -1,6 +1,7 @@
 #include "App.h"
 #include "CollisionTests.h"
 #include "GameObject.h"
+#include "GameScene.h"
 #include "Material.h"
 #include "ModelReader.h"
 #include "PrefabRegistry.h"
@@ -11,9 +12,9 @@ App::App(const std::string& cmdLine) : cmdLine(cmdLine),
 wnd(WIN_WIDTH, WIN_HEIGHT, L"DXPractice"),
 renderer(wnd.GetRenderer()), debugRenderer(renderer),
 textRenderer(renderer, L"Consolas", 18),
-renderSystem(RenderSystem(renderer)),
+renderSystem(RenderSystem(renderer, cam2D, cam3D)),
 gameContext{
-	renderer, physicsSystem, scriptSystem, animationSystem, renderSystem, camera,
+	renderer, physicsSystem, scriptSystem, animationSystem, renderSystem, cam2D, cam3D,
 	wnd.keyboard, wnd.mouse
 },
 sceneManager(gameContext)
@@ -52,9 +53,9 @@ void App::Init()
 	RegisterCollisionTests();
 
 	//sceneManager.Register<TitleScene>("Title");
-	//sceneManager.Register<GameScene>("Game");
+	sceneManager.Register<GameScene>("Game");
 	//sceneManager.Register<ResultScene>("Result");
-	sceneManager.RequestChange(sceneManager.IsRegistered(cmdLine) ? cmdLine : "Title");
+	sceneManager.RequestChange(sceneManager.IsRegistered(cmdLine) ? cmdLine : "Game");
 
 	wnd.mouse.EnableRaw();
 	imGui.Init(wnd.GetHwnd(), renderer.GetDevice().Get(), renderer.GetContext().Get());
@@ -96,8 +97,6 @@ void App::Draw(float deltaTime)
 	textRenderer.Begin();
 
 	debugRenderer.Begin();
-	renderer.SetView(camera.GetView());
-	renderer.Set2DMode();
 	renderSystem.Render();
 
 	if (Scene* scene = sceneManager.GetCurrScene())
@@ -108,7 +107,7 @@ void App::Draw(float deltaTime)
 		scene->OnDrawUI(textRenderer);
 	}
 
-	editor.Draw(sceneManager, camera);
+	editor.Draw(sceneManager, cam2D);
 
 	debugRenderer.Flush(renderer);
 	textRenderer.Flush(renderer);
@@ -136,7 +135,7 @@ void App::DebugTextRender(Scene& scene, float deltaTime)
 	textRenderer.DebugLine("%.1f fps  (%.2f ms)", deltaTime > 0.f ? 1.f / deltaTime : 0.f, deltaTime * 1000.f);
 	textRenderer.DebugLine("scene %s", sceneManager.GetCurrSceneName().c_str());
 	textRenderer.DebugLine("objects %zu", scene.GetObjects().size());
-	textRenderer.DebugLine(TextColor::Cyan, "cam y %.0f", camera.GetPosition().y);
+	textRenderer.DebugLine(TextColor::Cyan, "cam y %.0f", cam2D.GetPosition().y);
 	if (editor.IsEditMode())
 	{
 		textRenderer.DebugLine(TextColor::Yellow, "EDIT MODE - game stopped (F1 > Play)");
@@ -145,7 +144,7 @@ void App::DebugTextRender(Scene& scene, float deltaTime)
 
 void App::DrawTextLabels(Scene& scene)
 {
-	const DirectX::XMFLOAT2 camPos = camera.GetPosition();
+	const DirectX::XMFLOAT2 camPos = cam2D.GetPosition();
 
 	for (const auto& obj : scene.GetObjects())
 	{

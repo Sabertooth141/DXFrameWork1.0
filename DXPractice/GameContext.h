@@ -22,7 +22,8 @@ struct GameContext
 	ScriptSystem& scriptSys;
 	AnimationSystem& animationSys;
 	RenderSystem& renderSys;
-	Camera2D& camera;
+	Camera2D& cam2D;
+	Camera3D& cam3D;
 
 	Keyboard& keyboard;
 	Mouse& mouse;

@@ -1,9 +1,6 @@
 #pragma once
-#include <DirectXMath.h>
-#include <string>
 
 #include "ConstantBuffer.h"
-#include "Drawable.h"
 #include "IComponent.h"
 #include "PixelShader.h"
 #include "RenderLayer.h"
