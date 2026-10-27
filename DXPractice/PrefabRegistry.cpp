@@ -11,7 +11,7 @@ void RegisterPrefabs()
 		auto& anim = object.AddComponent<AnimatorComponent>(object.GetRenderer());
 		anim.SetRenderLayer(RenderLayer::Default);
 		anim.SetSortOrder(0);
-		anim.SetStatic(L"../../assets/jinx.jpg");
+		anim.SetStatic(L"../../assets/Sprites/jinx.jpg");
 
 		object.GetTransform()->SetScale(0.05f);
 

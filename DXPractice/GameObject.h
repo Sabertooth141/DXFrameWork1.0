@@ -28,34 +28,19 @@ public:
 	// for 2d
 	GameObject(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, GameContext& context,
 	           const std::wstring& vsPath = L"SpriteVertexShader.cso", const std::wstring& psPath = L"SpritePixelShader.cso");
-	GameObject(Renderer& renderer);
+	GameObject(GameContext& context);
 
 	void Update(float deltaTime);
 
 	template <typename T, typename... Args>
 	T& AddComponent(Args&&... args)
 	{
+		static_assert(std::is_base_of_v<IComponent, T>, "T must derive from IComponent");
+
 		std::unique_ptr<T> comp = std::make_unique<T>(std::forward<Args>(args)...);
 		T& ref = *comp;
 		ref.owner = this;
-
-		if constexpr (std::is_base_of_v<MonoBehavior, T>)
-		{
-			scriptSystem->RegisterScript(&ref);
-		}
-		else if constexpr (std::is_base_of_v<AnimatorComponent, T>)
-		{
-			animationSystem->Register(&ref);
-			renderSystem->Register(&ref);
-		}
-		else if constexpr (std::is_base_of_v<Rigidbody2DComponent, T>)
-		{
-			physicsSystem->AttachRBToEntry(this, &ref);
-		}
-		else if constexpr (std::is_base_of_v<Collider2D, T>)
-		{
-			physicsSystem->AttachColliderToEntry(this, &ref);
-		}
+		ref.OnAttach(*context);
 
 		components[typeid(T)] = std::move(comp);
 		return ref;

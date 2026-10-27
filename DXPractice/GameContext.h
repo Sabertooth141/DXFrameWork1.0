@@ -1,5 +1,6 @@
 #pragma once
 
+class Camera3D;
 class SceneManager;
 class Camera2D;
 class Renderer;

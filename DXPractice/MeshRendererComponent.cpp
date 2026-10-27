@@ -22,3 +22,10 @@ void MeshRendererComponent::Render(Renderer& renderer)
 		mesh->Draw(renderer);
 	}
 }
+
+void MeshRendererComponent::OnAttach(GameContext& context)
+{
+	IComponent::OnAttach(context);
+
+	context.renderSys.Register(this);
+}

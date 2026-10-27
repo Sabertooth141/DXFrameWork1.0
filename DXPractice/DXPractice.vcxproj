@@ -177,6 +177,7 @@
     <ClCompile Include="InputLayout.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="LightCBuffer.cpp" />
+    <ClCompile Include="LightComponent.cpp" />
     <ClCompile Include="MaterialCBuffer.cpp" />
     <ClCompile Include="MaterialComponent.cpp" />
     <ClCompile Include="MeshComponent.cpp" />
@@ -233,6 +234,7 @@
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="LightCBuffer.h" />
+    <ClInclude Include="LightComponent.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="MaterialCBuffer.h" />
     <ClInclude Include="MaterialComponent.h" />

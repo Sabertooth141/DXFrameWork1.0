@@ -1,5 +1,7 @@
 #include "Rigidbody2DComponent.h"
 
+#include "GameContext.h"
+#include "PhysicsSystem.h"
 #include "TransformComponent.h"
 
 Rigidbody2DComponent::Rigidbody2DComponent(TransformComponent& inTransformComp, float inMass, bool inIsStatic) :
@@ -8,6 +10,11 @@ Rigidbody2DComponent::Rigidbody2DComponent(TransformComponent& inTransformComp, 
 	isStatic(inIsStatic)
 {
 	RefreshInv();
+}
+
+void Rigidbody2DComponent::OnAttach(GameContext& context)
+{
+	context.physicsSys.AttachRBToEntry(owner, this);
 }
 
 void Rigidbody2DComponent::AddForce(DirectX::XMFLOAT2 force)

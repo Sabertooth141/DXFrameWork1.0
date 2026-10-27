@@ -27,6 +27,8 @@ public:
 	void Update(float deltaTime) override;
 	void Render();
 
+	void OnAttach(GameContext& context) override;
+
 	bool IsEnabled() const { return enabled; }
 	void SetEnabled(bool inEnabled);
 

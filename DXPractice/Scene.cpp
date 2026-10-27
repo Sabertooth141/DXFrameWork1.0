@@ -2,6 +2,7 @@
 #include "PrefabRegistry.h"
 #include "SpriteVertex.h"
 #include "App.h"
+#include "ModelReader.h"
 
 GameObject* Scene::Instantiate(const std::string& prefab, const DirectX::XMFLOAT3& pos)
 {
@@ -46,6 +47,28 @@ GameObject* Scene::Add2DObject()
 	return objects.back().get();
 }
 
+GameObject* Scene::Add3DObject(const std::string& modelPath, const MaterialData& matData)
+{
+	if (isClearing)
+	{
+		return nullptr;
+	}
+
+	ModelReader model(context.renderer, modelPath);
+	auto object = std::make_unique<GameObject>(matData, model, context);
+	
+	objects.push_back(std::move(object));
+	return objects.back().get();
+}
+
+GameObject* Scene::AddEmptyObject()
+{
+	auto object = std::make_unique<GameObject>(context);
+
+	objects.push_back(std::move(object));
+	return objects.back().get();
+}
+
 void Scene::Destroy(GameObject* object)
 {
 	if (!object)
@@ -77,8 +100,16 @@ GameObject* Scene::InstantiateAsLayout(const std::string& prefab, const DirectX:
 void Scene::Clear()
 {
 	isClearing = true;
-	for (auto& obj : objects) UnregisterFromSys(obj.get());
-	for (auto& obj : pendingSpawn) UnregisterFromSys(obj.get());
+
+	for (auto& obj : objects)
+	{
+		UnregisterFromSys(obj.get());
+	}
+	for (auto& obj : pendingSpawn)
+	{
+		UnregisterFromSys(obj.get());
+	}
+
 	objects.clear();
 	pendingSpawn.clear();
 	pendingDestroy.clear();

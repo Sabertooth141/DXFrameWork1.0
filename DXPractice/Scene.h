@@ -22,6 +22,9 @@ public:
 	GameObject* Instantiate(const std::string& prefab, const DirectX::XMFLOAT3& pos);
 	GameObject* InstantiateAsLayout(const std::string& prefab, const DirectX::XMFLOAT3& pos);
 	GameObject* Add2DObject();
+	GameObject* Add3DObject(const std::string& modelPath, const MaterialData& matData);
+	GameObject* AddEmptyObject();
+
 	void Destroy(GameObject* object);
 
 	virtual void OnEnter()
@@ -41,7 +44,7 @@ public:
 	}
 
 	void Update(float deltaTime);
-	void Clear();
+	void Clear(); // scene uninit
 	void FlushPending();
 	bool IsPendingDestroy(const GameObject* obj) const;
 

@@ -20,6 +20,7 @@ GameObject::GameObject(const MaterialData& matData, const ModelReader& modelRead
 	{
 		meshes.push_back(std::make_unique<MeshComponent>(*renderer, meshData, transformComp));
 	}
+	AddComponent<MeshRendererComponent>();
 }
 
 GameObject::GameObject(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, GameContext& context,
@@ -37,8 +38,9 @@ GameObject::GameObject(const std::vector<Vertex>& vertices, const std::vector<un
 	meshes.push_back(std::make_unique<MeshComponent>(*renderer, mesh, transformComp));
 }
 
-GameObject::GameObject(Renderer& renderer)
+GameObject::GameObject(GameContext& context)
 {
+	this->context = &context;
 	TransformComponent& transformComp = AddComponent<TransformComponent>();
 }
 

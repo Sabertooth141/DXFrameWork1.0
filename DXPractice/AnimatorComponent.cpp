@@ -98,6 +98,12 @@ void AnimatorComponent::Render()
 	currAnimation->spriteRenderer->Render();
 }
 
+void AnimatorComponent::OnAttach(GameContext& context)
+{
+	context.animationSys.Register(this);
+	context.renderSys.Register(this);
+}
+
 void AnimatorComponent::SetEnabled(bool inEnabled)
 {
 	enabled = inEnabled;

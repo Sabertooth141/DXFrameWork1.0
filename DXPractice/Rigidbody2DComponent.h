@@ -9,6 +9,8 @@ class Rigidbody2DComponent : public IComponent
 public:
 	Rigidbody2DComponent(TransformComponent& inTransformComp, float inMass, bool inIsStatic = false);
 
+	void OnAttach(GameContext& context) override;
+
 	void AddForce(DirectX::XMFLOAT2 force);
 	void AddTorque(float inTorque);
 	void ApplyImpulse(DirectX::XMFLOAT2 impulse, DirectX::XMFLOAT2 contactVector);

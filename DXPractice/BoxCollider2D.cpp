@@ -1,4 +1,7 @@
 #include "BoxCollider2D.h"
+
+#include "GameContext.h"
+#include "PhysicsSystem.h"
 #include "TransformComponent.h"
 
 BoxCollider2D::BoxCollider2D(const DirectX::XMFLOAT2 inHalfExtents, const DirectX::XMFLOAT2 inOffset,
@@ -9,6 +12,11 @@ BoxCollider2D::BoxCollider2D(const DirectX::XMFLOAT2 inHalfExtents, const Direct
 	offset(inOffset)
 {
 	isTrigger = inIsTrigger;
+}
+
+void Collider2D::OnAttach(GameContext& context)
+{
+	context.physicsSys.AttachColliderToEntry(owner, this);
 }
 
 AABB BoxCollider2D::GetWorldAABB() const
@@ -61,3 +69,4 @@ float BoxCollider2D::ComputeInertia(const float mass) const
 
 	return mass * (w * w + h * h) / 12.0f;
 }
+

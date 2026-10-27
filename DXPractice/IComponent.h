@@ -1,5 +1,6 @@
 #pragma once
 
+struct GameContext;
 class GameObject;
 class Renderer;
 class Collider2D;
@@ -22,6 +23,10 @@ public:
 	}
 
 	virtual void OnCollisionExit2D(const GameObject& other)
+	{
+	}
+
+	virtual void OnAttach(GameContext& context)
 	{
 	}
 

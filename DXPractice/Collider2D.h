@@ -34,6 +34,8 @@ struct CollisionManifold
 class Collider2D : public IComponent
 {
 public:
+	void OnAttach(GameContext& context) override;
+
 	virtual ColliderType GetType() const = 0;
 	virtual AABB GetWorldAABB() const = 0;
 	virtual float ComputeInertia(const float mass) const = 0;
