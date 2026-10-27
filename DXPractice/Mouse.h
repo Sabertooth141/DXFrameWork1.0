@@ -32,10 +32,10 @@ public:
 	public:
 		Event(Type type, const Mouse& parent) :
 			type(type),
-			leftPressed(parent.leftPressed),
-			rightPressed(parent.rightPressed),
 			x(parent.x),
-			y(parent.y)
+			y(parent.y),
+			leftPressed(parent.leftPressed),
+			rightPressed(parent.rightPressed)
 		{
 		}
 
@@ -83,7 +83,6 @@ public:
 	Mouse& operator=(const Mouse&) = delete;
 
 	std::pair<int, int> GetPos() const;
-	std::optional<RawDelta> readRawDelta();
 	int GetPosX() const;
 	int GetPosY() const;
 	bool IsInWindow() const;
@@ -95,6 +94,7 @@ public:
 	void EnableRaw();
 	void DisableRaw();
 	bool RawEnabled() const;
+	RawDelta ConsumeRawDelta();
 
 private:
 	void OnMouseMove(int inX, int inY);
@@ -108,7 +108,6 @@ private:
 	void OnWheelUp(int inX, int inY);
 	void OnWheelDown(int inX, int inY);
 	void TrimBuffer();
-	void TrimRawInputBuffer();
 	void OnWheelDelta(int inX, int inY, int inDelta);
 
 private:
@@ -121,5 +120,5 @@ private:
 	int wheelDeltaCarry = 0;
 	bool rawEnabled = false;
 	std::queue<Event> buffer;
-	std::queue<RawDelta> rawDeltaBuffer;
+	RawDelta rawAccum = {0, 0};
 };

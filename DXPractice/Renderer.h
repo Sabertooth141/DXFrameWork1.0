@@ -43,6 +43,16 @@ public:
 		return activeProj;
 	}
 
+	DirectX::XMMATRIX Get3DProj()
+	{
+		return projMatrix;
+	}
+
+	DirectX::XMMATRIX GetUIProj()
+	{
+		return uiOrthoMatrix;
+	}
+
 	Microsoft::WRL::ComPtr<ID3D11Device> GetDevice()
 	{
 		return pDevice;
@@ -62,7 +72,6 @@ public:
 	void Set2DMode();
 	void Set2DViewRange(float range);
 
-
 	void SetEnableScreenSpace(const bool enabled)
 	{
 		isDrawInScreen = enabled;
@@ -71,11 +80,6 @@ public:
 	bool IsScreenSpaceEnabled() const
 	{
 		return isDrawInScreen;
-	}
-
-	DirectX::XMMATRIX GetUIProj()
-	{
-		return uiOrthoMatrix;
 	}
 
 private:

@@ -1,6 +1,10 @@
 #pragma once
 #include <DirectXMath.h>
 #include <string>
+class Mouse;
+class Keyboard;
+class Camera3D;
+struct GameContext;
 class PhysicsSystem;
 class GameObject;
 class Scene;
@@ -16,7 +20,7 @@ public:
 		PLAY
 	};
 
-	void Draw(SceneManager& sceneManager, Camera2D& camera);
+	void Draw(SceneManager& sceneManager, GameContext& context);
 	void ToggleVisible();
 
 	bool IsVisible() const
@@ -41,6 +45,11 @@ public:
 		return mode == Mode::EDIT;
 	}
 
+	bool WantsCursorLocked() const
+	{
+		return isFlying;
+	}
+
 private:
 	// UI widgets
 	void DrawHierarchy(Scene& scene);
@@ -53,6 +62,7 @@ private:
 	void DrawPhysicsDebug(PhysicsSystem& physics);
 
 	void ValidateSelection(Scene& scene);
+	void HandleEditorCamera(Camera3D& cam, const Keyboard& keyboard, Mouse& mouse);
 
 	GameObject* Pick(Scene& scene, const Camera2D& camera, DirectX::XMFLOAT2 mousePosScreen);
 
@@ -81,4 +91,9 @@ private:
 
 	Mode mode = Mode::PLAY;
 	std::string playModeStartScene;
+
+	// 3d cam fly mode
+	bool isFlying = false;
+	float flySpeed = 5.f;
+	float lookSens = 0.004f;
 };

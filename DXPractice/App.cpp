@@ -107,7 +107,21 @@ void App::Draw(float deltaTime)
 		scene->OnDrawUI(textRenderer);
 	}
 
-	editor.Draw(sceneManager, cam2D);
+	editor.Draw(sceneManager, gameContext);
+	const bool wantCursorLock = editor.WantsCursorLocked();
+	
+	// true means mismatch -> change to lock / unlock
+	if (wantCursorLock == wnd.CursorEnabled())
+	{
+		if (wantCursorLock)
+		{
+			wnd.DisableCursor();
+		}
+		else
+		{
+			wnd.EnableCursor();
+		}
+	}
 
 	debugRenderer.Flush(renderer);
 	textRenderer.Flush(renderer);

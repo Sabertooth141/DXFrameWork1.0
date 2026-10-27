@@ -63,6 +63,8 @@ private:
 	bool cursorEnabled = true;
 	std::vector<BYTE> rawBuffer;
 
+	POINT savedCursorPos = {};
+
 	HWND hWnd;
 	int width;
 	int height;

@@ -347,12 +347,29 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 void Window::EnableCursor()
 {
+	if (cursorEnabled)
+	{
+		return;
+	}
+
 	cursorEnabled = true;
+
+	FreeCursor();
+	SetCursorPos(savedCursorPos.x, savedCursorPos.y);
+	ShowCursor();
 }
 
 void Window::DisableCursor()
 {
+	if (!cursorEnabled)
+	{
+		return;
+	}
 	cursorEnabled = false;
+
+	GetCursorPos(&savedCursorPos);
+	HideCursor();
+	ConfineCursor();
 }
 
 bool Window::CursorEnabled() const
@@ -376,10 +393,10 @@ void Window::FreeCursor()
 
 void Window::ShowCursor()
 {
-	while (::ShowCursor(TRUE) >= 0);
+	while (::ShowCursor(TRUE) < 0);
 }
 
 void Window::HideCursor()
 {
-	while (::ShowCursor(FALSE) < 0);
+	while (::ShowCursor(FALSE) >= 0);
 }

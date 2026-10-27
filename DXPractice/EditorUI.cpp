@@ -4,6 +4,8 @@
 
 #include "Camera2D.h"
 #include "GameObject.h"
+#include "Keyboard.h"
+#include "Mouse.h"
 #include "PrefabRegistry.h"
 #include "Scene.h"
 #include "SceneManager.h"
@@ -95,7 +97,7 @@ namespace
 	}
 }
 
-void EditorUI::Draw(SceneManager& sceneManager, Camera2D& camera)
+void EditorUI::Draw(SceneManager& sceneManager, GameContext& context)
 {
 	if (!isVisible)
 	{
@@ -118,19 +120,28 @@ void EditorUI::Draw(SceneManager& sceneManager, Camera2D& camera)
 	DrawInspector(*scene);
 	DrawPhysicsDebug(scene->GetPhysics());
 
-	DrawPrefabPalette(*scene, camera);
+	DrawPrefabPalette(*scene, context.cam2D);
 	ImGui::EndDisabled();
 
 	DrawLayoutSave(sceneManager);
 
+	if (!isTransitioning && CanEditViewport())
+	{
+		HandleEditorCamera(context.cam3D, context.keyboard, context.mouse);
+	}
+	else
+	{
+		isFlying = false;
+	}
+
 	if (!isTransitioning)
 	{
-		HandleViewportMouse(*scene, camera);
+		HandleViewportMouse(*scene, context.cam2D);
 	}
 
 	if (selectedObject)
 	{
-		DrawSelectionOutline(camera);
+		DrawSelectionOutline(context.cam2D);
 	}
 }
 
@@ -142,6 +153,7 @@ void EditorUI::ToggleVisible()
 		isPaused = false;
 		isDragging = false;
 		stepRequested = false;
+		isFlying = false;
 		return;
 	}
 	isPaused = true;
@@ -195,6 +207,73 @@ void EditorUI::ValidateSelection(Scene& scene)
 		selectedObject = nullptr;
 		isDragging = false;
 	}
+}
+
+void EditorUI::HandleEditorCamera(Camera3D& cam, const Keyboard& keyboard, Mouse& mouse)
+{
+	const ImGuiIO& io = ImGui::GetIO();
+	if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && !io.WantCaptureMouse)
+	{
+		isFlying = true;
+		mouse.ConsumeRawDelta();
+	}
+	if (!ImGui::IsMouseDown(ImGuiMouseButton_Right))
+	{
+		isFlying = false;
+	}
+
+	if (!isFlying)
+	{
+		return;
+	}
+
+	const Mouse::RawDelta delta = mouse.ConsumeRawDelta();
+	cam.Rotate(static_cast<float>(delta.x) * lookSens, static_cast<float>(-delta.y) * lookSens);
+
+	const DirectX::XMVECTOR forward = cam.GetCamForward();
+	const DirectX::XMVECTOR right = cam.GetCamRight();
+	const DirectX::XMVECTOR up = DirectX::XMVectorSet(0.f, 1.f, 0.f, 0.f);
+
+	DirectX::XMVECTOR move = DirectX::XMVectorZero();
+	if (keyboard.KeyIsPressed('W'))
+	{
+		move = DirectX::XMVectorAdd(move, forward);
+	}
+	if (keyboard.KeyIsPressed('S'))
+	{
+		move = DirectX::XMVectorSubtract(move, forward);
+	}
+	if (keyboard.KeyIsPressed('D'))
+	{
+		move = DirectX::XMVectorAdd(move, right);
+	}
+	if (keyboard.KeyIsPressed('A'))
+	{
+		move = DirectX::XMVectorSubtract(move, right);
+	}
+	if (keyboard.KeyIsPressed(VK_SPACE))
+	{
+		move = DirectX::XMVectorAdd(move, up);
+	}
+	if (keyboard.KeyIsPressed(VK_CONTROL))
+	{
+		move = DirectX::XMVectorSubtract(move, up);
+	}
+
+	if (DirectX::XMVectorGetX(DirectX::XMVector3LengthSq(move)) < 1e-6f)
+	{
+		return;
+	}
+
+	// normalize
+	float speed = flySpeed;
+	if (keyboard.KeyIsPressed(VK_SHIFT))
+	{
+		speed *= 3.f;
+	}
+
+	move = DirectX::XMVectorScale(DirectX::XMVector3Normalize(move), speed * io.DeltaTime);
+	DirectX::XMStoreFloat3(&cam.pos, DirectX::XMVectorAdd(DirectX::XMLoadFloat3(&cam.pos), move));
 }
 
 void EditorUI::DrawHierarchy(Scene& scene)
@@ -783,6 +862,7 @@ void EditorUI::EnterPlayMode(SceneManager& sceneManager)
 	selectedObject = nullptr;
 
 	sceneManager.RequestChange(sceneName);
+	isFlying = false;
 }
 
 void EditorUI::EnterEditMode(SceneManager& sceneManager)
@@ -810,4 +890,5 @@ void EditorUI::EnterEditMode(SceneManager& sceneManager)
 	}
 
 	sceneManager.RequestChange(tgtScene);
+	isFlying = false;
 }

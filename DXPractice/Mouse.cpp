@@ -7,17 +7,6 @@ std::pair<int, int> Mouse::GetPos() const
 	return {x, y};
 }
 
-std::optional<Mouse::RawDelta> Mouse::readRawDelta()
-{
-	if (rawDeltaBuffer.empty())
-	{
-		return std::nullopt;
-	}
-	const RawDelta d = rawDeltaBuffer.front();
-	rawDeltaBuffer.pop();
-	return d;
-}
-
 int Mouse::GetPosX() const
 {
 	return x;
@@ -79,6 +68,13 @@ bool Mouse::RawEnabled() const
 	return rawEnabled;
 }
 
+Mouse::RawDelta Mouse::ConsumeRawDelta()
+{
+	const RawDelta delta = rawAccum;
+	rawAccum = {0, 0};
+	return delta;
+}
+
 void Mouse::OnMouseMove(int inX, int inY)
 {
 	x = inX;
@@ -104,8 +100,8 @@ void Mouse::OnMouseEnter()
 
 void Mouse::OnRawDelta(int dx, int dy)
 {
-	rawDeltaBuffer.emplace(dx, dy);
-	TrimBuffer();
+	rawAccum.x += dx;
+	rawAccum.y += dy;
 }
 
 auto Mouse::OnLeftPressed(int inX, int inY) -> void
@@ -155,14 +151,6 @@ void Mouse::OnWheelDown(int inX, int inY)
 void Mouse::TrimBuffer()
 {
 	while (buffer.size() > bufferSize)
-	{
-		buffer.pop();
-	}
-}
-
-void Mouse::TrimRawInputBuffer()
-{
-	while (rawDeltaBuffer.size() > bufferSize)
 	{
 		buffer.pop();
 	}
