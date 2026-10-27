@@ -19,11 +19,31 @@ GameObject::GameObject(const MaterialData& matData, const ModelReader& modelRead
 	for (auto& meshData : modelReader.GetMeshes())
 	{
 		meshes.push_back(std::make_unique<MeshComponent>(*renderer, meshData, transformComp));
+
+		if (meshData.vertices.empty())
+		{
+			continue;
+		}
+
+		DirectX::BoundingBox meshBox;
+		DirectX::BoundingBox::CreateFromPoints(meshBox, meshData.vertices.size(), &meshData.vertices[0].pos,
+		                                       sizeof(Vertex));
+
+		if (!hasLocalBounds)
+		{
+			localBounds = meshBox;
+			hasLocalBounds = true;
+		}
+		else
+		{
+			DirectX::BoundingBox::CreateMerged(localBounds, localBounds, meshBox);
+		}
 	}
 	AddComponent<MeshRendererComponent>();
 }
 
-GameObject::GameObject(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, GameContext& context,
+GameObject::GameObject(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices,
+                       GameContext& context,
                        const std::wstring& vsPath, const std::wstring& psPath)
 {
 	this->context = &context;
@@ -56,6 +76,19 @@ TransformComponent* GameObject::GetTransform()
 std::vector<std::unique_ptr<MeshComponent>>& GameObject::GetMeshes()
 {
 	return meshes;
+}
+
+bool GameObject::GetWorldBounds(DirectX::BoundingOrientedBox& out) const
+{
+	if (!hasLocalBounds)
+	{
+		return false;
+	}
+
+	DirectX::BoundingOrientedBox localBox;
+	DirectX::BoundingOrientedBox::CreateFromBoundingBox(localBox, localBounds);
+	localBox.Transform(out, GetTransform()->GetMatrix());
+	return true;
 }
 
 void GameObject::NotifyColliderEnter2D(const GameObject& other) const

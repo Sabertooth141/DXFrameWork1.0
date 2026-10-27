@@ -3,9 +3,9 @@
 #include <stdexcept>
 
 #include "GameObject.h"
-#include "PixelShader.h"
 #include "SpriteRendererComponent.h"
 #include "TextureCache.h"
+#include "GameContext.h"
 
 AnimatorComponent::AnimatorComponent(Renderer& renderer) : renderer(renderer), currAnimation(nullptr)
 {

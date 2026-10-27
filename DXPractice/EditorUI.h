@@ -64,7 +64,9 @@ private:
 	void ValidateSelection(Scene& scene);
 	void HandleEditorCamera(Camera3D& cam, const Keyboard& keyboard, Mouse& mouse);
 
-	GameObject* Pick(Scene& scene, const Camera2D& camera, DirectX::XMFLOAT2 mousePosScreen);
+	GameObject* Pick(Scene& scene, GameContext& context, DirectX::XMFLOAT2 mousePosScreen);
+	GameObject* Pick2D(Scene& scene, const Camera2D& camera, DirectX::XMFLOAT2 mousePosScreen);
+	GameObject* Pick3D(Scene& scene, GameContext& context, DirectX::XMFLOAT2 mousePosScreen);
 
 	void EnterPlayMode(SceneManager& sceneManager);
 	void EnterEditMode(SceneManager& sceneManager);

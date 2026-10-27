@@ -1,5 +1,6 @@
 #include "MeshRendererComponent.h"
 
+#include "GameContext.h"
 #include "GameObject.h"
 #include "MaterialComponent.h"
 

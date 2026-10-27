@@ -1,17 +1,16 @@
 #pragma once
 #include <typeindex>
 #include <unordered_map>
+#include <DirectXCollision.h>
 
 #include "AnimationSystem.h"
 #include "BoxCollider2D.h"
 #include "MaterialComponent.h"
 #include "MeshComponent.h"
-#include "MonoBehavior.h"
-#include "PhysicsSystem.h"
-#include "ScriptSystem.h"
-#include "RenderSystem.h"
-#include "GameContext.h"
 #include "ObjectTags.h"
+#include "PhysicsSystem.h"
+#include "RenderSystem.h"
+#include "ScriptSystem.h"
 
 class Rigidbody2DComponent;
 class PhysicsSystem;
@@ -101,6 +100,13 @@ public:
 		tag = inTag;
 	}
 
+	bool HasLocalBounds() const
+	{
+		return hasLocalBounds;
+	}
+
+	bool GetWorldBounds(DirectX::BoundingOrientedBox& out) const;
+
 private:
 	ObjectTag tag = ObjectTag::DEFAULT;
 	std::unordered_map<std::type_index, std::unique_ptr<IComponent>> components;
@@ -116,4 +122,8 @@ private:
 	std::string objName = "GameObject";
 	std::string prefabName;
 	bool isLayoutObject = false;
+
+	// for 3d editor selecting
+	DirectX::BoundingBox localBounds{};
+	bool hasLocalBounds = false;
 };

@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include "Camera2D.h"
+#include "GameContext.h"
 #include "GameObject.h"
 
 void CameraController::Awake()

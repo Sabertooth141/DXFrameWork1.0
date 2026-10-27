@@ -13,6 +13,20 @@
 
 namespace
 {
+	constexpr float iconRadius = 8.f;
+	constexpr float nearClip = 0.1f;
+
+	bool Is2DObject(GameObject& obj)
+	{
+		return obj.GetComponent<AnimatorComponent>() != nullptr;
+	}
+
+	struct Ray
+	{
+		DirectX::XMVECTOR origin;
+		DirectX::XMVECTOR dir;
+	};
+
 	bool IsObjectScreenSpace(GameObject& obj)
 	{
 		auto* anim = obj.GetComponent<AnimatorComponent>();
@@ -94,6 +108,50 @@ namespace
 
 			rb->Wake();
 		}
+	}
+
+	// raycast from screen to world
+	Ray ScreenToRay(DirectX::XMFLOAT2 mousePos, GameContext& context)
+	{
+		const DirectX::XMMATRIX view = context.cam3D.GetView();
+		const DirectX::XMMATRIX proj = context.renderer.Get3DProj();
+
+		const float screenWidth = static_cast<float>(context.renderer.screenWidth);
+		const float screenHeight = static_cast<float>(context.renderer.screenHeight);
+
+		const DirectX::XMVECTOR nearPt = DirectX::XMVector3Unproject(
+			DirectX::XMVectorSet(mousePos.x, mousePos.y, 0.f, 0.f), 0.f, 0.f, screenWidth, screenHeight, 0.f, 1.f,
+			proj, view, DirectX::XMMatrixIdentity());
+		const DirectX::XMVECTOR farPt = DirectX::XMVector3Unproject(
+			DirectX::XMVectorSet(mousePos.x, mousePos.y, 1.f, 0.f), 0.f, 0.f, screenWidth, screenHeight, 0.f, 1.f,
+			proj, view, DirectX::XMMatrixIdentity());
+
+		return {nearPt, DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(farPt, nearPt))};
+	}
+
+	bool WorldToScreen3D(DirectX::XMFLOAT3 worldPos, GameContext& context, ImVec2& out)
+	{
+		const DirectX::XMMATRIX viewProj = context.cam3D.GetView() * context.renderer.Get3DProj();
+		const DirectX::XMVECTOR clip = DirectX::XMVector4Transform(
+			DirectX::XMVectorSet(worldPos.x, worldPos.y, worldPos.z, 1.f), viewProj);
+
+		const float clipW = DirectX::XMVectorGetW(clip);
+
+		// refuse anything close to near plane of clip space
+		if (clipW < nearClip)
+		{
+			return false;
+		}
+
+		const float normDeviceCoordX = DirectX::XMVectorGetX(clip) / clipW; // -1 ... 1
+		const float normDeviceCoordY = DirectX::XMVectorGetY(clip) / clipW; // -1 ... 1 (+y up)
+
+		out =
+		{
+			(normDeviceCoordX * 0.5f + 0.5f) * static_cast<float>(context.renderer.screenWidth),
+			(0.5f - normDeviceCoordY * 0.5f) * static_cast<float>(context.renderer.screenHeight) // +y down
+		};
+		return true;
 	}
 }
 
@@ -490,10 +548,10 @@ void EditorUI::DrawToolbar(SceneManager& sceneManager)
 		if (mode == Mode::EDIT)
 		{
 			ImGui::PushStyleColor(ImGuiCol_Button, {0.2f, 0.55f, 0.25f, 1.f});
-			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, { 0.2f, 0.65f, 0.3f, 1.f });
-			ImGui::PushStyleColor(ImGuiCol_ButtonActive, { 0.15f, 0.45f, 0.2f, 1.f });
-			
-			const bool isPlayPressed = ImGui::Button("プレイ", { 90.f, 0.f });
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, {0.2f, 0.65f, 0.3f, 1.f});
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, {0.15f, 0.45f, 0.2f, 1.f});
+
+			const bool isPlayPressed = ImGui::Button("プレイ", {90.f, 0.f});
 			ImGui::PopStyleColor(3);
 
 			if (isPlayPressed)
@@ -502,15 +560,15 @@ void EditorUI::DrawToolbar(SceneManager& sceneManager)
 			}
 
 			ImGui::SameLine();
-			ImGui::TextColored({ 0.6f, 0.85f, 1.f, 1.f }, "編集モード中");
+			ImGui::TextColored({0.6f, 0.85f, 1.f, 1.f}, "編集モード中");
 		}
 		else
 		{
-			ImGui::PushStyleColor(ImGuiCol_Button, { 0.6f, 0.25f, 0.2f, 1.f });
-			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, { 0.7f, 0.3f, 0.25f, 1.f });
-			ImGui::PushStyleColor(ImGuiCol_ButtonActive, { 0.5f, 0.2f, 0.15f, 1.f });
+			ImGui::PushStyleColor(ImGuiCol_Button, {0.6f, 0.25f, 0.2f, 1.f});
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, {0.7f, 0.3f, 0.25f, 1.f});
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, {0.5f, 0.2f, 0.15f, 1.f});
 
-			const bool isStopPressed = ImGui::Button("編集モード", { 90.f, 0.f });
+			const bool isStopPressed = ImGui::Button("編集モード", {90.f, 0.f});
 			ImGui::PopStyleColor(3);
 
 			if (isStopPressed)
@@ -521,11 +579,11 @@ void EditorUI::DrawToolbar(SceneManager& sceneManager)
 			ImGui::SameLine();
 			if (isPaused)
 			{
-				ImGui::TextColored({ 1.f, 0.7f, 0.3f, 1.f }, "プレイ中（一時停止）");
+				ImGui::TextColored({1.f, 0.7f, 0.3f, 1.f}, "プレイ中（一時停止）");
 			}
 			else
 			{
-				ImGui::TextColored({ 1.f, 0.7f, 0.3f, 1.f }, "プレイ中");
+				ImGui::TextColored({1.f, 0.7f, 0.3f, 1.f}, "プレイ中");
 			}
 		}
 		ImGui::EndDisabled();
@@ -581,7 +639,6 @@ void EditorUI::DrawToolbar(SceneManager& sceneManager)
 		{
 			ImGui::TextDisabled("一時停止中：クリックで選択／ドラッグで移動");
 		}
-
 	}
 
 	ImGui::End();
@@ -602,7 +659,7 @@ void EditorUI::HandleViewportMouse(Scene& scene, Camera2D& camera)
 
 	if (!io.WantCaptureMouse && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 	{
-		selectedObject = Pick(scene, camera, mouse);
+		selectedObject = Pick2D(scene, camera, mouse);
 		isDragging = selectedObject != nullptr;
 		if (isDragging)
 		{
@@ -716,7 +773,7 @@ void EditorUI::DrawPrefabPalette(Scene& scene, const Camera2D& camera)
 		{
 			ImGui::TextDisabled("編集モードのみ配置できます");
 		}
-		
+
 		ImGui::Separator();
 
 		ImGui::BeginDisabled(!canPlace);
@@ -771,13 +828,28 @@ void EditorUI::DrawPhysicsDebug(PhysicsSystem& physics)
 	ImGui::End();
 }
 
-GameObject* EditorUI::Pick(Scene& scene, const Camera2D& camera, const DirectX::XMFLOAT2 mousePosScreen)
+GameObject* EditorUI::Pick(Scene& scene, GameContext& context, DirectX::XMFLOAT2 mousePosScreen)
+{
+	if (GameObject* hit = Pick2D(scene, context.cam2D, mousePosScreen))
+	{
+		return hit;
+	}
+	else
+	{
+		return Pick3D(scene, context, mousePosScreen);
+	}
+}
+
+GameObject* EditorUI::Pick2D(Scene& scene, const Camera2D& camera, const DirectX::XMFLOAT2 mousePosScreen)
 {
 	const DirectX::XMFLOAT2 camPos = camera.GetPosition();
 	std::vector<GameObject*> candidates;
 	for (auto& obj : scene.GetObjects())
 	{
-		candidates.push_back(obj.get());
+		if (Is2DObject(*obj))
+		{
+			candidates.push_back(obj.get());
+		}
 	}
 
 	// topmost first: higher layer first, then higher sort order
@@ -819,6 +891,65 @@ GameObject* EditorUI::Pick(Scene& scene, const Camera2D& camera, const DirectX::
 	}
 
 	return nullptr;
+}
+
+GameObject* EditorUI::Pick3D(Scene& scene, GameContext& context, DirectX::XMFLOAT2 mousePosScreen)
+{
+	const Ray ray = ScreenToRay(mousePosScreen, context);
+
+	GameObject* nearestObj = nullptr;
+	float nearestDist = FLT_MAX;
+
+	for (auto& objPtr : scene.GetObjects())
+	{
+		GameObject& obj = *objPtr;
+
+		if (Is2DObject(obj))
+		{
+			continue;
+		}
+
+		// for objects with mesh
+		DirectX::BoundingOrientedBox obb;
+		if (obj.GetWorldBounds(obb))
+		{
+			float dist = 0.f;
+			if (obb.Intersects(ray.origin, ray.dir, dist) && dist < nearestDist)
+			{
+				nearestObj = &obj;
+				nearestDist = dist;
+			}
+			continue;
+		}
+
+		// for empty objects
+		const DirectX::XMFLOAT3 pos = obj.GetTransform()->GetPosition();
+		ImVec2 iconPos;
+		if (!WorldToScreen3D(pos, context, iconPos))
+		{
+			continue;
+		}
+
+		const float dx = iconPos.x - mousePosScreen.x;
+		const float dy = iconPos.y - mousePosScreen.y;
+
+		if (dx * dx + dy * dy > iconRadius * iconRadius)
+		{
+			continue;
+		}
+
+		// check dist with mesh objects
+		const float dist = DirectX::XMVectorGetX(
+			DirectX::XMVector3Length(DirectX::XMVectorSubtract(DirectX::XMLoadFloat3(&pos), ray.origin)));
+
+		if (dist < nearestDist)
+		{
+			nearestObj = &obj;
+			nearestDist = dist;
+		}
+	}
+
+	return nearestObj;
 }
 
 void EditorUI::EnterPlayMode(SceneManager& sceneManager)

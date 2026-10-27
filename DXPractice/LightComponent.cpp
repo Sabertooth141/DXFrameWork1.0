@@ -1,5 +1,6 @@
 #include "LightComponent.h"
 
+#include "GameContext.h"
 #include "GameObject.h"
 #include "Light.h"
 
