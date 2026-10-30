@@ -10,7 +10,7 @@
 
 namespace
 {
-	constexpr int LAYOUT_VERSION = 1;
+	constexpr int LAYOUT_VERSION = 2;
 	constexpr auto SCENE_DIR = "../../assets/scenes/";
 
 	// 小数点以下 3 桁に丸めて保存する（0.1f が 0.10000000149011612 にならないように。Git の差分も読みやすくなる
@@ -42,6 +42,13 @@ namespace
 		out = {json[0].get<float>(), json[1].get<float>(), json[2].get<float>()};
 		return true;
 	}
+
+	nlohmann::ordered_json RadiansToDegreesJson(const DirectX::XMFLOAT3& rad)
+	{
+		return Float3ToJson({
+			DirectX::XMConvertToDegrees(rad.x), DirectX::XMConvertToDegrees(rad.y), DirectX::XMConvertToDegrees(rad.z)
+		});
+	}
 }
 
 std::string SceneLayout::GetPath(const std::string& sceneName)
@@ -70,7 +77,7 @@ SceneLayout::Result SceneLayout::Save(const Scene& scene, const std::string& sce
 		entry["prefab"] = obj.GetPrefabName();
 		entry["name"] = obj.GetName();
 		entry["position"] = Float3ToJson(transform->GetPosition());
-		entry["rotation"] = Round3(DirectX::XMConvertToDegrees(rot.z));
+		entry["rotation"] = RadiansToDegreesJson(transform->GetRotation());
 		entry["scale"] = Float3ToJson(transform->GetScale());
 		objects.push_back(std::move(entry));
 	}
@@ -152,6 +159,15 @@ SceneLayout::Result SceneLayout::Load(Scene& scene, const std::string& sceneName
 		return result;
 	}
 
+	// no loading files saved by a newer editor
+	if (const auto it = root.find("version"); it != root.end() && it->is_number_integer()
+		&& it->get<int>() > LAYOUT_VERSION)
+	{
+		result.valid = false;
+		result.message = "読み込み失敗：このエディタより新しい形式です（version " + std::to_string(it->get<int>()) + "）";
+		return result;
+	}
+
 	const auto objectsIt = root.find("objects"); // iterator
 	if (objectsIt == root.end() || !objectsIt->is_array())
 	{
@@ -206,7 +222,15 @@ SceneLayout::Result SceneLayout::Load(Scene& scene, const std::string& sceneName
 		if (const auto it = entry.find("rotation"); it != entry.end() && it->is_number())
 		{
 			DirectX::XMFLOAT3 rot = transform->GetRotation();
-			rot.z = DirectX::XMConvertToRadians(it->get<float>());
+			DirectX::XMFLOAT3 deg;
+			if (JsonToFloat3(*it, deg))
+			{
+				rot = {
+					DirectX::XMConvertToRadians(deg.x),
+					DirectX::XMConvertToRadians(deg.y),
+					DirectX::XMConvertToRadians(deg.z)
+				};
+			}
 			transform->SetRotation(rot);
 		}
 

@@ -17,6 +17,10 @@ namespace
 	constexpr float iconRadius = 8.f;
 	constexpr float nearClip = 0.1f;
 
+	// 3d prefab placement
+	constexpr float placeDistance = 5.f; // distance infront of camera for prefab placement
+	constexpr float maxDragDistance = 500.f; // distance before object becomes unresponsive to drag
+
 	bool Is2DObject(GameObject& obj)
 	{
 		return obj.GetComponent<AnimatorComponent>() != nullptr;
@@ -34,7 +38,7 @@ namespace
 		return anim && anim->IsScreenSpaceEnabled();
 	}
 
-	// スクリーン座標（左上原点・+Y 下）→ ワールド座標（画面中央原点・+Y 上）
+	// screen: topleft x+ y+ to bottomright, world: x+ left to right, y+ bottom to top, z+ close to far
 	DirectX::XMFLOAT2 ScreenToWorld(DirectX::XMFLOAT2 screen, DirectX::XMFLOAT2 cam, bool screenSpace)
 	{
 		const float x = screen.x - static_cast<float>(WIN_WIDTH) * 0.5f;
@@ -45,6 +49,38 @@ namespace
 		}
 
 		return {x + cam.x, y + cam.y};
+	}
+
+	bool IntersectRayPlane(const Ray& ray, DirectX::XMFLOAT3 planePoint, DirectX::XMFLOAT3 planeNormal,
+	                       DirectX::XMVECTOR& outHit)
+	{
+		const DirectX::XMVECTOR normal = DirectX::XMLoadFloat3(&planeNormal);
+		const float denominator = DirectX::XMVectorGetX(DirectX::XMVector3Dot(ray.dir, normal));
+		// 
+		if (std::abs(denominator) < 1e-3f)
+		{
+			return false;
+		}
+
+		const DirectX::XMVECTOR toPlane = DirectX::XMVectorSubtract(DirectX::XMLoadFloat3(&planePoint), ray.origin);
+		const float projectedDist = DirectX::XMVectorGetX(DirectX::XMVector3Dot(toPlane, normal)) / denominator;
+
+		if (projectedDist < 0.f || projectedDist > maxDragDistance)
+		{
+			return false;
+		}
+
+		outHit = DirectX::XMVectorAdd(ray.origin, DirectX::XMVectorScale(ray.dir, projectedDist));
+		return true;
+	}
+
+	DirectX::XMFLOAT3 Spawn3DInFront(const Camera3D& cam3D)
+	{
+		DirectX::XMFLOAT3 out;
+		DirectX::XMStoreFloat3(&out, DirectX::XMVectorAdd(DirectX::XMLoadFloat3(&cam3D.pos),
+		                                                  DirectX::XMVectorScale(
+			                                                  cam3D.GetCamForward(), placeDistance)));
+		return out;
 	}
 
 	ImVec2 WorldToScreen(DirectX::XMFLOAT2 world, DirectX::XMFLOAT2 cam, bool screenSpace)
@@ -179,7 +215,7 @@ void EditorUI::Draw(SceneManager& sceneManager, GameContext& context)
 	DrawInspector(*scene);
 	DrawPhysicsDebug(scene->GetPhysics());
 
-	DrawPrefabPalette(*scene, context.cam2D);
+	DrawPrefabPalette(*scene, context);
 	ImGui::EndDisabled();
 
 	DrawLayoutSave(sceneManager);
@@ -267,6 +303,53 @@ void EditorUI::ValidateSelection(Scene& scene)
 		selectedObject = nullptr;
 		isDragging = false;
 	}
+}
+
+bool EditorUI::BeginDrag3D(GameContext& context, DirectX::XMFLOAT2 mouseScreenPos)
+{
+	const DirectX::XMFLOAT3 pos = selectedObject->GetTransform()->GetPosition();
+	isDragVertical = ImGui::GetIO().KeyShift;
+
+	draggingPoint = pos;
+	dragPlaneNormal = {0.f, 1.f, 0.f};
+	if (isDragVertical)
+	{
+		const DirectX::XMVECTOR forward = context.cam3D.GetCamForward();
+		const DirectX::XMVECTOR flat = DirectX::XMVectorSet(DirectX::XMVectorGetX(forward), 0.f,
+		                                                    DirectX::XMVectorGetZ(forward), 0.f);
+		const bool isLookingStraightDown = DirectX::XMVectorGetX(DirectX::XMVector3LengthSq(flat)) < 1e-4f;
+		DirectX::XMStoreFloat3(&dragPlaneNormal, DirectX::XMVector3Normalize(isLookingStraightDown ? forward : flat));
+	}
+
+	DirectX::XMVECTOR hit;
+	if (!IntersectRayPlane(ScreenToRay(mouseScreenPos, context), draggingPoint, dragPlaneNormal, hit))
+	{
+		return false;
+	}
+
+	DirectX::XMStoreFloat3(&drag3DOffset, DirectX::XMVectorSubtract(DirectX::XMLoadFloat3(&pos), hit));
+	return true;
+}
+
+void EditorUI::UpdateDrag3D(GameContext& context, DirectX::XMFLOAT2 mouseScreenPos)
+{
+	// if shift pressed or released -> rebuild normal / stop dragging
+	if (ImGui::GetIO().KeyShift != isDragVertical && !BeginDrag3D(context, mouseScreenPos))
+	{
+		isDragging = false;
+		return;
+	}
+
+	DirectX::XMVECTOR hit;
+	if (!IntersectRayPlane(ScreenToRay(mouseScreenPos, context), draggingPoint, dragPlaneNormal, hit))
+	{
+		return;
+	}
+
+	DirectX::XMFLOAT3 newPos;
+	DirectX::XMStoreFloat3(&newPos, DirectX::XMVectorAdd(hit, DirectX::XMLoadFloat3(&drag3DOffset)));
+	selectedObject->GetTransform()->SetPosition(newPos);
+	WakeObjRb(*selectedObject, true);
 }
 
 void EditorUI::HandleEditorCamera(Camera3D& cam, const Keyboard& keyboard, Mouse& mouse)
@@ -399,25 +482,42 @@ void EditorUI::DrawInspector(Scene& scene)
 	if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		TransformComponent* transform = selectedObjRef.GetTransform();
+		// 2D: pixel units on the XY plane. 3D: metres in XYZ. The data is three values either way
+		const bool is2D = Is2DObject(selectedObjRef);
 
 		DirectX::XMFLOAT3 pos = transform->GetPosition();
-		if (ImGui::DragFloat2("位置", &pos.x, 1.f))
+		const bool isPosChanged = is2D
+			                          ? ImGui::DragFloat2("位置", &pos.x, 1.f)
+			                          : ImGui::DragFloat3("位置", &pos.x, 0.05f);
+		if (isPosChanged)
 		{
 			transform->SetPosition(pos);
 			WakeObjRb(selectedObjRef, false);
 		}
 
+		// Stored in radians; only the display is converted to degrees (order: XMMatrixRotationRollPitchYaw(x, y, z))
 		DirectX::XMFLOAT3 rot = transform->GetRotation();
-		float deg = DirectX::XMConvertToDegrees(rot.z);
-		if (ImGui::DragFloat("回転（度）", &deg, 0.5f))
+		DirectX::XMFLOAT3 deg = {
+			DirectX::XMConvertToDegrees(rot.x), DirectX::XMConvertToDegrees(rot.y), DirectX::XMConvertToDegrees(rot.z)
+		};
+		const bool isRotChanged = is2D
+			                          ? ImGui::DragFloat("回転（度）", &deg.z, 0.5f) // 2D: Z only
+			                          : ImGui::DragFloat3("回転（度）", &deg.x, 0.5f);
+		if (isRotChanged)
 		{
-			rot.z = DirectX::XMConvertToRadians(deg);
+			rot = {
+				DirectX::XMConvertToRadians(deg.x), DirectX::XMConvertToRadians(deg.y),
+				DirectX::XMConvertToRadians(deg.z)
+			};
 			transform->SetRotation(rot);
 			WakeObjRb(selectedObjRef, false);
 		}
 
 		DirectX::XMFLOAT3 scale = transform->GetScale();
-		if (ImGui::DragFloat2("スケール", &scale.x, 0.5f))
+		const bool isScaleChanged = is2D
+			                            ? ImGui::DragFloat2("スケール", &scale.x, 0.5f)
+			                            : ImGui::DragFloat3("スケール", &scale.x, 0.01f);
+		if (isScaleChanged)
 		{
 			transform->SetScale(scale);
 			WakeObjRb(selectedObjRef, false);
@@ -648,7 +748,7 @@ void EditorUI::DrawToolbar(SceneManager& sceneManager)
 
 void EditorUI::HandleViewportMouse(Scene& scene, GameContext& context)
 {
-	// 選択・ドラッグは一時停止中のみ（ゲームのクリック操作と競合させない）
+	// if is in selection / is dragging -> return
 	if (!CanEditViewport())
 	{
 		isDragging = false;
@@ -662,12 +762,20 @@ void EditorUI::HandleViewportMouse(Scene& scene, GameContext& context)
 	if (!io.WantCaptureMouse && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 	{
 		selectedObject = Pick(scene, context, mouse);
-		isDragging = selectedObject != nullptr && Is2DObject(*selectedObject);
-		if (isDragging)
+		isDragging = false;
+		if (selectedObject)
 		{
-			const DirectX::XMFLOAT3 pos = selectedObject->GetTransform()->GetPosition();
-			const DirectX::XMFLOAT2 worldPos = ScreenToWorld(mouse, cam, IsObjectScreenSpace(*selectedObject));
-			objDragOffset = {pos.x - worldPos.x, pos.y - worldPos.y};
+			if (Is2DObject(*selectedObject))
+			{
+				const DirectX::XMFLOAT3 pos = selectedObject->GetTransform()->GetPosition();
+				const DirectX::XMFLOAT2 cursorWorldPos = ScreenToWorld(mouse, cam, IsObjectScreenSpace(*selectedObject));
+				objDragOffset = { pos.x - cursorWorldPos.x, pos.y - cursorWorldPos.y };
+				isDragging = true;
+			}
+			else
+			{
+				isDragging = BeginDrag3D(context, mouse);
+			}
 		}
 	}
 
@@ -679,6 +787,12 @@ void EditorUI::HandleViewportMouse(Scene& scene, GameContext& context)
 	if (!selectedObject || !ImGui::IsMouseDown(ImGuiMouseButton_Left))
 	{
 		isDragging = false;
+		return;
+	}
+
+	if (!Is2DObject(*selectedObject))
+	{
+		UpdateDrag3D(context, mouse);
 		return;
 	}
 
@@ -716,16 +830,17 @@ void EditorUI::DrawSelectionOutline(GameContext& context)
 		obb.GetCorners(corners);
 
 		static constexpr int edges[12][2] = {
-		{ 0, 1 },{ 1, 2 },{ 2, 3 },{ 3, 0 },
-		{ 4, 5 },{ 5, 6 },{ 6, 7 },{ 7, 4 },
-		{ 0, 4 },{ 1, 5 },{ 2, 6 },{ 3, 7 }
+			{0, 1}, {1, 2}, {2, 3}, {3, 0},
+			{4, 5}, {5, 6}, {6, 7}, {7, 4},
+			{0, 4}, {1, 5}, {2, 6}, {3, 7}
 		};
 
 		for (const auto& edge : edges)
 		{
 			ImVec2 lineStartPos, lineFinishPos;
 
-			if (WorldToScreen3D(corners[edge[0]], context, lineStartPos) && WorldToScreen3D(corners[edge[1]], context, lineFinishPos))
+			if (WorldToScreen3D(corners[edge[0]], context, lineStartPos) && WorldToScreen3D(
+				corners[edge[1]], context, lineFinishPos))
 			{
 				drawList->AddLine(lineStartPos, lineFinishPos, color, 2.f);
 			}
@@ -800,17 +915,17 @@ void EditorUI::DrawLayoutSave(SceneManager& sceneManager)
 	ImGui::End();
 }
 
-void EditorUI::DrawPrefabPalette(Scene& scene, const Camera2D& camera)
+void EditorUI::DrawPrefabPalette(Scene& scene, GameContext& context)
 {
-	ImGui::SetNextWindowSize({200.f, 250.f}, ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowPos({10.f, 420.f}, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 200.f, 250.f }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowPos({ 10.f, 420.f }, ImGuiCond_FirstUseEver);
 
 	if (ImGui::Begin("プレハブ"))
 	{
 		const bool canPlace = mode == Mode::EDIT;
 		if (canPlace)
 		{
-			ImGui::TextDisabled("クリックで画面中央に配置");
+			ImGui::TextDisabled("クリックで配置（2D：画面中央／3D：カメラの前）");
 		}
 		else
 		{
@@ -820,14 +935,31 @@ void EditorUI::DrawPrefabPalette(Scene& scene, const Camera2D& camera)
 		ImGui::Separator();
 
 		ImGui::BeginDisabled(!canPlace);
-		for (const std::string& prefabName : PrefabRegistry::Instance().GetPrefabNames())
+		const PrefabRegistry& registry = PrefabRegistry::Instance();
+		for (const std::string& prefabName : registry.GetPrefabNames())
 		{
-			if (ImGui::Selectable(prefabName.c_str()))
-			{
-				const DirectX::XMFLOAT2 cam = camera.GetPosition();
+			const PrefabDef* def = registry.Find(prefabName);
+			const bool is2DPrefab = def->shape == PrefabShape::SPRITE;
 
-				// 次フレームの FlushPending でシーンに追加される（一時停止中も Flush は行われる）
-				if (GameObject* obj = scene.InstantiateAsLayout(prefabName, {cam.x, cam.y, 1.f}))
+			const bool isClicked = ImGui::Selectable(prefabName.c_str());
+			ImGui::SameLine();
+			ImGui::TextDisabled(is2DPrefab ? "2D" : "3D");
+
+			if (isClicked)
+			{
+				DirectX::XMFLOAT3 spawnPos;
+				if (is2DPrefab)
+				{
+					const DirectX::XMFLOAT2 cam = context.cam2D.GetPosition();
+					spawnPos = { cam.x, cam.y, 1.f };
+				}
+				else
+				{
+					spawnPos = Spawn3DInFront(context.cam3D);
+				}
+
+				// Added to the scene at the next frame's FlushPending (Flush also runs while paused)
+				if (GameObject* obj = scene.InstantiateAsLayout(prefabName, spawnPos))
 				{
 					selectedObject = obj;
 					isDragging = false;
@@ -894,7 +1026,7 @@ void EditorUI::DrawObjectIcon(Scene& scene, GameContext& context)
 
 		drawList->AddCircleFilled(screenPos, iconRadius * 0.6f, color);
 		drawList->AddCircle(screenPos, iconRadius, color, 0, 1.5f);
-		drawList->AddText({ screenPos.x + iconRadius + 3.f, screenPos.y - 8.f }, color, obj.GetName().c_str());
+		drawList->AddText({screenPos.x + iconRadius + 3.f, screenPos.y - 8.f}, color, obj.GetName().c_str());
 	}
 }
 

@@ -7,7 +7,7 @@
 void RegisterPrefabs()
 {
 	// blocks
-	PrefabRegistry::Instance().Register("block", [](GameObject& object)
+	PrefabRegistry::Instance().RegisterSprite("block", [](GameObject& object)
 	{
 		auto& anim = object.AddComponent<AnimatorComponent>(object.GetRenderer());
 		anim.SetRenderLayer(RenderLayer::Default);
@@ -19,9 +19,25 @@ void RegisterPrefabs()
 		auto& rb = object.AddComponent<Rigidbody2DComponent>(*object.GetTransform(), 1.0f);
 		rb.SetGravity(500.f);
 
-		object.AddComponent<BoxCollider2D>(DirectX::XMFLOAT2(0.5f, 0.5f), DirectX::XMFLOAT2(0.f, 0.f), false, *object.GetTransform());
+		object.AddComponent<BoxCollider2D>(DirectX::XMFLOAT2(0.5f, 0.5f), DirectX::XMFLOAT2(0.f, 0.f), false,
+		                                   *object.GetTransform());
 
 		object.AddComponent<PhysicsTest>();
 		object.SetTag(ObjectTag::BLOCK);
+	});
+
+	// testCube
+	MaterialData mat{};
+	mat.specularIntensity = 0.5f;
+	mat.specularPower = 2.f;
+	PrefabRegistry::Instance().RegisterModel("testCube", "../../assets/models/testCube.fbx", mat, [](GameObject& object)
+	{
+	});
+
+	// test light
+	PrefabRegistry::Instance().RegisterEmtpy("testLight", [](GameObject& obj)
+	{
+		LightComponent& lightComp = obj.AddComponent<LightComponent>();
+		lightComp.color = { 1.f, 0.8f, 0.6f };
 	});
 }

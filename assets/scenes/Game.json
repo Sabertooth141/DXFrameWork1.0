@@ -1,6 +1,8 @@
 {
- "version": 1,
+ "version": 2,
  "scene": "Game",
  "objects": [
+  {"prefab":"testCube","name":"testCube","position":[-0.691,0.81,-3.266],"rotation":[0.0,0.0,0.0],"scale":[1.0,1.0,1.0]},
+  {"prefab":"testLight","name":"testLight","position":[-0.01,5.154,-0.301],"rotation":[0.0,0.0,0.0],"scale":[1.0,1.0,1.0]}
   ]
 }

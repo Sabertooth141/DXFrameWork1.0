@@ -11,22 +11,20 @@ GameObject* Scene::Instantiate(const std::string& prefab, const DirectX::XMFLOAT
 		return nullptr;
 	}
 
-	const PrefabFn* prefabFunction = PrefabRegistry::Instance().Find(prefab);
-	if (!prefabFunction)
+	const PrefabDef* prefabDef = PrefabRegistry::Instance().Find(prefab);
+	if (!prefabDef)
 	{
 		assert(false && "Scene::Instantiate: unknown prefab");
 		return nullptr;
 	}
 
-	MeshData quad = MakeSpriteQuad();
-	auto object = std::make_unique<GameObject>(
-		quad.vertices, quad.indices, context);
+	std::unique_ptr<GameObject> object = CreateObjectShell(*PrefabRegistry::Instance().Find(prefab));
 
 	object->SetName(prefab);
 	object->SetPrefabName(prefab);
 
 	object->GetTransform()->SetPosition(pos);
-	(*prefabFunction)(*object);
+	prefabDef->setupFunction(*object);
 
 	GameObject* raw = object.get();
 	pendingSpawn.push_back(std::move(object));
@@ -67,6 +65,26 @@ GameObject* Scene::AddEmptyObject()
 
 	objects.push_back(std::move(object));
 	return objects.back().get();
+}
+
+std::unique_ptr<GameObject> Scene::CreateObjectShell(const PrefabDef& def)
+{
+	switch (def.shape)
+	{
+	case PrefabShape::MODEL:
+	{
+		const ModelReader model(context.renderer, def.modelPath);
+		return std::make_unique<GameObject>(def.matData, model, context);
+	}
+	case PrefabShape::EMPTY:
+		return std::make_unique<GameObject>(context);
+	case PrefabShape::SPRITE:
+	default:
+	{
+		const MeshData meshQuad = MakeSpriteQuad();
+		return std::make_unique<GameObject>(meshQuad.vertices, meshQuad.indices, context);
+	}
+	}
 }
 
 void Scene::Destroy(GameObject* object)

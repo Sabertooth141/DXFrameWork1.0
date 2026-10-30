@@ -7,6 +7,7 @@
 #include "GameObject.h"
 #include "GameContext.h"
 
+struct PrefabDef;
 class TextRenderer;
 
 class Scene
@@ -24,6 +25,8 @@ public:
 	GameObject* Add2DObject();
 	GameObject* Add3DObject(const std::string& modelPath, const MaterialData& matData);
 	GameObject* AddEmptyObject();
+
+	std::unique_ptr<GameObject> CreateObjectShell(const PrefabDef& def);
 
 	void Destroy(GameObject* object);
 

@@ -58,11 +58,16 @@ private:
 	void HandleViewportMouse(Scene& scene, GameContext& context);
 	void DrawSelectionOutline(GameContext& context);
 	void DrawLayoutSave(SceneManager& sceneManager);
-	void DrawPrefabPalette(Scene& scene, const Camera2D& camera);
+	void DrawPrefabPalette(Scene& scene, GameContext& context);
 	void DrawPhysicsDebug(PhysicsSystem& physics);
 	void DrawObjectIcon(Scene& scene, GameContext& context);
 
+	// selection / drag
 	void ValidateSelection(Scene& scene);
+	bool BeginDrag3D(GameContext& context, DirectX::XMFLOAT2 mouseScreenPos);
+	void UpdateDrag3D(GameContext& context, DirectX::XMFLOAT2 mouseScreenPos);
+
+	// camera
 	void HandleEditorCamera(Camera3D& cam, const Keyboard& keyboard, Mouse& mouse);
 
 	GameObject* Pick(Scene& scene, GameContext& context, DirectX::XMFLOAT2 mousePosScreen);
@@ -86,8 +91,14 @@ private:
 	Scene* lastScene = nullptr;
 	GameObject* selectedObject = nullptr;
 
+	// drag
 	bool isDragging = false;
-	DirectX::XMFLOAT2 objDragOffset = {};
+	DirectX::XMFLOAT2 objDragOffset = {}; // 2d
+
+	DirectX::XMFLOAT3 draggingPoint = {};
+	DirectX::XMFLOAT3 dragPlaneNormal = {0.f, 1.f, 0.f};
+	DirectX::XMFLOAT3 drag3DOffset = {};
+	bool isDragVertical = false;
 
 	std::string saveMessage;
 	bool saveValid = true;
