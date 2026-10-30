@@ -2,9 +2,9 @@
 #include <typeindex>
 #include <unordered_map>
 #include <DirectXCollision.h>
+#include <memory>
 
 #include "AnimationSystem.h"
-#include "BoxCollider2D.h"
 #include "MaterialComponent.h"
 #include "MeshComponent.h"
 #include "ObjectTags.h"

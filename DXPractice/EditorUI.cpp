@@ -2,6 +2,7 @@
 
 #include <imgui.h>
 
+#include "BoxCollider2D.h"
 #include "Camera2D.h"
 #include "GameObject.h"
 #include "Keyboard.h"
@@ -182,6 +183,7 @@ void EditorUI::Draw(SceneManager& sceneManager, GameContext& context)
 	ImGui::EndDisabled();
 
 	DrawLayoutSave(sceneManager);
+	DrawObjectIcon(*scene, context);
 
 	if (!isTransitioning && CanEditViewport())
 	{
@@ -194,12 +196,12 @@ void EditorUI::Draw(SceneManager& sceneManager, GameContext& context)
 
 	if (!isTransitioning)
 	{
-		HandleViewportMouse(*scene, context.cam2D);
+		HandleViewportMouse(*scene, context);
 	}
 
 	if (selectedObject)
 	{
-		DrawSelectionOutline(context.cam2D);
+		DrawSelectionOutline(context);
 	}
 }
 
@@ -644,7 +646,7 @@ void EditorUI::DrawToolbar(SceneManager& sceneManager)
 	ImGui::End();
 }
 
-void EditorUI::HandleViewportMouse(Scene& scene, Camera2D& camera)
+void EditorUI::HandleViewportMouse(Scene& scene, GameContext& context)
 {
 	// 選択・ドラッグは一時停止中のみ（ゲームのクリック操作と競合させない）
 	if (!CanEditViewport())
@@ -655,12 +657,12 @@ void EditorUI::HandleViewportMouse(Scene& scene, Camera2D& camera)
 
 	const ImGuiIO& io = ImGui::GetIO();
 	const DirectX::XMFLOAT2 mouse = {io.MousePos.x, io.MousePos.y};
-	const DirectX::XMFLOAT2 cam = camera.GetPosition();
+	const DirectX::XMFLOAT2 cam = context.cam2D.GetPosition();
 
 	if (!io.WantCaptureMouse && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 	{
-		selectedObject = Pick2D(scene, camera, mouse);
-		isDragging = selectedObject != nullptr;
+		selectedObject = Pick(scene, context, mouse);
+		isDragging = selectedObject != nullptr && Is2DObject(*selectedObject);
 		if (isDragging)
 		{
 			const DirectX::XMFLOAT3 pos = selectedObject->GetTransform()->GetPosition();
@@ -687,18 +689,58 @@ void EditorUI::HandleViewportMouse(Scene& scene, Camera2D& camera)
 	WakeObjRb(*selectedObject, true);
 }
 
-void EditorUI::DrawSelectionOutline(Camera2D& camera)
+void EditorUI::DrawSelectionOutline(GameContext& context)
 {
-	DirectX::XMFLOAT2 corners[4];
-	GetObjCorners(*selectedObject, corners);
+	ImDrawList* drawList = ImGui::GetBackgroundDrawList();
+	const ImU32 color = IM_COL32(255, 200, 0, 255);
 
-	const DirectX::XMFLOAT2 cam = camera.GetPosition();
-	const bool isScreenSpace = IsObjectScreenSpace(*selectedObject);
+	if (Is2DObject(*selectedObject))
+	{
+		DirectX::XMFLOAT2 corners[4];
+		GetObjCorners(*selectedObject, corners);
 
-	ImDrawList* drawList = ImGui::GetForegroundDrawList();
-	drawList->AddQuad(WorldToScreen(corners[0], cam, isScreenSpace), WorldToScreen(corners[1], cam, isScreenSpace),
-	                  WorldToScreen(corners[2], cam, isScreenSpace), WorldToScreen(corners[3], cam, isScreenSpace),
-	                  IM_COL32(255, 200, 0, 255), 2.f);
+		const DirectX::XMFLOAT2 cam = context.cam2D.GetPosition();
+		const bool isScreenSpace = IsObjectScreenSpace(*selectedObject);
+
+		drawList->AddQuad(WorldToScreen(corners[0], cam, isScreenSpace), WorldToScreen(corners[1], cam, isScreenSpace),
+		                  WorldToScreen(corners[2], cam, isScreenSpace), WorldToScreen(corners[3], cam, isScreenSpace),
+		                  IM_COL32(255, 200, 0, 255), 2.f);
+
+		return;
+	}
+
+	DirectX::BoundingOrientedBox obb;
+	if (selectedObject->GetWorldBounds(obb))
+	{
+		DirectX::XMFLOAT3 corners[DirectX::BoundingOrientedBox::CORNER_COUNT];
+		obb.GetCorners(corners);
+
+		static constexpr int edges[12][2] = {
+		{ 0, 1 },{ 1, 2 },{ 2, 3 },{ 3, 0 },
+		{ 4, 5 },{ 5, 6 },{ 6, 7 },{ 7, 4 },
+		{ 0, 4 },{ 1, 5 },{ 2, 6 },{ 3, 7 }
+		};
+
+		for (const auto& edge : edges)
+		{
+			ImVec2 lineStartPos, lineFinishPos;
+
+			if (WorldToScreen3D(corners[edge[0]], context, lineStartPos) && WorldToScreen3D(corners[edge[1]], context, lineFinishPos))
+			{
+				drawList->AddLine(lineStartPos, lineFinishPos, color, 2.f);
+			}
+		}
+
+		return;
+	}
+
+	// no mesh
+	ImVec2 screenPos;
+
+	if (WorldToScreen3D(selectedObject->GetTransform()->GetPosition(), context, screenPos))
+	{
+		drawList->AddCircle(screenPos, iconRadius + 4.f, color, 0, 2.f);
+	}
 }
 
 void EditorUI::DrawLayoutSave(SceneManager& sceneManager)
@@ -706,9 +748,10 @@ void EditorUI::DrawLayoutSave(SceneManager& sceneManager)
 	ImGui::Begin("シーンセーブ");
 
 	Scene* scene = sceneManager.GetCurrScene();
+	const bool canSave = scene && mode == Mode::EDIT && !sceneManager.IsTransitioning();
 
-	ImGui::BeginDisabled(!scene || mode != Mode::EDIT || sceneManager.IsTransitioning());
-	if (ImGui::Button("シーンを保存"))
+	ImGui::BeginDisabled(!canSave);
+	if (ImGui::Button("シーンを保存") && canSave)
 	{
 		const SceneLayout::Result result = SceneLayout::Save(*scene, sceneManager.GetCurrSceneName());
 		saveValid = result.valid;
@@ -826,6 +869,33 @@ void EditorUI::DrawPhysicsDebug(PhysicsSystem& physics)
 	ImGui::Text("Total:           %.3f", s.totalMs);
 
 	ImGui::End();
+}
+
+void EditorUI::DrawObjectIcon(Scene& scene, GameContext& context)
+{
+	// switch drawing to background behind panels
+	ImDrawList* drawList = ImGui::GetBackgroundDrawList();
+
+	for (auto& objPtr : scene.GetObjects())
+	{
+		GameObject& obj = *objPtr;
+		if (Is2DObject(obj) || obj.HasLocalBounds())
+		{
+			continue;
+		}
+
+		ImVec2 screenPos;
+		if (!WorldToScreen3D(obj.GetTransform()->GetPosition(), context, screenPos))
+		{
+			continue;
+		}
+
+		constexpr ImU32 color = IM_COL32(200, 200, 200, 220);
+
+		drawList->AddCircleFilled(screenPos, iconRadius * 0.6f, color);
+		drawList->AddCircle(screenPos, iconRadius, color, 0, 1.5f);
+		drawList->AddText({ screenPos.x + iconRadius + 3.f, screenPos.y - 8.f }, color, obj.GetName().c_str());
+	}
 }
 
 GameObject* EditorUI::Pick(Scene& scene, GameContext& context, DirectX::XMFLOAT2 mousePosScreen)

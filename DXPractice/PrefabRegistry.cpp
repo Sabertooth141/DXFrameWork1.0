@@ -1,5 +1,6 @@
 #include "PrefabRegistry.h"
 
+#include "BoxCollider2D.h"
 #include "GameObject.h"
 #include "PhysicsTest.h"
 

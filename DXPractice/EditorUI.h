@@ -55,11 +55,12 @@ private:
 	void DrawHierarchy(Scene& scene);
 	void DrawInspector(Scene& scene);
 	void DrawToolbar(SceneManager& sceneManager);
-	void HandleViewportMouse(Scene& scene, Camera2D& camera);
-	void DrawSelectionOutline(Camera2D& camera);
+	void HandleViewportMouse(Scene& scene, GameContext& context);
+	void DrawSelectionOutline(GameContext& context);
 	void DrawLayoutSave(SceneManager& sceneManager);
 	void DrawPrefabPalette(Scene& scene, const Camera2D& camera);
 	void DrawPhysicsDebug(PhysicsSystem& physics);
+	void DrawObjectIcon(Scene& scene, GameContext& context);
 
 	void ValidateSelection(Scene& scene);
 	void HandleEditorCamera(Camera3D& cam, const Keyboard& keyboard, Mouse& mouse);
