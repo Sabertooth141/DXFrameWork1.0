@@ -16,9 +16,9 @@ struct VSInput
 {
 	float3 pos : POSITION;
 	float3 normal : NORMAL;
-	float2 texcoord : TEXTCOORD;
+	float2 texcoord : TEXCOORD;
 	uint4 boneIndices : BLENDINDICES;
-	float4 boneWeights : BONEWEIGHT;
+	float4 boneWeights : BLENDWEIGHT;
 };
 
 struct VSOutput
