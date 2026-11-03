@@ -64,6 +64,28 @@ public:
 		return static_cast<const T*>(it->second.get());
 	}
 
+	template <typename V>
+	void MergeLocalBounds(const std::vector<V>& vertices)
+	{
+		if (vertices.empty())
+		{
+			return;
+		}
+
+		DirectX::BoundingBox meshBox;
+		DirectX::BoundingBox::CreateFromPoints(meshBox, vertices.size(), &vertices[0].pos, sizeof(V));
+
+		if (!hasLocalBounds)
+		{
+			localBounds = meshBox;
+			hasLocalBounds = true;
+		}
+		else
+		{
+			DirectX::BoundingBox::CreateMerged(localBounds, localBounds, meshBox);
+		}
+	}
+
 	const TransformComponent* GetTransform() const { return GetComponent<TransformComponent>(); }
 
 	const std::string& GetName() const { return objName; }

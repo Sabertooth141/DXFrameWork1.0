@@ -4,6 +4,7 @@
 
 #include "IComponent.h"
 #include "DrawableBase.h"
+#include "Vertex.h"
 
 struct MaterialData;
 /**
@@ -16,7 +17,8 @@ public:
 	MaterialComponent(Renderer& renderer,
 	                  const MaterialData& matData,
 	                  const std::wstring& vsPath = L"VertexShader.cso",
-	                  const std::wstring& psPath = L"PixelShader.cso");
+	                  const std::wstring& psPath = L"PixelShader.cso",
+	                  const std::vector<D3D11_INPUT_ELEMENT_DESC>& layout = Vertex::GetInputLayout());
 
 	void Bind(Renderer& renderer);
 

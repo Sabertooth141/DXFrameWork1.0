@@ -1,10 +1,17 @@
 #pragma once
 #include <vector>
 
+#include "SkinnedVertex.h"
 #include "Vertex.h"
 
 struct MeshData
 {
 	std::vector<Vertex> vertices;
+	std::vector<unsigned int> indices;
+};
+
+struct SkinnedMeshData
+{
+	std::vector<SkinnedVertex> vertices;
 	std::vector<unsigned int> indices;
 };

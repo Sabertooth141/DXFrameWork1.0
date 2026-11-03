@@ -14,7 +14,11 @@
 class MeshComponent : public IComponent, public DrawableBase<MeshComponent>
 {
 public:
-	MeshComponent(Renderer& renderer, MeshData& meshData, TransformComponent& transformComp);
+	MeshComponent(Renderer& renderer, const MeshData& meshData, TransformComponent& transformComp);
+	MeshComponent(Renderer& renderer, const SkinnedMeshData& meshData, TransformComponent& transformComp);
 	void Update(float deltaTime) override;
+
+private:
+	void Init(Renderer& renderer, const std::vector<unsigned int>& indices, TransformComponent& transformComp);
 };
 

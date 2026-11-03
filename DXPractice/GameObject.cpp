@@ -4,35 +4,34 @@
 #include "App.h"
 #include "ModelReader.h"
 #include "Material.h"
+#include "SkeletalAnimatorComponent.h"
 
 GameObject::GameObject(const MaterialData& matData, const ModelReader& modelReader, GameContext& context,
                        const std::wstring& vsPath, const std::wstring& psPath) : GameObject(context)
 {
 	TransformComponent& transformComp = *GetTransform();
-	AddComponent<MaterialComponent>(*renderer, matData, vsPath, psPath);
-	for (auto& meshData : modelReader.GetMeshes())
+
+	if (modelReader.HasSkeleton())
 	{
-		meshes.push_back(std::make_unique<MeshComponent>(*renderer, meshData, transformComp));
-
-		if (meshData.vertices.empty())
+		AddComponent<MaterialComponent>(*renderer, matData, L"SkinnedVertexShader.cso", psPath, SkinnedVertex::GetInputLayout());
+		for (auto& meshData : modelReader.GetSkinnedMeshes())
 		{
-			continue;
+			meshes.push_back(std::make_unique<MeshComponent>(*renderer, meshData, transformComp));
+			MergeLocalBounds(meshData.vertices);
 		}
 
-		DirectX::BoundingBox meshBox;
-		DirectX::BoundingBox::CreateFromPoints(meshBox, meshData.vertices.size(), &meshData.vertices[0].pos,
-		                                       sizeof(Vertex));
-
-		if (!hasLocalBounds)
+		AddComponent<SkeletalAnimatorComponent>(*renderer, modelReader.GetSkeleton());
+	}
+	else
+	{
+		AddComponent<MaterialComponent>(*renderer, matData, vsPath, psPath);
+		for (auto& meshData : modelReader.GetMeshes())
 		{
-			localBounds = meshBox;
-			hasLocalBounds = true;
-		}
-		else
-		{
-			DirectX::BoundingBox::CreateMerged(localBounds, localBounds, meshBox);
+			meshes.push_back(std::make_unique<MeshComponent>(*renderer, meshData, transformComp));
+			MergeLocalBounds(meshData.vertices);
 		}
 	}
+
 	AddComponent<MeshRendererComponent>();
 }
 

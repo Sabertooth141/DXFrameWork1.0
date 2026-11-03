@@ -38,6 +38,17 @@ void RegisterPrefabs()
 	PrefabRegistry::Instance().RegisterEmtpy("testLight", [](GameObject& obj)
 	{
 		LightComponent& lightComp = obj.AddComponent<LightComponent>();
-		lightComp.color = { 1.f, 0.8f, 0.6f };
+		lightComp.color = {1.f, 0.8f, 0.6f};
+	});
+
+	// stage
+	PrefabRegistry::Instance().RegisterModel("stage", "../../assets/models/Stage.fbx", mat, [](GameObject& object)
+	{
+	});
+
+	// dragon
+	PrefabRegistry::Instance().RegisterModel("dragon", "../../assets/models/dragon/DragonUsurperMesh.fbx", mat, [](GameObject& object)
+	{
+		object.GetTransform()->SetScale(0.01f);
 	});
 }

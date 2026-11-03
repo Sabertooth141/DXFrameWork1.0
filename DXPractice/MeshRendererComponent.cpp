@@ -3,6 +3,7 @@
 #include "GameContext.h"
 #include "GameObject.h"
 #include "MaterialComponent.h"
+#include "SkeletalAnimatorComponent.h"
 
 void MeshRendererComponent::Render(Renderer& renderer)
 {
@@ -18,6 +19,12 @@ void MeshRendererComponent::Render(Renderer& renderer)
 	}
 
 	material->Bind(renderer);
+
+	if (auto* animator = owner->GetComponent<SkeletalAnimatorComponent>())
+	{
+		animator->BindPalette(renderer);
+	}
+
 	for (auto& mesh : owner->GetMeshes())
 	{
 		mesh->Draw(renderer);
