@@ -180,6 +180,13 @@ void ModelReader::BuildSkeletonNodes(const aiNode* node, int parentIndex)
 	skeletonNode.parent = parentIndex;
 	skeletonNode.bindLocal = ToRowMajor(node->mTransformation);
 
+	// per node TRS binding
+	DirectX::XMVECTOR scale, rotation, translation;
+	DirectX::XMMatrixDecompose(&scale, &rotation, &translation, DirectX::XMLoadFloat4x4(&skeletonNode.bindLocal));
+	DirectX::XMStoreFloat3(&skeletonNode.bindTranslation, translation);
+	DirectX::XMStoreFloat4(&skeletonNode.bindRotation, rotation);
+	DirectX::XMStoreFloat3(&skeletonNode.bindScale, scale);
+
 	skeleton->nodes.push_back(skeletonNode);
 	const int index = static_cast<int>(skeleton->nodes.size() - 1);
 	skeleton->nodeIndexByName.try_emplace(skeletonNode.name, index);

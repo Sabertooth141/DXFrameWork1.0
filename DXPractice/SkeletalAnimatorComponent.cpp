@@ -1,5 +1,94 @@
 #include "SkeletalAnimatorComponent.h"
 
+#include <algorithm>
+
+#include "AnimationClip.h"
+#include "GameContext.h"
+#include "SkeletalAnimationSystem.h"
+
+namespace
+{
+	// VectorKeyInfo && QuatKeyInfo
+	template <typename KeyInfo>
+	unsigned AdvanceKeyCursor(const std::vector<KeyInfo>& keys, float ticks, unsigned& cursor)
+	{
+		// since cursor will advance by 1 last starting key = size - 2
+		const unsigned lastValidSegmentStart = static_cast<unsigned>(keys.size() - 2);
+
+		if (cursor > lastValidSegmentStart || keys[cursor].time > ticks)
+		{
+			cursor = 0;
+		}
+
+		while (cursor < lastValidSegmentStart && keys[cursor + 1].time <= ticks)
+		{
+			cursor++;
+		}
+		return cursor;
+	}
+
+	// VectorKeyInfo && QuatKeyInfo
+	template <typename KeyInfo>
+	float SegmentProgress(const KeyInfo& startKey, const KeyInfo& finishKey, float ticks)
+	{
+		const float span = finishKey.time - startKey.time;
+		if (span <= 0.f)
+		{
+			return 0.f;
+		}
+
+		return std::clamp((ticks - startKey.time) / span, 0.f, 1.f);
+	}
+
+	DirectX::XMVECTOR SampleVectorKeyInfo(const std::vector<VectorKeyInfo>& keys, float ticks, unsigned& cursor,
+	                                      DirectX::FXMVECTOR fallback)
+	{
+		if (keys.empty())
+		{
+			return fallback;
+		}
+
+		if (keys.size() == 1)
+		{
+			return DirectX::XMLoadFloat3(&keys[0].value);
+		}
+
+		const unsigned keyIndex = AdvanceKeyCursor(keys, ticks, cursor);
+		const float progress = SegmentProgress(keys[keyIndex], keys[keyIndex + 1], ticks);
+
+		return DirectX::XMVectorLerp(DirectX::XMLoadFloat3(&keys[keyIndex].value),
+		                             DirectX::XMLoadFloat3(&keys[keyIndex + 1].value), progress);
+	}
+
+	DirectX::XMVECTOR SampleRotation(const std::vector<QuatKeyInfo>& keys, float ticks, unsigned& cursor,
+	                                 DirectX::FXMVECTOR fallback)
+	{
+		if (keys.empty())
+		{
+			return fallback;
+		}
+
+		if (keys.size() == 1)
+		{
+			return DirectX::XMLoadFloat4(&keys[0].value);
+		}
+
+		const unsigned keyIndex = AdvanceKeyCursor(keys, ticks, cursor);
+		const float progress = SegmentProgress(keys[keyIndex], keys[keyIndex + 1], ticks);
+
+		const DirectX::XMVECTOR startQuat = DirectX::XMLoadFloat4(&keys[keyIndex].value);
+		DirectX::XMVECTOR finishQuat = DirectX::XMLoadFloat4(&keys[keyIndex + 1].value);
+
+		// take the shortest rotation of q and -q from start to finish
+		if (DirectX::XMVectorGetX(DirectX::XMQuaternionDot(startQuat, finishQuat)) < 0.f)
+		{
+			finishQuat = DirectX::XMVectorNegate(finishQuat);
+		}
+
+		return DirectX::XMQuaternionNormalize(DirectX::XMQuaternionSlerp(startQuat, finishQuat, progress));
+	}
+}
+
 SkeletalAnimatorComponent::SkeletalAnimatorComponent(Renderer& renderer, std::shared_ptr<const Skeleton> inSkeleton) :
 	skeleton(std::move(inSkeleton)),
 	paletteCBuffer(renderer, palette, 1) // b1
@@ -19,7 +108,7 @@ SkeletalAnimatorComponent::SkeletalAnimatorComponent(Renderer& renderer, std::sh
 		DirectX::XMStoreFloat4x4(&boneMatrix, DirectX::XMMatrixIdentity());
 	}
 
-	ComputeGloabls();
+	ComputeGlobals();
 	ComputePalette();
 
 #ifdef _DEBUG
@@ -42,13 +131,103 @@ SkeletalAnimatorComponent::SkeletalAnimatorComponent(Renderer& renderer, std::sh
 #endif
 }
 
+void SkeletalAnimatorComponent::OnAttach(GameContext& context)
+{
+	IComponent::OnAttach(context);
+	context.skeletalAnimationSys.Register(this);
+}
+
+void SkeletalAnimatorComponent::Update(float deltaTime)
+{
+	if (!currClip)
+	{
+		return;
+	}
+
+	AdvanceTime(deltaTime);
+	SamplePose();
+	ComputeGlobals();
+	ComputePalette();
+}
+
+void SkeletalAnimatorComponent::SetClip(std::shared_ptr<const AnimationClip> inClip, bool inLoop)
+{
+	assert((!inClip || inClip->builtFor == skeleton.get()) && "clip was mapped against a different skeleton");
+
+	currClip = std::move(inClip);
+	isLoop = inLoop;
+	timeInSec = 0.f;
+	isFinished = false;
+	cursors.assign(currClip ? currClip->channels.size() : 0, KeyCursor{});
+}
+
+void SkeletalAnimatorComponent::AdvanceTime(float deltaTime)
+{
+	const float length = currClip->DurationInSeconds();
+	if (length <= 0.f)
+	{
+		timeInSec = 0.f;
+		isFinished = !isLoop;
+		return;
+	}
+
+	timeInSec += deltaTime;
+	if (isLoop)
+	{
+		timeInSec = std::fmod(timeInSec, length);
+	}
+	else if (timeInSec >= length)
+	{
+		timeInSec = length;
+		isFinished = true;
+	}
+}
+
+void SkeletalAnimatorComponent::SamplePose()
+{
+	// nodes without a channel stay in bind pose
+	for (size_t i = 0; i < skeleton->nodes.size(); i++)
+	{
+		localPose[i] = skeleton->nodes[i].bindLocal;
+	}
+
+	const float ticks = timeInSec * currClip->ticksPerSecond;
+
+	for (size_t channelIndex = 0; channelIndex < currClip->channels.size(); channelIndex++)
+	{
+		const int nodeIndex = currClip->channelToNode[channelIndex];
+
+		if (nodeIndex < 0)
+		{
+			continue;
+		}
+
+		const AnimationChannel& channel = currClip->channels[channelIndex];
+		const SkeletonNode& skeletonNode = skeleton->nodes[nodeIndex];
+		KeyCursor& cursor = cursors[channelIndex];
+
+		const DirectX::XMVECTOR translation = SampleVectorKeyInfo(channel.positions, ticks, cursor.position,
+		                                                          DirectX::XMLoadFloat3(&skeletonNode.bindTranslation));
+		const DirectX::XMVECTOR rotation = SampleRotation(channel.rotations, ticks, cursor.rotation,
+		                                                  DirectX::XMLoadFloat4(&skeletonNode.bindRotation));
+		const DirectX::XMVECTOR scale = SampleVectorKeyInfo(channel.scales, ticks, cursor.scale,
+		                                                    DirectX::XMLoadFloat3(&skeletonNode.bindScale));
+
+		// row vectors: SRT
+		const DirectX::XMMATRIX local = DirectX::XMMatrixScalingFromVector(scale) *
+			DirectX::XMMatrixRotationQuaternion(rotation) *
+			DirectX::XMMatrixTranslationFromVector(translation);
+		DirectX::XMStoreFloat4x4(&localPose[nodeIndex], local);
+	}
+}
+
 void SkeletalAnimatorComponent::BindPalette(Renderer& renderer)
 {
 	paletteCBuffer.Update(renderer, palette);
 	paletteCBuffer.Bind(renderer);
 }
 
-void SkeletalAnimatorComponent::ComputeGloabls()
+void SkeletalAnimatorComponent::ComputeGlobals()
 {
 	// parents first
 	for (size_t i = 0; i < skeleton->nodes.size(); i++)

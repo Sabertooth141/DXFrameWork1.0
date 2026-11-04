@@ -11,9 +11,12 @@ public:
 		animators.push_back(animator);
 	}
 
-	void Unregister(AnimatorComponent* animator)
+	void Unregister(GameObject* object)
 	{
-		std::erase(animators, animator);
+		std::erase_if(animators, [object](const AnimatorComponent* animator)
+		{
+			return animator->owner == object;
+		});
 	}
 
 	void Update(float deltaTime)

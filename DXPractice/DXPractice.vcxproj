@@ -153,6 +153,7 @@
     <Image Include="small.ico" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AnimationClip.cpp" />
     <ClCompile Include="AnimatorComponent.cpp" />
     <ClCompile Include="App.cpp" />
     <ClCompile Include="Bindable.cpp" />
@@ -203,6 +204,7 @@
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AnimationClip.h" />
     <ClInclude Include="AnimationSystem.h" />
     <ClInclude Include="AnimatorComponent.h" />
     <ClInclude Include="App.h" />
@@ -252,6 +254,7 @@
     <ClInclude Include="SceneLayout.h" />
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="ScriptSystem.h" />
+    <ClInclude Include="SkeletalAnimationSystem.h" />
     <ClInclude Include="SkeletalAnimatorComponent.h" />
     <ClInclude Include="Skeleton.h" />
     <ClInclude Include="SkinnedVertex.h" />

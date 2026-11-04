@@ -278,6 +278,9 @@
     <ClCompile Include="SkeletalAnimatorComponent.cpp">
       <Filter>Source Files\Components\Mesh</Filter>
     </ClCompile>
+    <ClCompile Include="AnimationClip.cpp">
+      <Filter>Source Files\Components\Mesh</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Win.h">
@@ -506,6 +509,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SkeletalAnimatorComponent.h">
+      <Filter>Header Files\Components\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimationClip.h">
+      <Filter>Header Files\Components\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeletalAnimationSystem.h">
       <Filter>Header Files\Components\Mesh</Filter>
     </ClInclude>
   </ItemGroup>

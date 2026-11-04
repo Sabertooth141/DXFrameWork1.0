@@ -163,9 +163,7 @@ void Scene::UnregisterFromSys(GameObject* object)
 {
 	context.physicsSys.Unregister(object);
 	context.scriptSys.Unregister(object);
-	if (auto* anim = object->GetComponent<AnimatorComponent>())
-	{
-		context.animationSys.Unregister(anim);
-	}
+	context.animationSys.Unregister(object);
+	context.skeletalAnimationSys.Unregister(object);
 	context.renderSys.Unregister(object);
 }

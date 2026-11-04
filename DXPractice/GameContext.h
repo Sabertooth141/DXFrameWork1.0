@@ -1,5 +1,6 @@
 #pragma once
 
+class SkeletalAnimationSystem;
 class Camera3D;
 class SceneManager;
 class Camera2D;
@@ -22,6 +23,7 @@ struct GameContext
 	PhysicsSystem& physicsSys;
 	ScriptSystem& scriptSys;
 	AnimationSystem& animationSys;
+	SkeletalAnimationSystem& skeletalAnimationSys;
 	RenderSystem& renderSys;
 	Camera2D& cam2D;
 	Camera3D& cam3D;

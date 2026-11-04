@@ -1,8 +1,10 @@
 #include "PrefabRegistry.h"
 
+#include "AnimationClip.h"
 #include "BoxCollider2D.h"
 #include "GameObject.h"
 #include "PhysicsTest.h"
+#include "SkeletalAnimatorComponent.h"
 
 void RegisterPrefabs()
 {
@@ -50,5 +52,8 @@ void RegisterPrefabs()
 	PrefabRegistry::Instance().RegisterModel("dragon", "../../assets/models/dragon/DragonUsurperMesh.fbx", mat, [](GameObject& object)
 	{
 		object.GetTransform()->SetScale(0.01f);
+
+		auto* animator = object.GetComponent<SkeletalAnimatorComponent>();
+		animator->SetClip(LoadAnimationClip("../../assets/models/dragon/animations/idle01.fbx", animator->GetSkeleton()), true);
 	});
 }

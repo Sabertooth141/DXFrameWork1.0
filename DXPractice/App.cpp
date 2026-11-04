@@ -9,15 +9,16 @@
 #include "WindowSettings.h"
 
 App::App(const std::string& cmdLine) : cmdLine(cmdLine),
-wnd(WIN_WIDTH, WIN_HEIGHT, L"DXPractice"),
-renderer(wnd.GetRenderer()), debugRenderer(renderer),
-textRenderer(renderer, L"Consolas", 18),
-renderSystem(RenderSystem(renderer, cam2D, cam3D)),
-gameContext{
-	renderer, physicsSystem, scriptSystem, animationSystem, renderSystem, cam2D, cam3D,
-	wnd.keyboard, wnd.mouse
-},
-sceneManager(gameContext)
+                                       wnd(WIN_WIDTH, WIN_HEIGHT, L"DXPractice"),
+                                       renderer(wnd.GetRenderer()), debugRenderer(renderer),
+                                       textRenderer(renderer, L"Consolas", 18),
+                                       renderSystem(RenderSystem(renderer, cam2D, cam3D)),
+                                       gameContext{
+	                                       renderer, physicsSystem, scriptSystem, animationSystem,
+	                                       skeletalAnimationSystem, renderSystem, cam2D, cam3D,
+	                                       wnd.keyboard, wnd.mouse
+                                       },
+                                       sceneManager(gameContext)
 {
 	gameContext.sceneManager = &sceneManager;
 }
@@ -74,6 +75,7 @@ void App::Update(float deltaTime)
 			physicsSystem.Update(deltaTime);
 			scriptSystem.LateUpdate(deltaTime);
 			animationSystem.Update(deltaTime);
+			skeletalAnimationSystem.Update(deltaTime);
 		}
 		scene->FlushPending();
 	}
@@ -109,7 +111,7 @@ void App::Draw(float deltaTime)
 
 	editor.Draw(sceneManager, gameContext);
 	const bool wantCursorLock = editor.WantsCursorLocked();
-	
+
 	// true means mismatch -> change to lock / unlock
 	if (wantCursorLock == wnd.CursorEnabled())
 	{
@@ -139,7 +141,7 @@ void App::DebugRender(Scene& scene)
 		{
 			debugRenderer.DrawBox(
 				col->GetWorldOBB().GetCorners(),
-				{ 0, 1, 0, 1 });
+				{0, 1, 0, 1});
 		}
 	}
 }
@@ -177,9 +179,9 @@ void App::DrawTextLabels(Scene& scene)
 		{
 			const DirectX::XMFLOAT3 pos = obj->GetTransform()->GetPosition();
 			textRenderer.DrawWorld(textLabel->text, {
-									   pos.x + textLabel->posOffset.x,
-									   pos.y + textLabel->posOffset.y
-				});
+				                       pos.x + textLabel->posOffset.x,
+				                       pos.y + textLabel->posOffset.y
+			                       });
 		}
 	}
 }

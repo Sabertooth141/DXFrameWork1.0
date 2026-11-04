@@ -14,6 +14,7 @@
 #include "EditorUI.h"
 #include "ImGuiLayer.h"
 #include "SceneManager.h"
+#include "SkeletalAnimationSystem.h"
 
 class GameObject;
 class ModelReader;
@@ -48,6 +49,7 @@ private:
 	Timer timer;
 	ScriptSystem scriptSystem;
 	AnimationSystem animationSystem;
+	SkeletalAnimationSystem skeletalAnimationSystem;
 	RenderSystem renderSystem;
 	PhysicsSystem physicsSystem;
 	Camera2D cam2D;

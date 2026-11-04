@@ -12,6 +12,11 @@ struct SkeletonNode
 	std::string name;
 	int parent = -1; // parent node, -1 = root
 	DirectX::XMFLOAT4X4 bindLocal{}; // local matrix
+
+	// node TRS
+	DirectX::XMFLOAT3 bindTranslation{};
+	DirectX::XMFLOAT4 bindRotation{0.f, 0.f, 0.f, 1.f};
+	DirectX::XMFLOAT3 bindScale{1.f, 1.f, 1.f};
 };
 
 struct SkeletonBone
