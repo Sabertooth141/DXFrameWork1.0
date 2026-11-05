@@ -154,6 +154,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AnimationClip.cpp" />
+    <ClCompile Include="AnimationClipCache.cpp" />
     <ClCompile Include="AnimatorComponent.cpp" />
     <ClCompile Include="App.cpp" />
     <ClCompile Include="Bindable.cpp" />
@@ -177,6 +178,7 @@
     <ClCompile Include="MeshComponent.cpp" />
     <ClCompile Include="MeshRendererComponent.cpp" />
     <ClCompile Include="MeshRenderSystem.cpp" />
+    <ClCompile Include="ModelCache.cpp" />
     <ClCompile Include="ModelReader.cpp" />
     <ClCompile Include="MonoBehavior.cpp" />
     <ClCompile Include="Mouse.cpp" />
@@ -205,6 +207,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AnimationClip.h" />
+    <ClInclude Include="AnimationClipCache.h" />
     <ClInclude Include="AnimationSystem.h" />
     <ClInclude Include="AnimatorComponent.h" />
     <ClInclude Include="App.h" />
@@ -238,6 +241,7 @@
     <ClInclude Include="MeshData.h" />
     <ClInclude Include="MeshRendererComponent.h" />
     <ClInclude Include="MeshRenderSystem.h" />
+    <ClInclude Include="ModelCache.h" />
     <ClInclude Include="ModelReader.h" />
     <ClInclude Include="MonoBehavior.h" />
     <ClInclude Include="Mouse.h" />

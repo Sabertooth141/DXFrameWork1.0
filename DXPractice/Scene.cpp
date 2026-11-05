@@ -2,6 +2,7 @@
 #include "PrefabRegistry.h"
 #include "SpriteVertex.h"
 #include "App.h"
+#include "ModelCache.h"
 #include "ModelReader.h"
 
 GameObject* Scene::Instantiate(const std::string& prefab, const DirectX::XMFLOAT3& pos)
@@ -52,7 +53,7 @@ GameObject* Scene::Add3DObject(const std::string& modelPath, const MaterialData&
 		return nullptr;
 	}
 
-	ModelReader model(context.renderer, modelPath);
+	const ModelReader& model = ModelCache::LoadModel(context.renderer, modelPath);
 	auto object = std::make_unique<GameObject>(matData, model, context);
 	
 	objects.push_back(std::move(object));
@@ -73,7 +74,7 @@ std::unique_ptr<GameObject> Scene::CreateObjectShell(const PrefabDef& def)
 	{
 	case PrefabShape::MODEL:
 	{
-		const ModelReader model(context.renderer, def.modelPath);
+		const ModelReader& model = ModelCache::LoadModel(context.renderer, def.modelPath);
 		return std::make_unique<GameObject>(def.matData, model, context);
 	}
 	case PrefabShape::EMPTY:
