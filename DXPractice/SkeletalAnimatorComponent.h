@@ -2,6 +2,7 @@
 #include <DirectXMath.h>
 #include <memory>
 
+#include "AnimationFadeTable.h"
 #include "ConstantBuffer.h"
 #include "IComponent.h"
 #include "Skeleton.h"
@@ -31,7 +32,22 @@ public:
 	void BindPalette(Renderer& renderer);
 
 	void SetClip(std::shared_ptr<const AnimationClip> inClip, bool inLoop);
+	void AddCLip(std::shared_ptr<const AnimationClip> inClip);
+	void SetFadeTable(std::shared_ptr<const AnimationFadeTable> inTable)
+	{
+		fadeTable = inTable;
+	}
 
+	bool PlayClip(const std::string& name, bool inIsLoop = true, float fadeSec = -1.f);
+
+	bool IsFinished() const
+	{
+		return isFinished;
+	}
+	const std::string& GetCurrClipName() const;
+	std::vector<std::string> GetClipNames() const;
+
+	
 	const Skeleton& GetSkeleton() const
 	{
 		return *skeleton;
@@ -49,6 +65,9 @@ private:
 	std::vector<DirectX::XMFLOAT4X4> globalPose;
 	BonePalette palette{};
 	VertexConstantBuffer<BonePalette> paletteCBuffer;
+
+	std::unordered_map<std::string, std::shared_ptr<const AnimationClip>> clips;
+	std::shared_ptr<const AnimationFadeTable> fadeTable;
 
 	// animation playback states
 	std::shared_ptr<const AnimationClip> currClip;

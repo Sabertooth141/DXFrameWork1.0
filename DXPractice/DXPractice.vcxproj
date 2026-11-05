@@ -208,6 +208,7 @@
   <ItemGroup>
     <ClInclude Include="AnimationClip.h" />
     <ClInclude Include="AnimationClipCache.h" />
+    <ClInclude Include="AnimationFadeTable.h" />
     <ClInclude Include="AnimationSystem.h" />
     <ClInclude Include="AnimatorComponent.h" />
     <ClInclude Include="App.h" />

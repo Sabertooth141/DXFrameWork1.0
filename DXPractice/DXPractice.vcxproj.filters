@@ -281,6 +281,12 @@
     <ClCompile Include="AnimationClip.cpp">
       <Filter>Source Files\Components\Mesh</Filter>
     </ClCompile>
+    <ClCompile Include="ModelCache.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AnimationClipCache.cpp">
+      <Filter>Source Files\Components\Mesh</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Win.h">
@@ -515,6 +521,15 @@
       <Filter>Header Files\Components\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="SkeletalAnimationSystem.h">
+      <Filter>Header Files\Components\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelCache.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimationClipCache.h">
+      <Filter>Header Files\Components\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimationFadeTable.h">
       <Filter>Header Files\Components\Mesh</Filter>
     </ClInclude>
   </ItemGroup>
