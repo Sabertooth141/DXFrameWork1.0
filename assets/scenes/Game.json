@@ -2,7 +2,7 @@
  "version": 2,
  "scene": "Game",
  "objects": [
-  {"prefab":"dragon","name":"dragon","position":[0.583,0.0,5.014],"rotation":[0.0,0.0,0.0],"scale":[0.01,0.01,0.01]},
+  {"prefab":"dragon","name":"dragon","position":[-3.434,-3.363,12.204],"rotation":[0.0,0.0,0.0],"scale":[0.01,0.01,0.01]},
   {"prefab":"testLight","name":"testLight","position":[-1.963,2.424,-6.499],"rotation":[0.0,0.0,0.0],"scale":[1.0,1.0,1.0]}
   ]
 }

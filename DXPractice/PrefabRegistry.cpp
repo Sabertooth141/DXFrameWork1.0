@@ -1,10 +1,36 @@
 #include "PrefabRegistry.h"
 
+#include <memory>
+
 #include "AnimationClip.h"
+#include "AnimationClipCache.h"
 #include "BoxCollider2D.h"
+#include "CycleAnimationTester.h"
 #include "GameObject.h"
 #include "PhysicsTest.h"
 #include "SkeletalAnimatorComponent.h"
+
+namespace
+{
+	std::shared_ptr<const AnimationFadeTable> DragonFadeTable()
+	{
+		static const std::shared_ptr<const AnimationFadeTable> fadeTable = []
+		{
+			auto table = std::make_shared<AnimationFadeTable>(0.2f);
+			table->SetFade(AnimationFadeTable::any, "attackHand", 0.1f);
+			table->SetFade(AnimationFadeTable::any, "attackMouth", 0.1f);
+			table->SetFade(AnimationFadeTable::any, "attackFlame", 0.1f);
+			table->SetFade(AnimationFadeTable::any, "getHit", 0.05f);
+			table->SetFade("idle01", "walk", 0.3f);
+			table->SetFade("walk", "idle01", 0.3f);
+			table->SetFade("Walk", "Run", 0.3f);
+			table->SetFade("Run", "Walk", 0.3f);
+			return table;
+		}();
+
+		return fadeTable;
+	}
+}
 
 void RegisterPrefabs()
 {
@@ -49,11 +75,39 @@ void RegisterPrefabs()
 	});
 
 	// dragon
-	PrefabRegistry::Instance().RegisterModel("dragon", "../../assets/models/dragon/DragonUsurperMesh.fbx", mat, [](GameObject& object)
-	{
-		object.GetTransform()->SetScale(0.01f);
+	PrefabRegistry::Instance().RegisterModel("dragon", "../../assets/models/dragon/DragonUsurperMesh.fbx", mat,
+	                                         [](GameObject& object)
+	                                         {
+		                                         object.GetTransform()->SetScale(0.01f);
 
-		auto* animator = object.GetComponent<SkeletalAnimatorComponent>();
-		animator->SetClip(LoadAnimationClip("../../assets/models/dragon/animations/idle01.fbx", animator->GetSkeleton()), true);
-	});
+		                                         auto* animator = object.GetComponent<SkeletalAnimatorComponent>();
+		                                         const std::string animDir = "../../assets/models/dragon/animations/";
+
+		                                         struct ClipDef
+		                                         {
+			                                         const char* name;
+			                                         bool loop;
+		                                         };
+		                                         for (const ClipDef& def : {
+			                                              ClipDef{"idle01", true}, {"idle02", true}, {"Walk", true},
+			                                              {"Run", true},
+			                                              {"attackHand", false}, {"attackMouth", false},
+			                                              {"attackFlame", false}, {"attackWing", false},
+			                                              {"getHit", false}, {"Die", false},
+			                                              {"Scream", false},
+			                                              {"Sleep", true}, {"takeOff", false}, {"Land", false},
+			                                              {"FlyIdle", true}, {"FlyForward", true}, {"FlyGlide", true},
+			                                              {"FlyFlame", true}
+		                                              })
+		                                         {
+			                                         animator->AddClip(
+				                                         AnimationClipCache::LoadClip(
+					                                         animDir + def.name + ".fbx", animator->GetSkeleton()),
+				                                         def.loop);
+		                                         }
+		                                         animator->SetFadeTable(DragonFadeTable());
+		                                         animator->PlayClip("idle02");
+
+		                                         object.AddComponent<CycleAnimationTester>();
+	                                         });
 }

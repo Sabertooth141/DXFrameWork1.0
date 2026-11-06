@@ -131,7 +131,7 @@ void SceneManager::SwitchToScene(const std::string& inSceneName)
 	currScene = factories.at(inSceneName)(context);
 	currName = inSceneName;
 
-	context.gameScene = currScene.get();
+	context.currScene = currScene.get();
 	currScene->OnEnter();
 
 	// OnEnter の直後にシーン JSON のレイアウトオブジェクトを読み込む（ファイルがなければ何もしない）

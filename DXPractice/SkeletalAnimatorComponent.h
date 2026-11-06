@@ -22,6 +22,12 @@ struct KeyCursor
 	unsigned scale = 0;
 };
 
+struct ClipEntry
+{
+	std::shared_ptr<const AnimationClip> clip;
+	bool isLoop = true;
+};
+
 class SkeletalAnimatorComponent : public IComponent
 {
 public:
@@ -31,20 +37,22 @@ public:
 	void Update(float deltaTime) override;
 	void BindPalette(Renderer& renderer);
 
-	void SetClip(std::shared_ptr<const AnimationClip> inClip, bool inLoop);
-	void AddCLip(std::shared_ptr<const AnimationClip> inClip);
+	void SetCurrClip(std::shared_ptr<const AnimationClip> inClip, bool inLoop);
+	void AddClip(std::shared_ptr<const AnimationClip> inClip, bool inLoop);
 	void SetFadeTable(std::shared_ptr<const AnimationFadeTable> inTable)
 	{
 		fadeTable = inTable;
 	}
 
-	bool PlayClip(const std::string& name, bool inIsLoop = true, float fadeSec = -1.f);
+	bool PlayClip(const std::string& name, float fadeSec = -1.f);
 
 	bool IsFinished() const
 	{
 		return isFinished;
 	}
 	const std::string& GetCurrClipName() const;
+	
+	// sorted
 	std::vector<std::string> GetClipNames() const;
 
 	
@@ -66,7 +74,7 @@ private:
 	BonePalette palette{};
 	VertexConstantBuffer<BonePalette> paletteCBuffer;
 
-	std::unordered_map<std::string, std::shared_ptr<const AnimationClip>> clips;
+	std::unordered_map<std::string, ClipEntry> clipEntries;
 	std::shared_ptr<const AnimationFadeTable> fadeTable;
 
 	// animation playback states

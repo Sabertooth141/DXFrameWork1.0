@@ -8,6 +8,8 @@ void MonoBehavior::OnAttach(GameContext& context)
 {
 	IComponent::OnAttach(context);
 
+	SetInput(context.keyboard, context.mouse);
+	SetDebugRenderer(context);
 	context.scriptSys.RegisterScript(this);
 }
 
@@ -22,14 +24,19 @@ void MonoBehavior::SetInput(Keyboard& inKeyboard, Mouse& inMouse)
 	mouse = &inMouse;
 }
 
+void MonoBehavior::SetDebugRenderer(const GameContext& context)
+{
+	textRenderer = &context.textRenderer;
+}
+
 GameObject* MonoBehavior::Instantiate(const std::string& prefab, const DirectX::XMFLOAT3& pos) const
 {
-	return owner->GetContext().gameScene->Instantiate(prefab, pos);
+	return owner->GetContext().currScene->Instantiate(prefab, pos);
 }
 
 void MonoBehavior::Destroy(GameObject* object) const
 {
-	owner->GetContext().gameScene->Destroy(object);
+	owner->GetContext().currScene->Destroy(object);
 }
 
 void MonoBehavior::DestroySelf() const

@@ -162,6 +162,7 @@
     <ClCompile Include="BoxCollider2D.cpp" />
     <ClCompile Include="CameraController.cpp" />
     <ClCompile Include="CollisionTests.cpp" />
+    <ClCompile Include="CycleAnimationTester.cpp" />
     <ClCompile Include="DebugRenderer.cpp" />
     <ClCompile Include="Drawable.cpp" />
     <ClCompile Include="EditorUI.cpp" />
@@ -221,6 +222,7 @@
     <ClInclude Include="Collider2D.h" />
     <ClInclude Include="CollisionDispatch.h" />
     <ClInclude Include="CollisionTests.h" />
+    <ClInclude Include="CycleAnimationTester.h" />
     <ClInclude Include="DebugRenderer.h" />
     <ClInclude Include="EditorUI.h" />
     <ClInclude Include="GameContext.h" />

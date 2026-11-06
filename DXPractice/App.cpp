@@ -14,7 +14,7 @@ App::App(const std::string& cmdLine) : cmdLine(cmdLine),
                                        textRenderer(renderer, L"Consolas", 18),
                                        renderSystem(RenderSystem(renderer, cam2D, cam3D)),
                                        gameContext{
-	                                       renderer, physicsSystem, scriptSystem, animationSystem,
+	                                       renderer, textRenderer, physicsSystem, scriptSystem, animationSystem,
 	                                       skeletalAnimationSystem, renderSystem, cam2D, cam3D,
 	                                       wnd.keyboard, wnd.mouse
                                        },
@@ -151,7 +151,6 @@ void App::DebugTextRender(Scene& scene, float deltaTime)
 	textRenderer.DebugLine("%.1f fps  (%.2f ms)", deltaTime > 0.f ? 1.f / deltaTime : 0.f, deltaTime * 1000.f);
 	textRenderer.DebugLine("scene %s", sceneManager.GetCurrSceneName().c_str());
 	textRenderer.DebugLine("objects %zu", scene.GetObjects().size());
-	textRenderer.DebugLine(TextColor::Cyan, "cam y %.0f", cam2D.GetPosition().y);
 	if (editor.IsEditMode())
 	{
 		textRenderer.DebugLine(TextColor::Yellow, "EDIT MODE - game stopped (F1 > Play)");

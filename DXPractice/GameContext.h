@@ -1,5 +1,6 @@
 #pragma once
 
+class TextRenderer;
 class SkeletalAnimationSystem;
 class Camera3D;
 class SceneManager;
@@ -20,6 +21,7 @@ struct GlobalContext
 struct GameContext
 {
 	Renderer& renderer;
+	TextRenderer& textRenderer;
 	PhysicsSystem& physicsSys;
 	ScriptSystem& scriptSys;
 	AnimationSystem& animationSys;
@@ -31,7 +33,7 @@ struct GameContext
 	Keyboard& keyboard;
 	Mouse& mouse;
 
-	Scene* gameScene = nullptr;
+	Scene* currScene = nullptr;
 	SceneManager* sceneManager = nullptr;
 	GlobalContext globalContext;
 };

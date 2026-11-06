@@ -150,7 +150,7 @@ void SkeletalAnimatorComponent::Update(float deltaTime)
 	ComputePalette();
 }
 
-void SkeletalAnimatorComponent::SetClip(std::shared_ptr<const AnimationClip> inClip, bool inLoop)
+void SkeletalAnimatorComponent::SetCurrClip(std::shared_ptr<const AnimationClip> inClip, bool inLoop)
 {
 	assert((!inClip || inClip->builtFor == skeleton.get()) && "clip was mapped against a different skeleton");
 
@@ -159,6 +159,61 @@ void SkeletalAnimatorComponent::SetClip(std::shared_ptr<const AnimationClip> inC
 	timeInSec = 0.f;
 	isFinished = false;
 	cursors.assign(currClip ? currClip->channels.size() : 0, KeyCursor{});
+}
+
+void SkeletalAnimatorComponent::AddClip(std::shared_ptr<const AnimationClip> inClip, bool inLoop)
+{
+	if (!inClip)
+	{
+		return;
+	}
+
+	const std::string name = inClip->name;
+	clipEntries[name] = {std::move(inClip), inLoop};
+}
+
+bool SkeletalAnimatorComponent::PlayClip(const std::string& name, float fadeSec)
+{
+	auto it = clipEntries.find(name);
+	if (it == clipEntries.end())
+	{
+		OutputDebugStringA(("[SkeletalAnimator] no clip named '" + name + "\'\n").c_str());
+		return false;
+	}
+
+	if (fadeSec < 0.f)
+	{
+		fadeSec = fadeTable ? fadeTable->GetFadeTime(GetCurrClipName(), name) : 0.f;
+	}
+
+#ifndef NDEBUG
+	char msg[256];
+	sprintf_s(msg, "[SkeletalAnimator] %s -> %s (fade %.2fs, snapped until crossfade)\n",
+		GetCurrClipName().c_str(), name.c_str(), fadeSec);
+	OutputDebugStringA(msg);
+#endif
+
+	SetCurrClip(it->second.clip, it->second.isLoop);
+	return true;
+}
+
+const std::string& SkeletalAnimatorComponent::GetCurrClipName() const
+{
+	static const std::string none;
+	return currClip ? currClip->name : none;
+}
+
+std::vector<std::string> SkeletalAnimatorComponent::GetClipNames() const
+{
+	std::vector<std::string> names;
+	names.reserve(clipEntries.size());
+	for (const auto& [name, entry] : clipEntries)
+	{
+		names.push_back(name);
+	}
+
+	std::ranges::sort(names);
+	return names;
 }
 
 void SkeletalAnimatorComponent::AdvanceTime(float deltaTime)

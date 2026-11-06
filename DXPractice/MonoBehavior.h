@@ -4,6 +4,7 @@
 
 #include "IComponent.h"
 
+class TextRenderer;
 class Mouse;
 class Keyboard;
 
@@ -35,6 +36,7 @@ public:
 	void ChangeScene(const std::string& sceneName, float exitTime = 0.f, float enterTime = 0.f) const;
 
 	void SetInput(Keyboard& inKeyboard, Mouse& inMouse);
+	void SetDebugRenderer(const GameContext& context);
 
 	bool IsStarted() const
 	{
@@ -63,6 +65,7 @@ public:
 public:
 	Keyboard* keyboard = nullptr;
 	Mouse* mouse = nullptr;
+	TextRenderer* textRenderer = nullptr;
 
 protected:
 	bool started = false;
