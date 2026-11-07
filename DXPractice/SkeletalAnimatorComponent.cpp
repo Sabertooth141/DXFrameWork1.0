@@ -165,27 +165,13 @@ void SkeletalAnimatorComponent::OnAttach(GameContext& context)
 
 void SkeletalAnimatorComponent::Update(float deltaTime)
 {
-	if (!playback.clip)
+	if (playback.clip)
 	{
-		return;
+		Tick(deltaTime * timeScale);
 	}
 
-	const float scaledDelta = deltaTime * timeScale;
-	AdvanceTime(playback, scaledDelta);
-
-	if (fade.isActive)
-	{
-		SampleClip(playback, sampledPoseTRSes);
-		UpdateFade(scaledDelta);
-	}
-	else
-	{
-		SampleClip(playback, currPoseTRSes);
-	}
-
-	BuildLocalMatrices();
-	ComputeGlobals();
-	ComputePalette();
+	firedEvents.swap(pendingEvents);
+	pendingEvents.clear();
 }
 
 void SkeletalAnimatorComponent::AddClip(std::shared_ptr<const AnimationClip> inClip, bool inLoop)
@@ -228,9 +214,138 @@ bool SkeletalAnimatorComponent::PlayClip(const std::string& name, float fadeSec)
 	OutputDebugStringA(msg);
 #endif
 
+	// report interrupt if not exited properly
+	if (playback.clip && !playback.isFinished)
+	{
+		pendingEvents.push_back({FiredEventType::INTERRUPTED, playback.clip->name, {}, playback.timeInSec});
+	}
+
 	StartFade(fadeSec);
 	StartPlayback(it->second);
 	return true;
+}
+
+void SkeletalAnimatorComponent::AddEvent(const std::string& clipName, float timeSec, const std::string& eventName)
+{
+	auto it = clipEntries.find(clipName);
+	if (it == clipEntries.end())
+	{
+		OutputDebugStringA(("[SkeletalAnimator] AddEvent: no clip named '" + clipName + "'\n").c_str());
+		assert(false && "AddEvent before AddClip, or clip name typo (case sensitive)");
+		return;
+	}
+
+	ClipEntry& entry = it->second;
+	const float length = entry.clip->DurationInSeconds();
+	assert(timeSec >= 0.f && timeSec <= length && "event time outside the clip");
+	timeSec = std::clamp(timeSec, 0.f, length);
+
+	// find position by time
+	auto pointer = std::ranges::upper_bound(entry.events, timeSec, {}, &AnimationEvent::timeSec);
+	entry.events.insert(pointer, AnimationEvent{timeSec, eventName});
+}
+
+float SkeletalAnimatorComponent::GetCurrClipLength() const
+{
+	if (playback.clip)
+	{
+		return playback.clip->DurationInSeconds();
+	}
+	else
+	{
+		return 0.f;
+	}
+}
+
+void SkeletalAnimatorComponent::Scrub(float deltaSec)
+{
+	if (playback.clip)
+	{
+		Tick(deltaSec);
+	}
+}
+
+void SkeletalAnimatorComponent::Tick(float clipDeltaSec)
+{
+	const float prevTimeSec = playback.timeInSec;
+	AdvanceTime(playback, clipDeltaSec);
+	CollectEvents(prevTimeSec, clipDeltaSec);
+
+	if (fade.isActive)
+	{
+		SampleClip(playback, sampledPoseTRSes);
+		UpdateFade(clipDeltaSec);
+	}
+	else
+	{
+		SampleClip(playback, currPoseTRSes);
+	}
+
+	BuildLocalMatrices();
+	ComputeGlobals();
+	ComputePalette();
+}
+
+void SkeletalAnimatorComponent::CollectEvents(float prevTimeSec, float deltaSec)
+{
+	const bool includeStart = playback.isFreshStart;
+	playback.isFreshStart = false;
+
+	// no events/ backwards doesnt fire event
+	if (!playback.events || playback.events->empty() || deltaSec < 0.f)
+	{
+		return;
+	}
+
+	const float currTimeSec = playback.timeInSec;
+	if (!playback.isLoop)
+	{
+		ClampToRange(prevTimeSec, currTimeSec, includeStart);
+		return;
+	}
+
+	const float length = playback.clip->DurationInSeconds();
+	if (deltaSec >= length)
+	{
+		ClampToRange(0.f, length, true);
+		return;
+	}
+
+	if (currTimeSec >= prevTimeSec)
+	{
+		ClampToRange(prevTimeSec, currTimeSec, includeStart);
+	}
+	else
+	{
+		ClampToRange(prevTimeSec, length, includeStart);
+		ClampToRange(0.f, currTimeSec, true);
+	}
+}
+
+void SkeletalAnimatorComponent::ClampToRange(float startSec, float finishSec, bool isIncludingStartSec)
+{
+	for (const AnimationEvent& event : *playback.events)
+	{
+		if (event.timeSec > finishSec)
+		{
+			break;
+		}
+
+		bool isAfterStart;
+		if (isIncludingStartSec)
+		{
+			isAfterStart = event.timeSec >= startSec;
+		}
+		else
+		{
+			isAfterStart = event.timeSec > startSec;
+		}
+
+		if (isAfterStart)
+		{
+			pendingEvents.push_back({ FiredEventType::MARKER, playback.clip->name, event.eventName, event.timeSec });
+		}
+	}
 }
 
 const std::string& SkeletalAnimatorComponent::GetCurrClipName() const
@@ -257,9 +372,11 @@ void SkeletalAnimatorComponent::StartPlayback(const ClipEntry& entry)
 	assert(entry.clip->builtFor == skeleton.get() && "clip was mapped agaisnt a different skelton");
 
 	playback.clip = entry.clip;
+	playback.events = &entry.events;
 	playback.isLoop = entry.isLoop;
 	playback.timeInSec = 0.f;
 	playback.isFinished = false;
+	playback.isFreshStart = true;
 	playback.cursors.assign(playback.clip->channels.size(), KeyCursor{});
 }
 
@@ -293,11 +410,15 @@ void SkeletalAnimatorComponent::AdvanceTime(ClipPlayback& clipPlayback, float de
 	if (clipPlayback.isLoop)
 	{
 		clipPlayback.timeInSec = std::fmod(clipPlayback.timeInSec, length);
+		if (clipPlayback.timeInSec < 0.f) // for negative deltas
+		{
+			clipPlayback.timeInSec += length;
+		}
 	}
-	else if (clipPlayback.timeInSec >= length)
+	else
 	{
-		clipPlayback.timeInSec = length;
-		clipPlayback.isFinished = true;
+		clipPlayback.timeInSec = std::clamp(clipPlayback.timeInSec, 0.f, length);
+		clipPlayback.isFinished = clipPlayback.timeInSec >= length;
 	}
 }
 
