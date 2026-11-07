@@ -183,9 +183,9 @@ void ModelReader::BuildSkeletonNodes(const aiNode* node, int parentIndex)
 	// per node TRS binding
 	DirectX::XMVECTOR scale, rotation, translation;
 	DirectX::XMMatrixDecompose(&scale, &rotation, &translation, DirectX::XMLoadFloat4x4(&skeletonNode.bindLocal));
-	DirectX::XMStoreFloat3(&skeletonNode.bindTranslation, translation);
-	DirectX::XMStoreFloat4(&skeletonNode.bindRotation, rotation);
-	DirectX::XMStoreFloat3(&skeletonNode.bindScale, scale);
+	DirectX::XMStoreFloat3(&skeletonNode.bindTRS.translation, translation);
+	DirectX::XMStoreFloat4(&skeletonNode.bindTRS.rotation, rotation);
+	DirectX::XMStoreFloat3(&skeletonNode.bindTRS.scale, scale);
 
 	skeleton->nodes.push_back(skeletonNode);
 	const int index = static_cast<int>(skeleton->nodes.size() - 1);

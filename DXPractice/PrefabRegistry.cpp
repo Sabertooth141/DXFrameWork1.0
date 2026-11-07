@@ -21,8 +21,8 @@ namespace
 			table->SetFade(AnimationFadeTable::any, "attackMouth", 0.1f);
 			table->SetFade(AnimationFadeTable::any, "attackFlame", 0.1f);
 			table->SetFade(AnimationFadeTable::any, "getHit", 0.05f);
-			table->SetFade("idle01", "walk", 0.3f);
-			table->SetFade("walk", "idle01", 0.3f);
+			table->SetFade("idle01", "Walk", 0.3f);
+			table->SetFade("Walk", "idle01", 0.3f);
 			table->SetFade("Walk", "Run", 0.3f);
 			table->SetFade("Run", "Walk", 0.3f);
 			return table;

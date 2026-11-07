@@ -60,6 +60,19 @@ namespace
 		                             DirectX::XMLoadFloat3(&keys[keyIndex + 1].value), progress);
 	}
 
+	DirectX::XMVECTOR BlendRotation(DirectX::FXMVECTOR startRot, DirectX::FXMVECTOR finishRot, float weight)
+	{
+		DirectX::XMVECTOR target = finishRot;
+
+		// take the shortest rotation of q and -q from start to finish
+		if (DirectX::XMVectorGetX(DirectX::XMQuaternionDot(startRot, finishRot)) < 0.1f)
+		{
+			target = DirectX::XMVectorNegate(target);
+		}
+
+		return DirectX::XMQuaternionNormalize(DirectX::XMQuaternionSlerp(startRot, finishRot, weight));
+	}
+
 	DirectX::XMVECTOR SampleRotation(const std::vector<QuatKeyInfo>& keys, float ticks, unsigned& cursor,
 	                                 DirectX::FXMVECTOR fallback)
 	{
@@ -79,13 +92,23 @@ namespace
 		const DirectX::XMVECTOR startQuat = DirectX::XMLoadFloat4(&keys[keyIndex].value);
 		DirectX::XMVECTOR finishQuat = DirectX::XMLoadFloat4(&keys[keyIndex + 1].value);
 
-		// take the shortest rotation of q and -q from start to finish
-		if (DirectX::XMVectorGetX(DirectX::XMQuaternionDot(startQuat, finishQuat)) < 0.f)
-		{
-			finishQuat = DirectX::XMVectorNegate(finishQuat);
-		}
+		return BlendRotation(startQuat, finishQuat, progress);
+	}
 
-		return DirectX::XMQuaternionNormalize(DirectX::XMQuaternionSlerp(startQuat, finishQuat, progress));
+	LocalTRS BlendTRS(const LocalTRS& startTRS, const LocalTRS& finishTRS, float weight)
+	{
+		LocalTRS out;
+		DirectX::XMStoreFloat3(&out.translation,
+		                       DirectX::XMVectorLerp(DirectX::XMLoadFloat3(&startTRS.translation),
+		                                             DirectX::XMLoadFloat3(&finishTRS.translation), weight));
+		DirectX::XMStoreFloat4(&out.rotation,
+		                       DirectX::XMVectorLerp(DirectX::XMLoadFloat4(&startTRS.rotation),
+		                                             DirectX::XMLoadFloat4(&finishTRS.rotation), weight));
+		DirectX::XMStoreFloat3(&out.scale,
+		                       DirectX::XMVectorLerp(DirectX::XMLoadFloat3(&startTRS.scale),
+		                                             DirectX::XMLoadFloat3(&finishTRS.scale), weight));
+
+		return out;
 	}
 }
 
@@ -94,13 +117,15 @@ SkeletalAnimatorComponent::SkeletalAnimatorComponent(Renderer& renderer, std::sh
 	paletteCBuffer(renderer, palette, 1) // b1
 {
 	const size_t nodeCount = skeleton->nodes.size();
-	localPose.resize(nodeCount);
+	currPoseTRSes.resize(nodeCount);
+	sampledPoseTRSes.resize(nodeCount);
+	localMatrices.resize(nodeCount);
 	globalPose.resize(nodeCount);
 
 	// init as bind pose
 	for (size_t i = 0; i < nodeCount; i++)
 	{
-		localPose[i] = skeleton->nodes[i].bindLocal;
+		currPoseTRSes[i] = skeleton->nodes[i].bindTRS;
 	}
 
 	for (auto& boneMatrix : palette.bones)
@@ -108,10 +133,11 @@ SkeletalAnimatorComponent::SkeletalAnimatorComponent(Renderer& renderer, std::sh
 		DirectX::XMStoreFloat4x4(&boneMatrix, DirectX::XMMatrixIdentity());
 	}
 
+	BuildLocalMatrices();
 	ComputeGlobals();
 	ComputePalette();
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 	// in bind pose every final matrix should be identity
 	float maxError = 0.f;
 	for (size_t b = 0; b < skeleton->bones.size(); b++)
@@ -139,26 +165,27 @@ void SkeletalAnimatorComponent::OnAttach(GameContext& context)
 
 void SkeletalAnimatorComponent::Update(float deltaTime)
 {
-	if (!currClip)
+	if (!playback.clip)
 	{
 		return;
 	}
 
-	AdvanceTime(deltaTime);
-	SamplePose();
+	const float scaledDelta = deltaTime * timeScale;
+	AdvanceTime(playback, scaledDelta);
+
+	if (fade.isActive)
+	{
+		SampleClip(playback, sampledPoseTRSes);
+		UpdateFade(scaledDelta);
+	}
+	else
+	{
+		SampleClip(playback, currPoseTRSes);
+	}
+
+	BuildLocalMatrices();
 	ComputeGlobals();
 	ComputePalette();
-}
-
-void SkeletalAnimatorComponent::SetCurrClip(std::shared_ptr<const AnimationClip> inClip, bool inLoop)
-{
-	assert((!inClip || inClip->builtFor == skeleton.get()) && "clip was mapped against a different skeleton");
-
-	currClip = std::move(inClip);
-	isLoop = inLoop;
-	timeInSec = 0.f;
-	isFinished = false;
-	cursors.assign(currClip ? currClip->channels.size() : 0, KeyCursor{});
 }
 
 void SkeletalAnimatorComponent::AddClip(std::shared_ptr<const AnimationClip> inClip, bool inLoop)
@@ -188,19 +215,28 @@ bool SkeletalAnimatorComponent::PlayClip(const std::string& name, float fadeSec)
 
 #ifndef NDEBUG
 	char msg[256];
-	sprintf_s(msg, "[SkeletalAnimator] %s -> %s (fade %.2fs, snapped until crossfade)\n",
-		GetCurrClipName().c_str(), name.c_str(), fadeSec);
+	if (fade.isActive)
+	{
+		sprintf_s(msg, "[SkeletalAnimator] %s -> %s (fade %.2fs, interrupting fade at w=%.2f)\n",
+			GetCurrClipName().c_str(), name.c_str(), fadeSec, fade.elapsedSec / fade.durationSec);
+	}
+	else
+	{
+		sprintf_s(msg, "[SkeletalAnimator] %s -> %s (fade %.2fs)\n",
+			GetCurrClipName().c_str(), name.c_str(), fadeSec);
+	}
 	OutputDebugStringA(msg);
 #endif
 
-	SetCurrClip(it->second.clip, it->second.isLoop);
+	StartFade(fadeSec);
+	StartPlayback(it->second);
 	return true;
 }
 
 const std::string& SkeletalAnimatorComponent::GetCurrClipName() const
 {
 	static const std::string none;
-	return currClip ? currClip->name : none;
+	return playback.clip ? playback.clip->name : none;
 }
 
 std::vector<std::string> SkeletalAnimatorComponent::GetClipNames() const
@@ -216,63 +252,125 @@ std::vector<std::string> SkeletalAnimatorComponent::GetClipNames() const
 	return names;
 }
 
-void SkeletalAnimatorComponent::AdvanceTime(float deltaTime)
+void SkeletalAnimatorComponent::StartPlayback(const ClipEntry& entry)
 {
-	const float length = currClip->DurationInSeconds();
-	if (length <= 0.f)
+	assert(entry.clip->builtFor == skeleton.get() && "clip was mapped agaisnt a different skelton");
+
+	playback.clip = entry.clip;
+	playback.isLoop = entry.isLoop;
+	playback.timeInSec = 0.f;
+	playback.isFinished = false;
+	playback.cursors.assign(playback.clip->channels.size(), KeyCursor{});
+}
+
+void SkeletalAnimatorComponent::StartFade(float fadeSec)
+{
+	// if first animation or fade = 0 -> snap
+	if (fadeSec <= 0 || !playback.clip)
 	{
-		timeInSec = 0.f;
-		isFinished = !isLoop;
+		fade.isActive = false;
 		return;
 	}
 
-	timeInSec += deltaTime;
-	if (isLoop)
+	fade.isActive = true;
+	fade.source = FadeSource::SNAPSHOT;
+	fade.durationSec = fadeSec;
+	fade.elapsedSec = 0.f;
+	fade.fromPose = currPoseTRSes;
+}
+
+void SkeletalAnimatorComponent::AdvanceTime(ClipPlayback& clipPlayback, float deltaTime)
+{
+	const float length = clipPlayback.clip->DurationInSeconds();
+	if (length <= 0.f)
 	{
-		timeInSec = std::fmod(timeInSec, length);
+		clipPlayback.timeInSec = 0.f;
+		clipPlayback.isFinished = !clipPlayback.isLoop;
+		return;
 	}
-	else if (timeInSec >= length)
+
+	clipPlayback.timeInSec += deltaTime;
+	if (clipPlayback.isLoop)
 	{
-		timeInSec = length;
-		isFinished = true;
+		clipPlayback.timeInSec += std::fmod(clipPlayback.timeInSec, length);
+	}
+	else if (clipPlayback.timeInSec += length)
+	{
+		clipPlayback.timeInSec = length;
+		clipPlayback.isFinished = true;
 	}
 }
 
-void SkeletalAnimatorComponent::SamplePose()
+void SkeletalAnimatorComponent::SampleClip(ClipPlayback& clipPlayback, std::vector<LocalTRS>& outPose)
 {
 	// nodes without a channel stay in bind pose
 	for (size_t i = 0; i < skeleton->nodes.size(); i++)
 	{
-		localPose[i] = skeleton->nodes[i].bindLocal;
+		outPose[i] = skeleton->nodes[i].bindTRS;
 	}
 
-	const float ticks = timeInSec * currClip->ticksPerSecond;
+	const AnimationClip& clip = *clipPlayback.clip;
+	const float ticks = clipPlayback.timeInSec * clip.ticksPerSecond;
 
-	for (size_t channelIndex = 0; channelIndex < currClip->channels.size(); channelIndex++)
+	for (size_t channelIndex = 0; channelIndex < clip.channels.size(); channelIndex++)
 	{
-		const int nodeIndex = currClip->channelToNode[channelIndex];
+		const int nodeIndex = clip.channelToNode[channelIndex];
 
 		if (nodeIndex < 0)
 		{
 			continue;
 		}
 
-		const AnimationChannel& channel = currClip->channels[channelIndex];
-		const SkeletonNode& skeletonNode = skeleton->nodes[nodeIndex];
-		KeyCursor& cursor = cursors[channelIndex];
+		const AnimationChannel& channel = clip.channels[channelIndex];
+		KeyCursor& cursor = clipPlayback.cursors[channelIndex];
+		LocalTRS& trs = outPose[nodeIndex];
 
-		const DirectX::XMVECTOR translation = SampleVectorKeyInfo(channel.positions, ticks, cursor.position,
-		                                                          DirectX::XMLoadFloat3(&skeletonNode.bindTranslation));
-		const DirectX::XMVECTOR rotation = SampleRotation(channel.rotations, ticks, cursor.rotation,
-		                                                  DirectX::XMLoadFloat4(&skeletonNode.bindRotation));
-		const DirectX::XMVECTOR scale = SampleVectorKeyInfo(channel.scales, ticks, cursor.scale,
-		                                                    DirectX::XMLoadFloat3(&skeletonNode.bindScale));
+		// trs holds the bind values here, they double as the fallback for empty key lists
+		DirectX::XMStoreFloat3(&trs.translation,
+		                       SampleVectorKeyInfo(channel.positions, ticks, cursor.position,
+		                                           DirectX::XMLoadFloat3(&trs.translation)));
+		DirectX::XMStoreFloat4(&trs.rotation,
+		                       SampleRotation(channel.rotations, ticks, cursor.rotation,
+		                                      DirectX::XMLoadFloat4(&trs.rotation)));
+		DirectX::XMStoreFloat3(&trs.scale,
+		                       SampleVectorKeyInfo(channel.scales, ticks, cursor.scale,
+		                                           DirectX::XMLoadFloat3(&trs.scale)));
+	}
+}
 
-		// row vectors: SRT
-		const DirectX::XMMATRIX local = DirectX::XMMatrixScalingFromVector(scale) *
-			DirectX::XMMatrixRotationQuaternion(rotation) *
-			DirectX::XMMatrixTranslationFromVector(translation);
-		DirectX::XMStoreFloat4x4(&localPose[nodeIndex], local);
+void SkeletalAnimatorComponent::UpdateFade(float deltaTime)
+{
+	fade.elapsedSec += deltaTime;
+	const float weight = std::clamp(fade.elapsedSec / fade.durationSec, 0.f, 1.f);
+
+	switch (fade.source)
+	{
+	case FadeSource::SNAPSHOT:
+		// capture frompose in startfade and never changes
+		break;
+	}
+
+	for (size_t i = 0; i < currPoseTRSes.size(); i++)
+	{
+		currPoseTRSes[i] = BlendTRS(fade.fromPose[i], sampledPoseTRSes[i], weight);
+	}
+
+	if (weight >= 1.f)
+	{
+		fade.isActive = false;
+	}
+}
+
+void SkeletalAnimatorComponent::BuildLocalMatrices()
+{
+	for (size_t i = 0; i < currPoseTRSes.size(); i++)
+	{
+		const LocalTRS& trs = currPoseTRSes[i];
+		const DirectX::XMMATRIX local =
+			DirectX::XMMatrixScalingFromVector(DirectX::XMLoadFloat3(&trs.scale)) *
+			DirectX::XMMatrixRotationQuaternion(DirectX::XMLoadFloat4(&trs.rotation)) *
+			DirectX::XMMatrixTranslationFromVector(DirectX::XMLoadFloat3(&trs.translation));
+		DirectX::XMStoreFloat4x4(&localMatrices[i], local);
 	}
 }
 
@@ -287,7 +385,7 @@ void SkeletalAnimatorComponent::ComputeGlobals()
 	// parents first
 	for (size_t i = 0; i < skeleton->nodes.size(); i++)
 	{
-		const DirectX::XMMATRIX local = DirectX::XMLoadFloat4x4(&localPose[i]); // load to matrix from 4x4
+		const DirectX::XMMATRIX local = DirectX::XMLoadFloat4x4(&localMatrices[i]); // load to matrix from 4x4
 		const int parentIndex = skeleton->nodes[i].parent;
 
 		const DirectX::XMMATRIX global = (parentIndex < 0)

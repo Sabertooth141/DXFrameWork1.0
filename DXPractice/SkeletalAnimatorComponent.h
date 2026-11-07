@@ -28,6 +28,29 @@ struct ClipEntry
 	bool isLoop = true;
 };
 
+struct ClipPlayback
+{
+	std::shared_ptr<const AnimationClip> clip;
+	std::vector<KeyCursor> cursors;
+	float timeInSec = 0.f;
+	bool isLoop = true;
+	bool isFinished = false;
+};
+
+enum class FadeSource
+{
+	SNAPSHOT,
+};
+
+struct PoseFade
+{
+	bool isActive = false;
+	FadeSource source = FadeSource::SNAPSHOT;
+	float durationSec = 0.f;
+	float elapsedSec = 0.f;
+	std::vector<LocalTRS> fromPose;
+};
+
 class SkeletalAnimatorComponent : public IComponent
 {
 public:
@@ -37,7 +60,6 @@ public:
 	void Update(float deltaTime) override;
 	void BindPalette(Renderer& renderer);
 
-	void SetCurrClip(std::shared_ptr<const AnimationClip> inClip, bool inLoop);
 	void AddClip(std::shared_ptr<const AnimationClip> inClip, bool inLoop);
 	void SetFadeTable(std::shared_ptr<const AnimationFadeTable> inTable)
 	{
@@ -48,8 +70,19 @@ public:
 
 	bool IsFinished() const
 	{
-		return isFinished;
+		return playback.isFinished;
 	}
+
+	bool IsFading() const
+	{
+		return fade.isActive;
+	}
+
+	void SetTimeScale(float inScale)
+	{
+		timeScale = inScale;
+	}
+
 	const std::string& GetCurrClipName() const;
 	
 	// sorted
@@ -62,14 +95,21 @@ public:
 	}
 
 private:
-	void AdvanceTime(float deltaTime);
-	void SamplePose();
+	void StartPlayback(const ClipEntry& entry);
+	void StartFade(float fadeSec);
+	static void AdvanceTime(ClipPlayback& clipPlayback, float deltaTime);
+	void SampleClip(ClipPlayback& clipPlayback, std::vector<LocalTRS>& outPose);
+	void UpdateFade(float deltaTime);
+	void BuildLocalMatrices();
 	void ComputeGlobals();
 	void ComputePalette();
 
 private:
 	std::shared_ptr<const Skeleton> skeleton;
-	std::vector<DirectX::XMFLOAT4X4> localPose;
+
+	std::vector<LocalTRS> currPoseTRSes;
+	std::vector<LocalTRS> sampledPoseTRSes;
+	std::vector<DirectX::XMFLOAT4X4> localMatrices;
 	std::vector<DirectX::XMFLOAT4X4> globalPose;
 	BonePalette palette{};
 	VertexConstantBuffer<BonePalette> paletteCBuffer;
@@ -78,9 +118,7 @@ private:
 	std::shared_ptr<const AnimationFadeTable> fadeTable;
 
 	// animation playback states
-	std::shared_ptr<const AnimationClip> currClip;
-	std::vector<KeyCursor> cursors;
-	float timeInSec = 0.f;
-	bool isLoop = true;
-	bool isFinished = false;
+	ClipPlayback playback;
+	PoseFade fade;
+	float timeScale = 1.f; // for slow mo
 };

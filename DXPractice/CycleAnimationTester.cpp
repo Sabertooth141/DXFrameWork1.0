@@ -48,6 +48,29 @@ void CycleAnimationTester::Update(float deltaTime)
 	{
 		PlayCurrent();
 	}
+	if (keyboard->KeyIsTriggered('T'))
+	{
+		StopSequences();
+		PlayByName("takeOff");
+		chainTakeOffToFlyIdle = true;
+	}
+	if (keyboard->KeyIsTriggered('Y'))
+	{
+		// idle01 -> Walk (0.3s), attackHand lands halfway through that fade
+		StartScript({ { 0.f, "idle01", 0.f },{ 1.f, "Walk", -1.f },{ 12.15f, "attackHand", -1.f } });
+	}
+	if (keyboard->KeyIsTriggered('M'))
+	{
+		slowMotion = !slowMotion;
+		animator->SetTimeScale(slowMotion ? slowScale : 1.f);
+	}
+
+	if (chainTakeOffToFlyIdle && animator->IsFinished() && animator->GetCurrClipName() == "takeOff")
+	{
+		chainTakeOffToFlyIdle = false;
+		PlayByName("FlyIdle");
+	}
+	UpdateScript(deltaTime * (slowMotion ? slowScale : 1.f));
 
 	if (animator->IsFinished() && !finishReported)
 	{
@@ -59,11 +82,54 @@ void CycleAnimationTester::Update(float deltaTime)
 
 void CycleAnimationTester::PlayCurrent()
 {
-	const std::string& clipName = clipNames[currClipIndex];
-	animator->PlayClip(clipName);
+	PlayByName(clipNames[currClipIndex]);
+}
+
+void CycleAnimationTester::PlayByName(const std::string& clipName, float fadeSec)
+{
+	if (!animator->PlayClip(clipName, fadeSec))
+	{
+		return;
+	}
 	finishReported = false;
+
+	auto it = std::ranges::find(clipNames, clipName);
+	if (it != clipNames.end())
+	{
+		currClipIndex = it - clipNames.begin();
+	}
 
 	char msg[128];
 	sprintf_s(msg, "[AnimTest] %zu/%zu %s\n", currClipIndex + 1, clipNames.size(), clipName.c_str());
 	OutputDebugStringA(msg);
+}
+
+void CycleAnimationTester::StartScript(std::vector<ScriptStep> steps)
+{
+	StopSequences();
+	script = std::move(steps);
+	UpdateScript(0.f);
+}
+
+void CycleAnimationTester::UpdateScript(float deltaTime)
+{
+	if (scriptIndex >= script.size())
+	{
+		return;
+	}
+
+	scriptTime += deltaTime;
+	while (scriptIndex < script.size() && scriptTime >= script[scriptIndex].atSec)
+	{
+		const ScriptStep& step = script[scriptIndex++];
+		PlayByName(step.clipName, step.fadeSec);
+	}
+}
+
+void CycleAnimationTester::StopSequences()
+{
+	script.clear();
+	scriptIndex = 0;
+	scriptTime = 0.f;
+	chainTakeOffToFlyIdle = false;
 }
