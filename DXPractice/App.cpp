@@ -73,9 +73,9 @@ void App::Update(float deltaTime)
 			scene->OnUpdate(deltaTime);
 			scriptSystem.Update(deltaTime);
 			physicsSystem.Update(deltaTime);
-			scriptSystem.LateUpdate(deltaTime);
 			animationSystem.Update(deltaTime);
 			skeletalAnimationSystem.Update(deltaTime);
+			scriptSystem.LateUpdate(deltaTime);
 		}
 		scene->FlushPending();
 	}
