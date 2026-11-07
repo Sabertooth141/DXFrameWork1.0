@@ -144,7 +144,7 @@ private:
 	void ComputePalette();
 	void Tick(float clipDeltaSec);
 	void CollectEvents(float prevTimeSec, float deltaSec);
-	void CollectRange(float startSec, float finishSec, bool isIncludingStartSec);
+	void ClampToRange(float startSec, float finishSec, bool isIncludingStartSec);
 
 private:
 	std::shared_ptr<const Skeleton> skeleton;

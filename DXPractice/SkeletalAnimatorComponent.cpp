@@ -343,7 +343,7 @@ void SkeletalAnimatorComponent::ClampToRange(float startSec, float finishSec, bo
 
 		if (isAfterStart)
 		{
-			pendingEvents.push_back({ FiredEventType::MARKER, playback.clip->name, event.eventName, event.timeSec });
+			pendingEvents.push_back({FiredEventType::MARKER, playback.clip->name, event.eventName, event.timeSec});
 		}
 	}
 }
