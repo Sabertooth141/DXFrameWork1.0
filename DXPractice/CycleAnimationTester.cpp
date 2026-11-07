@@ -36,16 +36,19 @@ void CycleAnimationTester::Update(float deltaTime)
 
 	if (keyboard->KeyIsTriggered('N'))
 	{
+		StopSequences();
 		currClipIndex = (currClipIndex + 1) % clipNames.size();
 		PlayCurrent();
 	}
 	if (keyboard->KeyIsTriggered('B'))
 	{
+		StopSequences();
 		currClipIndex = (currClipIndex + clipNames.size() - 1) % clipNames.size();
 		PlayCurrent();
 	}
 	if (keyboard->KeyIsTriggered('R'))
 	{
+		StopSequences();
 		PlayCurrent();
 	}
 	if (keyboard->KeyIsTriggered('T'))
@@ -57,7 +60,7 @@ void CycleAnimationTester::Update(float deltaTime)
 	if (keyboard->KeyIsTriggered('Y'))
 	{
 		// idle01 -> Walk (0.3s), attackHand lands halfway through that fade
-		StartScript({ { 0.f, "idle01", 0.f },{ 1.f, "Walk", -1.f },{ 12.15f, "attackHand", -1.f } });
+		StartScript({ { 0.f, "idle01", 0.f },{ 1.f, "Walk", -1.f },{ 1.15f, "attackHand", -1.f } });
 	}
 	if (keyboard->KeyIsTriggered('M'))
 	{

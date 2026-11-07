@@ -65,12 +65,12 @@ namespace
 		DirectX::XMVECTOR target = finishRot;
 
 		// take the shortest rotation of q and -q from start to finish
-		if (DirectX::XMVectorGetX(DirectX::XMQuaternionDot(startRot, finishRot)) < 0.1f)
+		if (DirectX::XMVectorGetX(DirectX::XMQuaternionDot(startRot, finishRot)) < 0.f)
 		{
 			target = DirectX::XMVectorNegate(target);
 		}
 
-		return DirectX::XMQuaternionNormalize(DirectX::XMQuaternionSlerp(startRot, finishRot, weight));
+		return DirectX::XMQuaternionNormalize(DirectX::XMQuaternionSlerp(startRot, target, weight));
 	}
 
 	DirectX::XMVECTOR SampleRotation(const std::vector<QuatKeyInfo>& keys, float ticks, unsigned& cursor,
@@ -102,8 +102,8 @@ namespace
 		                       DirectX::XMVectorLerp(DirectX::XMLoadFloat3(&startTRS.translation),
 		                                             DirectX::XMLoadFloat3(&finishTRS.translation), weight));
 		DirectX::XMStoreFloat4(&out.rotation,
-		                       DirectX::XMVectorLerp(DirectX::XMLoadFloat4(&startTRS.rotation),
-		                                             DirectX::XMLoadFloat4(&finishTRS.rotation), weight));
+		                       BlendRotation(DirectX::XMLoadFloat4(&startTRS.rotation),
+		                                     DirectX::XMLoadFloat4(&finishTRS.rotation), weight));
 		DirectX::XMStoreFloat3(&out.scale,
 		                       DirectX::XMVectorLerp(DirectX::XMLoadFloat3(&startTRS.scale),
 		                                             DirectX::XMLoadFloat3(&finishTRS.scale), weight));
@@ -218,12 +218,12 @@ bool SkeletalAnimatorComponent::PlayClip(const std::string& name, float fadeSec)
 	if (fade.isActive)
 	{
 		sprintf_s(msg, "[SkeletalAnimator] %s -> %s (fade %.2fs, interrupting fade at w=%.2f)\n",
-			GetCurrClipName().c_str(), name.c_str(), fadeSec, fade.elapsedSec / fade.durationSec);
+		          GetCurrClipName().c_str(), name.c_str(), fadeSec, fade.elapsedSec / fade.durationSec);
 	}
 	else
 	{
 		sprintf_s(msg, "[SkeletalAnimator] %s -> %s (fade %.2fs)\n",
-			GetCurrClipName().c_str(), name.c_str(), fadeSec);
+		          GetCurrClipName().c_str(), name.c_str(), fadeSec);
 	}
 	OutputDebugStringA(msg);
 #endif
@@ -292,9 +292,9 @@ void SkeletalAnimatorComponent::AdvanceTime(ClipPlayback& clipPlayback, float de
 	clipPlayback.timeInSec += deltaTime;
 	if (clipPlayback.isLoop)
 	{
-		clipPlayback.timeInSec += std::fmod(clipPlayback.timeInSec, length);
+		clipPlayback.timeInSec = std::fmod(clipPlayback.timeInSec, length);
 	}
-	else if (clipPlayback.timeInSec += length)
+	else if (clipPlayback.timeInSec >= length)
 	{
 		clipPlayback.timeInSec = length;
 		clipPlayback.isFinished = true;
