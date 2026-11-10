@@ -1,7 +1,9 @@
 #pragma once
 #include <d3d11.h>
+#include <deque>
 #include <DirectXMath.h>
 #include <memory>
+#include <string>
 #include <string_view>
 #include <vector>
 #include <wrl/client.h>
@@ -61,6 +63,11 @@ public:
 	void Begin();
 	void Flush(Renderer& renderer);
 
+	void Log(const char* fmt, ...);
+	void Log(DirectX::XMFLOAT4 color, const char* fmt, ...);
+
+	void DrawLog(float deltaTime);
+
 	void DrawScreen(std::string_view text, DirectX::XMFLOAT2 posPx,
 		DirectX::XMFLOAT4 color = TextColor::White,
 		float scale = 1.f, TextAlign align = TextAlign::Left);
@@ -89,6 +96,15 @@ public:
 	BitmapFont& GetFont() { return *font; }
 
 private:
+	struct LogEntry
+	{
+		std::string text;
+		DirectX::XMFLOAT4 color = TextColor::White;
+		float remainingSec;
+	};
+
+	void PushLog(DirectX::XMFLOAT4 color, const char* fmt, va_list args);
+
 	void Append(std::vector<TextVertex>& out, std::string_view text, DirectX::XMFLOAT2 origin,
 		DirectX::XMFLOAT4 color, float scale, TextAlign align);
 
@@ -121,4 +137,9 @@ private:
 	float debugCursorY = 0.f;
 
 	static constexpr float textDepth = 0.5f; // depth test is off in 2D mode, draw order decides
+
+	// on screen logs
+	std::deque<LogEntry> logEntries;
+	static constexpr size_t maxLogEntries = 10;
+	static constexpr float logLifeSec = 5.f;
 };

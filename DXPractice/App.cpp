@@ -155,6 +155,7 @@ void App::DebugTextRender(Scene& scene, float deltaTime)
 	{
 		textRenderer.DebugLine(TextColor::Yellow, "EDIT MODE - game stopped (F1 > Play)");
 	}
+	textRenderer.DrawLog(deltaTime);
 }
 
 void App::DrawTextLabels(Scene& scene)

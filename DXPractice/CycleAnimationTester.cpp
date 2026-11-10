@@ -29,7 +29,7 @@ void CycleAnimationTester::Start()
 
 	overlay = &owner->AddComponent<TextLabel>();
 	overlay->isDrawingScreen = true;
-	overlay->posOffset = {8.f, 120.f};
+	overlay->posOffset = {420.f, 120.f};
 }
 
 void CycleAnimationTester::Update(float deltaTime)
@@ -221,12 +221,7 @@ void CycleAnimationTester::HandleEvents()
 			          isCleanup ? " -> cleanup: hitbox forced off" : "");
 		}
 
-		OutputDebugStringA(("[AnimEvent] " + std::string(line) + "\n").c_str());
-		recentEvents.push_back(line);
-		if (recentEvents.size() > maxRecentEvents)
-		{
-			recentEvents.pop_front();
-		}
+		textRenderer->Log("[animEvent] %s", line);
 	}
 }
 

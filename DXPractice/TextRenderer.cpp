@@ -232,7 +232,7 @@ DirectX::XMFLOAT2 TextRenderer::Measure(std::string_view text, float scale)
 }
 
 void TextRenderer::Append(std::vector<TextVertex>& out, std::string_view text, DirectX::XMFLOAT2 origin,
-	DirectX::XMFLOAT4 color, float scale, TextAlign align)
+                          DirectX::XMFLOAT4 color, float scale, TextAlign align)
 {
 	// everything is built in a +y up space; screen text converts its origin first
 	const float lineStep = font->GetLineHeight() * scale;
@@ -321,6 +321,53 @@ void TextRenderer::Flush(Renderer& inRenderer)
 	// world labels first, HUD on top
 	FlushBatch(inRenderer, worldVerts, inRenderer.GetView());
 	FlushBatch(inRenderer, screenVerts, DirectX::XMMatrixIdentity());
+}
+
+void TextRenderer::Log(const char* fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	PushLog(TextColor::White, fmt, args);
+	va_end(args);
+}
+
+void TextRenderer::Log(DirectX::XMFLOAT4 color, const char* fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	PushLog(color, fmt, args);
+	va_end(args);
+}
+
+void TextRenderer::PushLog(DirectX::XMFLOAT4 color, const char* fmt, va_list args)
+{
+	char buffer[formatBufferSize];
+	vsnprintf(buffer, formatBufferSize, fmt, args);
+
+	OutputDebugStringA(buffer);
+	OutputDebugStringA("\n");
+
+	logEntries.push_back({ buffer, color, logLifeSec });
+	if (logEntries.size() > maxLogEntries)
+	{
+		logEntries.pop_front();
+	}
+}
+
+void TextRenderer::DrawLog(float deltaTime)
+{
+	for (LogEntry& entry : logEntries)
+	{
+		DirectX::XMFLOAT4 color = entry.color;
+		color.w *= (std::min)(entry.remainingSec, 1.f);
+		DebugLine(color, "%s", entry.text.c_str());
+		entry.remainingSec -= deltaTime;
+	}
+
+	while (!logEntries.empty() && logEntries.front().remainingSec <= 0.f)
+	{
+		logEntries.pop_front();
+	}
 }
 
 void TextRenderer::FlushBatch(Renderer& inRenderer, const std::vector<TextVertex>& verts, DirectX::XMMATRIX view)
