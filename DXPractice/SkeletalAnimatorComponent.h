@@ -133,6 +133,11 @@ public:
 		return *skeleton;
 	}
 
+	int FindNodeIndex(const std::string& name) const;
+
+	DirectX::XMMATRIX GetNodeWorldMatrix(int nodeIndex) const;
+	DirectX::XMMATRIX GetBoneWorldMatrix(const std::string& name) const;
+
 private:
 	void StartPlayback(const ClipEntry& entry);
 	void StartFade(float fadeSec);

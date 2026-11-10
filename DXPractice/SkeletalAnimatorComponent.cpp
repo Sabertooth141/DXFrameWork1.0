@@ -4,6 +4,7 @@
 
 #include "AnimationClip.h"
 #include "GameContext.h"
+#include "GameObject.h"
 #include "SkeletalAnimationSystem.h"
 
 namespace
@@ -365,6 +366,40 @@ std::vector<std::string> SkeletalAnimatorComponent::GetClipNames() const
 
 	std::ranges::sort(names);
 	return names;
+}
+
+int SkeletalAnimatorComponent::FindNodeIndex(const std::string& name) const
+{
+	const auto it = skeleton->nodeIndexByName.find(name);
+	if (it == skeleton->nodeIndexByName.end())
+	{
+		OutputDebugStringA(("[SkeletalAnimator] FindNodeIndex: no node named '" + name + "'\n").c_str());
+		return -1;
+	}
+
+	return it->second;
+}
+
+DirectX::XMMATRIX SkeletalAnimatorComponent::GetNodeWorldMatrix(int nodeIndex) const
+{
+	assert(nodeIndex >= 0 && nodeIndex < static_cast<int>(globalPose.size()));
+
+	return DirectX::XMLoadFloat4x4(&globalPose[nodeIndex]) *
+		DirectX::XMLoadFloat4x4(&skeleton->meshSpaceInverse) *
+		owner->GetTransform()->GetMatrix();
+}
+
+DirectX::XMMATRIX SkeletalAnimatorComponent::GetBoneWorldMatrix(const std::string& name) const
+{
+	const int nodeIndex = FindNodeIndex(name);
+	if (nodeIndex >= 0)
+	{
+		return GetNodeWorldMatrix(nodeIndex);
+	}
+	else
+	{
+		return owner->GetTransform()->GetMatrix();
+	}
 }
 
 void SkeletalAnimatorComponent::StartPlayback(const ClipEntry& entry)

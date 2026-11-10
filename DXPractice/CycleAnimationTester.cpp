@@ -30,6 +30,11 @@ void CycleAnimationTester::Start()
 	overlay = &owner->AddComponent<TextLabel>();
 	overlay->isDrawingScreen = true;
 	overlay->posOffset = {420.f, 120.f};
+
+	for (const SkeletonNode& node : animator->GetSkeleton().nodes)
+	{
+		OutputDebugStringA(("[Bones]: " + node.name + "\n").c_str());
+	}
 }
 
 void CycleAnimationTester::Update(float deltaTime)
@@ -70,7 +75,7 @@ void CycleAnimationTester::Update(float deltaTime)
 	if (keyboard->KeyIsTriggered('M'))
 	{
 		slowMotion = !slowMotion;
-		animator->SetTimeScale(slowMotion ? slowScale : 1.f);
+		ApplyTimeScale();
 	}
 	// event testing
 	if (keyboard->KeyIsTriggered('U'))
@@ -96,7 +101,7 @@ void CycleAnimationTester::Update(float deltaTime)
 		chainTakeOffToFlyIdle = false;
 		PlayByName("FlyIdle");
 	}
-	UpdateScript(deltaTime * (slowMotion ? slowScale : 1.f));
+	UpdateScript(deltaTime * CurrentTimeScale());
 
 	if (animator->IsFinished() && !finishReported)
 	{

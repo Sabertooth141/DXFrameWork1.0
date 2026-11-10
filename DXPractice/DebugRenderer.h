@@ -29,8 +29,20 @@ public:
 	void DrawCross(DirectX::XMFLOAT2 center, float size, DirectX::XMFLOAT4 color);
 	void Flush(Renderer& renderer);
 
+	void DrawLine3D(DirectX::XMFLOAT3 start, DirectX::XMFLOAT3 end, DirectX::XMFLOAT4 color);
+	void DrawSphere3D(DirectX::XMFLOAT3 center, float radius, DirectX::XMFLOAT4 color);
+	void DrawCapsule3D(DirectX::XMFLOAT3 centerA, DirectX::XMFLOAT3 centerB, float radius, DirectX::XMFLOAT4 color);
+
+	void Flush3D(Renderer& renderer, DirectX::FXMMATRIX view);
+
 private:
 	void EnsureCapacity(const Renderer& renderer, size_t vertexCount);
+
+	void DrawArc3D(DirectX::FXMVECTOR center, DirectX::FXMVECTOR axisX, DirectX::FXMVECTOR axisY,
+	               float radius, float startRad, float endRad,
+	               int segments, DirectX::XMFLOAT4 color);
+	void DrawBatch(Renderer& renderer, const std::vector<DebugVertex>& vertices,
+	               DirectX::FXMMATRIX view, DirectX::CXMMATRIX proj);
 
 private:
 	std::vector<DebugVertex> vertices;
@@ -44,4 +56,8 @@ private:
 	size_t vertexBufferCapacity = 0;
 
 	static constexpr float debugDepth = 0.5f;
+
+	//3d
+	std::vector<DebugVertex> vertices3D;
+	static constexpr int circleSegments = 16;
 };

@@ -100,7 +100,7 @@ private:
 	{
 		std::string text;
 		DirectX::XMFLOAT4 color = TextColor::White;
-		float remainingSec;
+		float remainingSec = 0.f;
 	};
 
 	void PushLog(DirectX::XMFLOAT4 color, const char* fmt, va_list args);
