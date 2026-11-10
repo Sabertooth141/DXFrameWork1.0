@@ -1,8 +1,10 @@
 #pragma once
+#include <deque>
 #include <vector>
 
 #include "MonoBehavior.h"
 
+struct TextLabel;
 class SkeletalAnimatorComponent;
 
 class CycleAnimationTester : public MonoBehavior
@@ -10,6 +12,7 @@ class CycleAnimationTester : public MonoBehavior
 public:
 	void Start() override;
 	void Update(float deltaTime) override;
+	void LateUpdate(float deltaTime) override;
 
 private:
 	struct ScriptStep
@@ -25,8 +28,15 @@ private:
 	void UpdateScript(float deltaTime);
 	void StopSequences();
 
+	float CurrentTimeScale() const;
+	void ApplyTimeScale();
+	void HandleEvents();
+	void UpdateOverlay();
+
 private:
 	static constexpr float slowScale = 0.2f;
+	static constexpr float stepSec = 1.f / 60.f;
+	static constexpr size_t maxRecentEvents = 6;
 
 	SkeletalAnimatorComponent* animator = nullptr;
 	std::vector<std::string> clipNames;
@@ -39,5 +49,11 @@ private:
 	float scriptTime = 0.f;
 	bool chainTakeOffToFlyIdle = false;
 	bool slowMotion = false;
-};
 
+	// event 
+	TextLabel* overlay = nullptr;
+	bool isPaused = false;
+	std::deque<std::string> recentEvents;
+
+	std::string hitboxClip;
+};

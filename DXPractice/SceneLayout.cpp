@@ -11,7 +11,7 @@
 namespace
 {
 	constexpr int LAYOUT_VERSION = 2;
-	constexpr auto SCENE_DIR = "../../assets/scenes/";
+	constexpr auto SCENE_DIR = "../../scenes/";
 
 	// 小数点以下 3 桁に丸めて保存する（0.1f が 0.10000000149011612 にならないように。Git の差分も読みやすくなる
 	double Round3(float v)

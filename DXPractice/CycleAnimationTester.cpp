@@ -3,6 +3,7 @@
 #include "GameObject.h"
 #include "Keyboard.h"
 #include "SkeletalAnimatorComponent.h"
+#include "TextLabel.h"
 #include "TextRenderer.h"
 
 void CycleAnimationTester::Start()
@@ -25,6 +26,10 @@ void CycleAnimationTester::Start()
 	{
 		currClipIndex = 0;
 	}
+
+	overlay = &owner->AddComponent<TextLabel>();
+	overlay->isDrawingScreen = true;
+	overlay->posOffset = {8.f, 120.f};
 }
 
 void CycleAnimationTester::Update(float deltaTime)
@@ -60,12 +65,30 @@ void CycleAnimationTester::Update(float deltaTime)
 	if (keyboard->KeyIsTriggered('Y'))
 	{
 		// idle01 -> Walk (0.3s), attackHand lands halfway through that fade
-		StartScript({ { 0.f, "idle01", 0.f },{ 1.f, "Walk", -1.f },{ 1.15f, "attackHand", -1.f } });
+		StartScript({{0.f, "idle01", 0.f}, {1.f, "Walk", -1.f}, {1.15f, "attackHand", -1.f}});
 	}
 	if (keyboard->KeyIsTriggered('M'))
 	{
 		slowMotion = !slowMotion;
 		animator->SetTimeScale(slowMotion ? slowScale : 1.f);
+	}
+	// event testing
+	if (keyboard->KeyIsTriggered('U'))
+	{
+		StartScript({{0.f, "attackHand", 0.f}, {0.5f, "getHit", -1.f}});
+	}
+	if (keyboard->KeyIsTriggered('P'))
+	{
+		isPaused = !isPaused;
+		ApplyTimeScale();
+	}
+	if (isPaused && keyboard->KeyIsTriggered(VK_RIGHT))
+	{
+		animator->Scrub(stepSec);
+	}
+	if (isPaused && keyboard->KeyIsTriggered(VK_LEFT))
+	{
+		animator->Scrub(-stepSec);
 	}
 
 	if (chainTakeOffToFlyIdle && animator->IsFinished() && animator->GetCurrClipName() == "takeOff")
@@ -80,7 +103,17 @@ void CycleAnimationTester::Update(float deltaTime)
 		OutputDebugStringA(("[AnimTest] " + animator->GetCurrClipName() + " finished\n").c_str());
 		finishReported = true;
 	}
+}
 
+void CycleAnimationTester::LateUpdate(float deltaTime)
+{
+	if (!animator)
+	{
+		return;
+	}
+
+	HandleEvents();
+	UpdateOverlay();
 }
 
 void CycleAnimationTester::PlayCurrent()
@@ -135,4 +168,86 @@ void CycleAnimationTester::StopSequences()
 	scriptIndex = 0;
 	scriptTime = 0.f;
 	chainTakeOffToFlyIdle = false;
+}
+
+float CycleAnimationTester::CurrentTimeScale() const
+{
+	if (isPaused)
+	{
+		return 0.f;
+	}
+
+	if (slowMotion)
+	{
+		return slowScale;
+	}
+	else
+	{
+		return 1.f;
+	}
+}
+
+void CycleAnimationTester::ApplyTimeScale()
+{
+	animator->SetTimeScale(CurrentTimeScale());
+}
+
+void CycleAnimationTester::HandleEvents()
+{
+	for (const FiredAnimationEvent& event : animator->GetFiredEvents())
+	{
+		char line[160];
+		if (event.type == FiredEventType::MARKER)
+		{
+			if (event.eventName == "HitboxOn")
+			{
+				hitboxClip = event.clipName;
+			}
+			else if (event.eventName == "HitboxOff")
+			{
+				hitboxClip.clear();
+			}
+			sprintf_s(line, "%s %s @%.3f (t=%.3f)", event.clipName.c_str(), event.eventName.c_str(),
+			          event.timeSec, animator->GetCurrClipTime());
+		}
+		else // INTERRUPTED
+		{
+			const bool isCleanup = !hitboxClip.empty() && hitboxClip == event.clipName;
+			if (isCleanup)
+			{
+				hitboxClip.clear();
+			}
+			sprintf_s(line, "%s INTERRUPTED @%.3f%s", event.clipName.c_str(), event.timeSec,
+			          isCleanup ? " -> cleanup: hitbox forced off" : "");
+		}
+
+		OutputDebugStringA(("[AnimEvent] " + std::string(line) + "\n").c_str());
+		recentEvents.push_back(line);
+		if (recentEvents.size() > maxRecentEvents)
+		{
+			recentEvents.pop_front();
+		}
+	}
+}
+
+void CycleAnimationTester::UpdateOverlay()
+{
+	char header[192];
+	sprintf_s(header, "%s  %.3f / %.3f s%s%s%s\n",
+		animator->GetCurrClipName().c_str(), animator->GetCurrClipTime(), animator->GetCurrClipLength(),
+		isPaused ? "  [PAUSED  <- / -> 1/60s]" : "",
+		slowMotion ? "  x0.2" : "",
+		animator->IsFading() ? "  fading" : "");
+
+	std::string text = header;
+	if (!hitboxClip.empty())
+	{
+		text += "HITBOX ON (" + hitboxClip + ")\n";
+	}
+	for (const std::string& line : recentEvents)
+	{
+		text += line;
+		text += '\n';
+	}
+	overlay->text = std::move(text);
 }

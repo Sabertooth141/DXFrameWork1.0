@@ -75,39 +75,48 @@ void RegisterPrefabs()
 	});
 
 	// dragon
-	PrefabRegistry::Instance().RegisterModel("dragon", "../../assets/models/dragon/DragonUsurperMesh.fbx", mat,
-	                                         [](GameObject& object)
-	                                         {
-		                                         object.GetTransform()->SetScale(0.01f);
+	PrefabRegistry::Instance().RegisterModel("dragon", "../../assets/models/dragon/DragonUsurperMesh.fbx", mat, [](GameObject& object)
+	{
+		object.GetTransform()->SetScale(0.01f);
 
-		                                         auto* animator = object.GetComponent<SkeletalAnimatorComponent>();
-		                                         const std::string animDir = "../../assets/models/dragon/animations/";
+		auto* animator = object.GetComponent<SkeletalAnimatorComponent>();
+		const std::string animDir = "../../assets/models/dragon/animations/";
 
-		                                         struct ClipDef
-		                                         {
-			                                         const char* name;
-			                                         bool loop;
-		                                         };
-		                                         for (const ClipDef& def : {
-			                                              ClipDef{"idle01", true}, {"idle02", true}, {"Walk", true},
-			                                              {"Run", true},
-			                                              {"attackHand", false}, {"attackMouth", false},
-			                                              {"attackFlame", false}, {"attackWing", false},
-			                                              {"getHit", false}, {"Die", false},
-			                                              {"Scream", false},
-			                                              {"Sleep", true}, {"takeOff", false}, {"Land", false},
-			                                              {"FlyIdle", true}, {"FlyForward", true}, {"FlyGlide", true},
-			                                              {"FlyFlame", true}
-		                                              })
-		                                         {
-			                                         animator->AddClip(
-				                                         AnimationClipCache::LoadClip(
-					                                         animDir + def.name + ".fbx", animator->GetSkeleton()),
-				                                         def.loop);
-		                                         }
-		                                         animator->SetFadeTable(DragonFadeTable());
-		                                         animator->PlayClip("idle02");
+		struct ClipDef
+		{
+			const char* name;
+			bool loop;
+		};
+		for (const ClipDef& def : {
+			     ClipDef{"idle01", true}, {"idle02", true}, {"Walk", true},
+			     {"Run", true},
+			     {"attackHand", false}, {"attackMouth", false},
+			     {"attackFlame", false}, {"attackWing", false},
+			     {"getHit", false}, {"Die", false},
+			     {"Scream", false},
+			     {"Sleep", true}, {"takeOff", false}, {"Land", false},
+			     {"FlyIdle", true}, {"FlyForward", true}, {"FlyGlide", true},
+			     {"FlyFlame", true}
+		     })
+		{
+			animator->AddClip(
+				AnimationClipCache::LoadClip(
+					animDir + def.name + ".fbx", animator->GetSkeleton()),
+				def.loop);
+		}
+		animator->SetFadeTable(DragonFadeTable());
 
-		                                         object.AddComponent<CycleAnimationTester>();
-	                                         });
+		// events, seconds on each clip's own timeline
+		// find times with the tester: P to pause, <- / -> to step
+		animator->AddEvent("attackHand", 1.2f, "HitboxOn");
+		animator->AddEvent("attackHand", 1.65f, "HitboxOff");
+		animator->AddEvent("Walk", 0.f, "Footstep");
+		animator->AddEvent("Walk", 0.64f, "Footstep");
+		
+
+
+		animator->PlayClip("idle02");
+
+		object.AddComponent<CycleAnimationTester>();
+	});
 }
