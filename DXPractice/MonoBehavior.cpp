@@ -9,7 +9,7 @@ void MonoBehavior::OnAttach(GameContext& context)
 	IComponent::OnAttach(context);
 
 	SetInput(context.keyboard, context.mouse);
-	SetDebugRenderer(context);
+	SetDebugTextRenderer(context);
 	context.scriptSys.RegisterScript(this);
 }
 
@@ -24,7 +24,7 @@ void MonoBehavior::SetInput(Keyboard& inKeyboard, Mouse& inMouse)
 	mouse = &inMouse;
 }
 
-void MonoBehavior::SetDebugRenderer(const GameContext& context)
+void MonoBehavior::SetDebugTextRenderer(const GameContext& context)
 {
 	textRenderer = &context.textRenderer;
 }

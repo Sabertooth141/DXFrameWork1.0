@@ -36,7 +36,7 @@ public:
 	void ChangeScene(const std::string& sceneName, float exitTime = 0.f, float enterTime = 0.f) const;
 
 	void SetInput(Keyboard& inKeyboard, Mouse& inMouse);
-	void SetDebugRenderer(const GameContext& context);
+	void SetDebugTextRenderer(const GameContext& context);
 
 	bool IsStarted() const
 	{
