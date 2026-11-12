@@ -84,20 +84,20 @@ void DebugRenderer::Flush3D(Renderer& renderer, DirectX::FXMMATRIX view)
 	DrawBatch(renderer, vertices3D, view, renderer.Get3DProj());
 }
 
-void DebugRenderer::DrawBatch(Renderer& renderer, const std::vector<DebugVertex>& vertices, DirectX::FXMMATRIX view, DirectX::CXMMATRIX proj)
+void DebugRenderer::DrawBatch(Renderer& renderer, const std::vector<DebugVertex>& inVertices, DirectX::FXMMATRIX view, DirectX::CXMMATRIX proj)
 {
-	if (vertices.empty())
+	if (inVertices.empty())
 	{
 		return;
 	}
 
 	auto* ctx = renderer.pContext.Get();
 
-	EnsureCapacity(renderer, vertices.size());
+	EnsureCapacity(renderer, inVertices.size());
 	{
 		D3D11_MAPPED_SUBRESOURCE msr;
 		ctx->Map(vertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
-		memcpy(msr.pData, vertices.data(), sizeof(DebugVertex) * vertices.size());
+		memcpy(msr.pData, inVertices.data(), sizeof(DebugVertex) * inVertices.size());
 		ctx->Unmap(vertexBuffer.Get(), 0);
 	}
 
@@ -125,7 +125,7 @@ void DebugRenderer::DrawBatch(Renderer& renderer, const std::vector<DebugVertex>
 	ctx->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
 
 	// draw at the end 
-	ctx->Draw(static_cast<UINT>(vertices.size()), 0);
+	ctx->Draw(static_cast<UINT>(inVertices.size()), 0);
 }
 
 void DebugRenderer::DrawLine3D(DirectX::XMFLOAT3 start, DirectX::XMFLOAT3 end, DirectX::XMFLOAT4 color)
@@ -151,6 +151,53 @@ void DebugRenderer::DrawSphere3D(DirectX::XMFLOAT3 center, float radius, DirectX
 
 void DebugRenderer::DrawCapsule3D(DirectX::XMFLOAT3 centerA, DirectX::XMFLOAT3 centerB, float radius, DirectX::XMFLOAT4 color)
 {
+	using namespace DirectX;
+
+	const XMVECTOR posCenterA = XMLoadFloat3(&centerA);
+	const XMVECTOR posCenterB = XMLoadFloat3(&centerB);
+	const XMVECTOR axis = posCenterB - posCenterA;
+	const float length = XMVectorGetX(XMVector3Length(axis));
+
+	if (length < 1e-5f)
+	{
+		DrawSphere3D(centerA, radius, color);
+		return;
+	}
+
+	// find the two perpendicular axes
+	const XMVECTOR dir = axis / length;
+	XMVECTOR helperDir;
+	if (fabsf(XMVectorGetY(dir)) < 0.99f)
+	{
+		helperDir = XMVectorSet(0.f, 1.f, 0.f, 0.f);
+	}
+	else
+	{
+		helperDir = XMVectorSet(1.f, 0.f, 0.f, 0.f);
+	}
+	const XMVECTOR uDir = XMVector3Normalize(XMVector3Cross(helperDir, dir));
+	const XMVECTOR vDir = XMVector3Cross(dir, uDir);
+
+	// end rings
+	DrawArc3D(posCenterA, uDir, vDir, radius, 0.f, XM_2PI, circleSegments, color);
+	DrawArc3D(posCenterB, uDir, vDir, radius, 0.f, XM_2PI, circleSegments, color);
+
+	// side lines
+	const XMVECTOR sides[4] = {uDir, -uDir, vDir, -vDir};
+	for (const XMVECTOR& side : sides)
+	{
+		XMFLOAT3 start, end;
+		XMStoreFloat3(&start, posCenterA + side * radius);
+		XMStoreFloat3(&end, posCenterB + side * radius);
+		DrawLine3D(start, end, color);
+	}
+
+	// end caps
+	const int half = circleSegments / 2;
+	DrawArc3D(posCenterB, uDir, dir, radius, 0.f, XM_PI, half, color);
+	DrawArc3D(posCenterB, vDir, dir, radius, 0.f, XM_PI, half, color);
+	DrawArc3D(posCenterA, uDir, -dir, radius, 0.f, XM_PI, half, color);
+	DrawArc3D(posCenterA, vDir, -dir, radius, 0.f, XM_PI, half, color);
 }
 
 void DebugRenderer::DrawArc3D(DirectX::FXMVECTOR center, DirectX::FXMVECTOR axisX, DirectX::FXMVECTOR axisY, float radius, float startRad, float endRad, int segments, DirectX::XMFLOAT4 color)
@@ -162,6 +209,18 @@ void DebugRenderer::DrawArc3D(DirectX::FXMVECTOR center, DirectX::FXMVECTOR axis
 
 	DirectX::XMFLOAT3 prevVertex;
 	DirectX::XMStoreFloat3(&prevVertex, center + (axisX * cosf(startRad) + axisY * sinf(startRad)) * radius);
+
+	// walk the arc
+	for (int i = 1; i <= segments; i++)
+	{
+		const float angle = startRad + step * static_cast<float>(i);
+
+		XMFLOAT3 currVertex;
+		XMStoreFloat3(&currVertex, center + (axisX * cosf(angle) + axisY * sinf(angle)) * radius);
+
+		DrawLine3D(prevVertex, currVertex, color);
+		prevVertex = currVertex;
+	}
 }
 
 void DebugRenderer::EnsureCapacity(const Renderer& renderer, const size_t vertexCount)

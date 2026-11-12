@@ -89,6 +89,11 @@ void App::HandleInput(float deltaTime)
 	{
 		editor.ToggleVisible();
 	}
+
+	if (wnd.keyboard.KeyIsTriggered(VK_F2))
+	{
+		isShowingColliders = !isShowingColliders;
+	}
 #endif
 }
 
@@ -125,6 +130,7 @@ void App::Draw(float deltaTime)
 		}
 	}
 
+	debugRenderer.Flush3D(renderer, cam3D.GetView());
 	debugRenderer.Flush(renderer);
 	textRenderer.Flush(renderer);
 
@@ -144,6 +150,39 @@ void App::DebugRender(Scene& scene)
 				{0, 1, 0, 1});
 		}
 	}
+
+	if (!isShowingColliders)
+	{
+		return;
+	}
+
+	// temp for testing
+	for (auto& object : scene.GetObjects())
+	{
+		const auto* animator = object->GetComponent<SkeletalAnimatorComponent>();
+		if (!animator)
+		{
+			continue;
+		}
+
+		const Skeleton& skeleton = animator->GetSkeleton();
+		for (int i = 0; i < static_cast<int>(skeleton.nodes.size()); i++)
+		{
+			const int parent = skeleton.nodes[i].parent;
+
+			if (parent < 0)
+			{
+				continue;
+			}
+
+			DirectX::XMFLOAT3 from, to;
+			DirectX::XMStoreFloat3(&from, animator->GetNodeWorldMatrix(parent).r[3]);
+			DirectX::XMStoreFloat3(&to, animator->GetNodeWorldMatrix(i).r[3]);
+			debugRenderer.DrawLine3D(from, to, { 1.f, 0.f, 1.f, 1.f });
+		}
+	}
+	debugRenderer.DrawSphere3D({ 0.f, 0.f, 0.f }, 0.5f, { 0.f, 1.f, 1.f, 1.f });
+	debugRenderer.DrawCapsule3D({ 2.f, 0.5f, 0.f }, { 2.f, 2.f, 0.f }, 0.5f, { 1.f, 0.f, 0.f, 1.f });
 }
 
 void App::DebugTextRender(Scene& scene, float deltaTime)

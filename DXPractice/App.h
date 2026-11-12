@@ -63,5 +63,6 @@ private:
 	std::unique_ptr<LightCBuffer> lightCBuffer;
 
 	float sensitivity = 0.004f;
+	bool isShowingColliders = false;
 };
 
