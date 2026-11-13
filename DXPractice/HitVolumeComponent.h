@@ -79,7 +79,7 @@ public:
 	void SetAllHurtboxEnabled(bool inIsEnabled);
 
 	// hitboxOn / hitboxOff
-	void ApplyAnimationEvent();
+	void ApplyAnimationEvents();
 
 	void UpdateWorldShapes();
 

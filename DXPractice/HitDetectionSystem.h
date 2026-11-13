@@ -22,6 +22,7 @@ public:
 	{
 		for (HitVolumeComponent* volume : volumes)
 		{
+			volume->ApplyAnimationEvents();
 			volume->UpdateWorldShapes();
 		}
 	}

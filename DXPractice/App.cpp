@@ -194,8 +194,6 @@ void App::DebugRender(Scene& scene)
 			debugRenderer.DrawLine3D(from, to, {1.f, 0.f, 1.f, 1.f});
 		}
 	}
-	debugRenderer.DrawSphere3D({0.f, 0.f, 0.f}, 0.5f, {0.f, 1.f, 1.f, 1.f});
-	debugRenderer.DrawCapsule3D({2.f, 0.5f, 0.f}, {2.f, 2.f, 0.f}, 0.5f, {1.f, 0.f, 0.f, 1.f});
 }
 
 void App::DebugTextRender(Scene& scene, float deltaTime)

@@ -7,11 +7,17 @@
 #include "SkeletalAnimatorComponent.h"
 
 namespace
-{
-	constexpr DirectX::XMFLOAT4 hurtboxColor = {0.f, 1.f, 0.f, 1.f};
-	constexpr DirectX::XMFLOAT4 hitboxInactiveColor{0.45f, 0.f, 0.f, 1.f};
+{	
+	const std::string hitboxOnEvent = "HitboxOn";
+	const std::string hitboxOffEvent = "HitboxOff";
 
 	constexpr float axisExtra = 0.2f; // poke axes out of the shape
+
+	// debug
+	constexpr DirectX::XMFLOAT4 hurtboxColor{ 0.f, 1.f, 0.f, 1.f };
+	constexpr DirectX::XMFLOAT4 hurtboxDisabledColor{ 0.15f, 0.3f, 0.15f, 1.f };
+	constexpr DirectX::XMFLOAT4 hitboxActiveColor{ 1.f, 0.15f, 0.15f, 1.f };
+	constexpr DirectX::XMFLOAT4 hitboxInactiveColor{ 0.45f, 0.f, 0.f, 1.f };
 }
 
 void HitVolumeComponent::OnAttach(GameContext& context)
@@ -79,17 +85,74 @@ void HitVolumeComponent::SetAllHurtboxEnabled(bool inIsEnabled)
 	}
 }
 
-void HitVolumeComponent::ApplyAnimationEvent()
+void HitVolumeComponent::ApplyAnimationEvents()
 {
+	if (!animator)
+	{
+		return;
+	}
+
+	for (const FiredAnimationEvent& event : animator->GetFiredEvents())
+	{
+		if (event.type == FiredEventType::INTERRUPTED)
+		{
+			for (size_t i = 0; i < hitGroups.size(); i++)
+			{
+				if (hitGroups[i].isActive && hitGroups[i].activatedByClip == event.clipName)
+				{
+					ActivateGroup(i, false, {});
+				}
+			}
+
+			continue;
+		}
+
+		const bool isOn = event.eventName == hitboxOnEvent;
+		// if neither on nor off
+		if (!isOn && event.eventName != hitboxOffEvent)
+		{
+			continue;
+		}
+
+		const int index = FindGroup(event.param);
+		assert(index >= 0 && "HitboxOn/Off param is not a hitbox group on this object");
+		if (index >= 0)
+		{
+			ActivateGroup(index, isOn, event.clipName);
+		}
+	}
 }
 
 bool HitVolumeComponent::CanHit(int groupIndex, const GameObject* victim, float currTime) const
 {
-
+	const HitGroup& group = hitGroups[groupIndex];
+	for (const HitRecord& record : group.hitRecords)
+	{
+		if (record.victim != victim)
+		{
+			continue;
+		}
+		if (group.rehitIntervalSec <= 0.f)
+		{
+			return false;
+		}
+		return currTime - record.lastHitTimeSec >= group.rehitIntervalSec;
+	}
+	return true;
 }
 
 void HitVolumeComponent::RecordHit(int groupIndex, const GameObject* victim, float currTime)
 {
+	for (HitRecord& record : hitGroups[groupIndex].hitRecords)
+	{
+		if (record.victim == victim)
+		{
+			record.lastHitTimeSec = currTime;
+			return;
+		}
+	}
+
+	hitGroups[groupIndex].hitRecords.push_back({victim, currTime});
 }
 
 void HitVolumeComponent::UpdateWorldShapes()
@@ -140,7 +203,16 @@ void HitVolumeComponent::DrawDebug(DebugRenderer& debugRenderer) const
 			continue;
 		}
 
-		const XMFLOAT4 color = shape.desc.role == HitVolumeRole::HURTBOX ? hurtboxColor : hitboxInactiveColor;
+		XMFLOAT4 color;
+		if (shape.desc.role == HitVolumeRole::HURTBOX)
+		{
+			color = shape.isEnabeld ? hurtboxColor : hurtboxDisabledColor;
+		}
+		else
+		{
+			color = hitGroups[shape.groupIndex].isActive ? hitboxActiveColor : hitboxInactiveColor;
+		}
+
 		debugRenderer.DrawCapsule3D(shape.world.centerA, shape.world.centerB, shape.world.radius, color);
 
 		if (!isShowingBoneAxes || shape.nodeIndex < 0)
@@ -187,7 +259,7 @@ int HitVolumeComponent::FindOrAddGroup(const std::string& inGroupName)
 		return index;
 	}
 
-	hitGroups.push_back({ .name = inGroupName });
+	hitGroups.push_back({.name = inGroupName});
 	return static_cast<int>(hitGroups.size() - 1);
 }
 

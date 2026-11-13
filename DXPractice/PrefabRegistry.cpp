@@ -193,8 +193,8 @@ void RegisterPrefabs()
 
 		// events, seconds on each clip's own timeline
 		// TODO: manual timing manipulation
-		animator->AddEvent("attackHand", 1.2f, "HitboxOn");
-		animator->AddEvent("attackHand", 1.65f, "HitboxOff");
+		animator->AddEvent("attackHand", 1.2f, "HitboxOn", "lunge");
+		animator->AddEvent("attackHand", 1.65f, "HitboxOff", "lunge");
 		animator->AddEvent("Walk", 0.f, "Footstep");
 		animator->AddEvent("Walk", 0.64f, "Footstep");
 
