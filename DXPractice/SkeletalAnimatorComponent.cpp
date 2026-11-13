@@ -226,7 +226,7 @@ bool SkeletalAnimatorComponent::PlayClip(const std::string& name, float fadeSec)
 	return true;
 }
 
-void SkeletalAnimatorComponent::AddEvent(const std::string& clipName, float timeSec, const std::string& eventName)
+void SkeletalAnimatorComponent::AddEvent(const std::string& clipName, float timeSec, const std::string& eventName, const std::string& param)
 {
 	auto it = clipEntries.find(clipName);
 	if (it == clipEntries.end())
@@ -243,7 +243,7 @@ void SkeletalAnimatorComponent::AddEvent(const std::string& clipName, float time
 
 	// find position by time
 	auto pointer = std::ranges::upper_bound(entry.events, timeSec, {}, &AnimationEvent::timeSec);
-	entry.events.insert(pointer, AnimationEvent{timeSec, eventName});
+	entry.events.insert(pointer, AnimationEvent{timeSec, eventName, param});
 }
 
 float SkeletalAnimatorComponent::GetCurrClipLength() const
@@ -344,7 +344,7 @@ void SkeletalAnimatorComponent::ClampToRange(float startSec, float finishSec, bo
 
 		if (isAfterStart)
 		{
-			pendingEvents.push_back({FiredEventType::MARKER, playback.clip->name, event.eventName, event.timeSec});
+			pendingEvents.push_back({FiredEventType::MARKER, playback.clip->name, event.eventName, event.timeSec, event.param});
 		}
 	}
 }

@@ -99,7 +99,7 @@ void RegisterPrefabs()
 		addHurtbox("body", "Spine02", {1.28f, 0.f, 0.f}, 1.3f);
 		addHurtbox("chest", "Chest", {1.27f, 0.f, 0.f}, 1.2f);
 
-		// neck and head (Head's X is sideways; its +Z points to the snout)
+		// neck and head 
 		addHurtbox("neck", "Neck01", {1.22f, 0.f, 0.f}, 0.9f);
 		addHurtbox("neck", "Neck02", {1.13f, 0.f, 0.f}, 0.8f);
 		addHurtbox("neck", "Neck03", {1.05f, 0.f, 0.f}, 0.7f);
@@ -117,30 +117,54 @@ void RegisterPrefabs()
 		addHurtbox("legR", "UpperReg_R", {1.79f, 0.f, 0.f}, 0.65f); // typo'd
 		addHurtbox("legR", "RowerReg_R", {1.56f, 0.f, 0.f}, 0.4f); // typo'd
 
-		// tail (joint23's axes match the world; the tip continues along its -Z)
+		// tail 
 		addHurtbox("tail", "joint19", {1.51f, 0.f, 0.f}, 0.85f);
 		addHurtbox("tail", "joint20", {1.54f, 0.f, 0.f}, 0.75f);
 		addHurtbox("tail", "joint21", {1.96f, 0.f, 0.f}, 0.6f);
 		addHurtbox("tail", "joint22", {1.99f, 0.f, 0.f}, 0.5f);
-		//addHurtbox("tail", "joint23", {0.f, 0.f, -1.4f}, 0.35f);
+		addHurtbox("tail", "joint23", {0.f, 0.f, 1.4f}, 0.35f);
 
-		// claw hitbox (attackHand): hand to claw tips, plus the forearm
-		hitVolume.AddShape({
-			.role = HitVolumeRole::HITBOX, .name = "claw", .groupName = "claw", .boneName = "Hand_R",
-			.localCenterB = {1.4f, 0.f, 0.f}, .radius = 0.45f, .isSweeping = true
-		});
-		hitVolume.AddShape({
-			.role = HitVolumeRole::HITBOX, .name = "forearm", .groupName = "claw", .boneName = "RowerArm_R",
-			.localCenterB = {1.72f, 0.f, 0.f}, .radius = 0.45f, .isSweeping = true
-		});
-		hitVolume.AddShape({
-			.role = HitVolumeRole::HITBOX, .name = "claw", .groupName = "clawL", .boneName = "Hand_L",
-			.localCenterB = {1.4f, 0.f, 0.f}, .radius = 0.45f, .isSweeping = true
-		});
-		hitVolume.AddShape({
-			.role = HitVolumeRole::HITBOX, .name = "forearm", .groupName = "clawL", .boneName = "LowerArm_L",
-			.localCenterB = {1.72f, 0.f, 0.f}, .radius = 0.45f, .isSweeping = true
-		});
+		// hitboxes: one group per attack
+		auto addHitbox = [&hitVolume](const char* name, const char* group, const char* bone,
+		                              DirectX::XMFLOAT3 localCenterA, DirectX::XMFLOAT3 localCenterB,
+		                              float radius, bool isSweeping)
+		{
+			hitVolume.AddShape({
+				.role = HitVolumeRole::HITBOX, .name = name, .groupName = group, .boneName = bone,
+				.localCenterA = localCenterA, .localCenterB = localCenterB,
+				.radius = radius, .isSweeping = isSweeping
+			});
+		};
+
+		// lunge (attackHand): the body is the weapon
+		addHitbox("body", "lunge", "Spine02", {}, {1.28f, 0.f, 0.f}, 1.3f, false);
+		addHitbox("body", "lunge", "Chest", {}, {1.27f, 0.f, 0.f}, 1.2f, false);
+		addHitbox("neck", "lunge", "Neck01", {}, {1.22f, 0.f, 0.f}, 0.9f, false);
+		addHitbox("head", "lunge", "Head", {}, {0.f, 0.f, -1.9f}, 0.7f, false);
+		addHitbox("arm", "lunge", "UpperArm_L", {}, {1.76f, 0.f, 0.f}, 0.7f, false);
+		addHitbox("arm", "lunge", "UpperArm_R", {}, {1.76f, 0.f, 0.f}, 0.7f, false);
+		addHitbox("forearm", "lunge", "LowerArm_L", {}, { 1.72f, 0.f, 0.f }, 0.45f, true);
+		addHitbox("forearm", "lunge", "RowerArm_R", {}, { 1.72f, 0.f, 0.f }, 0.45f, true); // typo'd
+		addHitbox("claw", "lunge", "Hand_L", {}, { 1.4f, 0.f, 0.f }, 0.45f, true);
+		addHitbox("claw", "lunge", "Hand_R", {}, { 1.4f, 0.f, 0.f }, 0.45f, true);
+
+		// bite (attackMouth): head + lower jaw, swept because the head snaps fast
+		addHitbox("head", "bite", "Head", {}, {0.f, 0.f, -1.9f}, 0.7f, true);
+		addHitbox("jaw", "bite", "Jaw01", {}, {1.32f, 0.f, 0.f}, 0.4f, true);
+
+		// breath (attackFlame, FlyFlame): widening chain along the snout (UpperMouth01 +X); length and radii are guesses
+		addHitbox("fire", "breath", "UpperMouth01", {1.f, 0.f, 0.f}, {4.f, 0.f, 0.f}, 0.6f, false);
+		addHitbox("fire", "breath", "UpperMouth01", {4.f, 0.f, 0.f}, {8.f, 0.f, 0.f}, 1.f, false);
+		addHitbox("fire", "breath", "UpperMouth01", {8.f, 0.f, 0.f}, {12.f, 0.f, 0.f}, 1.4f, false);
+
+		// wingL (attackWing): leading edge + finger bones, fat radius to cover the membrane between fingers
+		addHitbox("wing", "wingL", "Wing01_L", {}, {2.99f, 0.f, 0.f}, 0.5f, true);
+		addHitbox("wing", "wingL", "Wing02_L", {}, {4.69f, 0.f, 0.f}, 0.5f, true);
+		addHitbox("wing", "wingL", "WingIndex02_L", {}, {2.28f, 0.f, 0.f}, 0.6f, true);
+		addHitbox("wing", "wingL", "WingMiddle02_L", {}, {3.71f, 0.f, 0.f}, 0.6f, true);
+		addHitbox("wing", "wingL", "WingMiddle04_L", {}, {5.40f, 0.f, 0.f}, 0.6f, true);
+		addHitbox("wing", "wingL", "WingRing04_L", {}, {4.07f, 0.f, 0.f}, 0.6f, true);
+		addHitbox("wing", "wingL", "WingPinky04_L", {}, {2.82f, 0.f, 0.f}, 0.6f, true);
 
 		// animations
 		struct ClipDef
@@ -168,7 +192,7 @@ void RegisterPrefabs()
 		animator->SetFadeTable(DragonFadeTable());
 
 		// events, seconds on each clip's own timeline
-		// find times with the tester: P to pause, <- / -> to step
+		// TODO: manual timing manipulation
 		animator->AddEvent("attackHand", 1.2f, "HitboxOn");
 		animator->AddEvent("attackHand", 1.65f, "HitboxOff");
 		animator->AddEvent("Walk", 0.f, "Footstep");

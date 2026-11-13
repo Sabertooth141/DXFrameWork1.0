@@ -18,6 +18,7 @@ struct AnimationEvent
 {
 	float timeSec = 0.f;
 	std::string eventName;
+	std::string param; // group name for events
 };
 
 // one per channel
@@ -58,6 +59,7 @@ struct FiredAnimationEvent
 	std::string clipName;
 	std::string eventName;
 	float timeSec = 0.f;
+	std::string param;
 };
 
 enum class FadeSource
@@ -90,7 +92,7 @@ public:
 	}
 
 	bool PlayClip(const std::string& name, float fadeSec = -1.f);
-	void AddEvent(const std::string& clipName, float timeSec, const std::string& eventName);
+	void AddEvent(const std::string& clipName, float timeSec, const std::string& eventName, const std::string& param = {});
 
 	const std::vector<FiredAnimationEvent>& GetFiredEvents() const
 	{
