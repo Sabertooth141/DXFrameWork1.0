@@ -163,6 +163,7 @@ bool Scene::IsPendingDestroy(const GameObject* obj) const
 void Scene::UnregisterFromSys(GameObject* object)
 {
 	context.physicsSys.Unregister(object);
+	context.hitDetectionSys.Unregister(object);
 	context.scriptSys.Unregister(object);
 	context.animationSys.Unregister(object);
 	context.skeletalAnimationSys.Unregister(object);

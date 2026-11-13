@@ -291,6 +291,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Collision3D.cpp">
+      <Filter>Source Files\Components\Physics\Colliders</Filter>
+    </ClCompile>
+    <ClCompile Include="HitVolumeComponent.cpp">
+      <Filter>Source Files\Components\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="HitDetectionSystem.cpp">
       <Filter>Source Files\Components\Physics</Filter>
     </ClCompile>
   </ItemGroup>
@@ -541,7 +547,13 @@
     <ClInclude Include="CycleAnimationTester.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="HitVolumeComponent.h">
+      <Filter>Header Files\Components\Physics</Filter>
+    </ClInclude>
     <ClInclude Include="Collision3D.h">
+      <Filter>Header Files\Components\Physics\Colliders</Filter>
+    </ClInclude>
+    <ClInclude Include="HitDetectionSystem.h">
       <Filter>Header Files\Components\Physics</Filter>
     </ClInclude>
   </ItemGroup>

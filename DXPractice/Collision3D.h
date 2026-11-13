@@ -13,8 +13,8 @@ struct SegmentClosest3D
 {
 	DirectX::XMFLOAT3 pointAxisA;
 	DirectX::XMFLOAT3 pointAxisB;
-	float alongAxisA;
-	float alongAxisB;
+	float alongAxisA = 0.f;
+	float alongAxisB = 0.f;
 	float distSq = 0.f;
 };
 

@@ -1,5 +1,6 @@
 #pragma once
 
+class HitDetectionSystem;
 class TextRenderer;
 class SkeletalAnimationSystem;
 class Camera3D;
@@ -23,6 +24,7 @@ struct GameContext
 	Renderer& renderer;
 	TextRenderer& textRenderer;
 	PhysicsSystem& physicsSys;
+	HitDetectionSystem& hitDetectionSys;
 	ScriptSystem& scriptSys;
 	AnimationSystem& animationSys;
 	SkeletalAnimationSystem& skeletalAnimationSys;

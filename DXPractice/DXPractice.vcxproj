@@ -169,6 +169,8 @@
     <ClCompile Include="EditorUI.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GameScene.cpp" />
+    <ClCompile Include="HitDetectionSystem.cpp" />
+    <ClCompile Include="HitVolumeComponent.cpp" />
     <ClCompile Include="ImGuiLayer.cpp" />
     <ClCompile Include="IndexBuffer.cpp" />
     <ClCompile Include="InputLayout.cpp" />
@@ -229,6 +231,8 @@
     <ClInclude Include="EditorUI.h" />
     <ClInclude Include="GameContext.h" />
     <ClInclude Include="GameScene.h" />
+    <ClInclude Include="HitDetectionSystem.h" />
+    <ClInclude Include="HitVolumeComponent.h" />
     <ClInclude Include="IComponent.h" />
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="Drawable.h" />

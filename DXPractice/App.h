@@ -12,6 +12,7 @@
 #include "GameContext.h"
 #include "TextRenderer.h"
 #include "EditorUI.h"
+#include "HitDetectionSystem.h"
 #include "ImGuiLayer.h"
 #include "SceneManager.h"
 #include "SkeletalAnimationSystem.h"
@@ -52,6 +53,7 @@ private:
 	SkeletalAnimationSystem skeletalAnimationSystem;
 	RenderSystem renderSystem;
 	PhysicsSystem physicsSystem;
+	HitDetectionSystem hitDetectionSystem;
 	Camera2D cam2D;
 	Camera3D cam3D;
 

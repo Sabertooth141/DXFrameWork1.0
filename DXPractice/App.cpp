@@ -16,8 +16,10 @@ App::App(const std::string& cmdLine) : cmdLine(cmdLine),
                                        textRenderer(renderer, L"Consolas", 18),
                                        renderSystem(RenderSystem(renderer, cam2D, cam3D)),
                                        gameContext{
-	                                       renderer, textRenderer, physicsSystem, scriptSystem, animationSystem,
-	                                       skeletalAnimationSystem, renderSystem, cam2D, cam3D,
+	                                       renderer, textRenderer, physicsSystem, hitDetectionSystem,
+	                                       scriptSystem, animationSystem,
+	                                       skeletalAnimationSystem, renderSystem,
+	                                       cam2D, cam3D,
 	                                       wnd.keyboard, wnd.mouse
                                        },
                                        sceneManager(gameContext)
@@ -78,6 +80,7 @@ void App::Update(float deltaTime)
 			animationSystem.Update(deltaTime);
 			skeletalAnimationSystem.Update(deltaTime);
 			scriptSystem.LateUpdate(deltaTime);
+			hitDetectionSystem.Update();
 		}
 		scene->FlushPending();
 	}
@@ -158,6 +161,14 @@ void App::DebugRender(Scene& scene)
 		return;
 	}
 
+	for (auto& object : scene.GetObjects())
+	{
+		if (const auto* volume = object->GetComponent<HitVolumeComponent>())
+		{
+			volume->DrawDebug(debugRenderer);
+		}
+	}
+
 	// temp for testing
 	for (auto& object : scene.GetObjects())
 	{
@@ -180,11 +191,11 @@ void App::DebugRender(Scene& scene)
 			DirectX::XMFLOAT3 from, to;
 			DirectX::XMStoreFloat3(&from, animator->GetNodeWorldMatrix(parent).r[3]);
 			DirectX::XMStoreFloat3(&to, animator->GetNodeWorldMatrix(i).r[3]);
-			debugRenderer.DrawLine3D(from, to, { 1.f, 0.f, 1.f, 1.f });
+			debugRenderer.DrawLine3D(from, to, {1.f, 0.f, 1.f, 1.f});
 		}
 	}
-	debugRenderer.DrawSphere3D({ 0.f, 0.f, 0.f }, 0.5f, { 0.f, 1.f, 1.f, 1.f });
-	debugRenderer.DrawCapsule3D({ 2.f, 0.5f, 0.f }, { 2.f, 2.f, 0.f }, 0.5f, { 1.f, 0.f, 0.f, 1.f });
+	debugRenderer.DrawSphere3D({0.f, 0.f, 0.f}, 0.5f, {0.f, 1.f, 1.f, 1.f});
+	debugRenderer.DrawCapsule3D({2.f, 0.5f, 0.f}, {2.f, 2.f, 0.f}, 0.5f, {1.f, 0.f, 0.f, 1.f});
 }
 
 void App::DebugTextRender(Scene& scene, float deltaTime)
