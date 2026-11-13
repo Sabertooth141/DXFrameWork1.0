@@ -161,6 +161,7 @@
     <ClCompile Include="BitmapFont.cpp" />
     <ClCompile Include="BoxCollider2D.cpp" />
     <ClCompile Include="CameraController.cpp" />
+    <ClCompile Include="Collision3D.cpp" />
     <ClCompile Include="CollisionTests.cpp" />
     <ClCompile Include="CycleAnimationTester.cpp" />
     <ClCompile Include="DebugRenderer.cpp" />
@@ -220,6 +221,7 @@
     <ClInclude Include="Camera3D.h" />
     <ClInclude Include="CameraController.h" />
     <ClInclude Include="Collider2D.h" />
+    <ClInclude Include="Collision3D.h" />
     <ClInclude Include="CollisionDispatch.h" />
     <ClInclude Include="CollisionTests.h" />
     <ClInclude Include="CycleAnimationTester.h" />

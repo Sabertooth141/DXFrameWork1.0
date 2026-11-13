@@ -1,4 +1,6 @@
 #include "App.h"
+
+#include "Collision3D.h"
 #include "CollisionTests.h"
 #include "GameObject.h"
 #include "GameScene.h"

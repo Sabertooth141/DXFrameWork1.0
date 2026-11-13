@@ -287,6 +287,12 @@
     <ClCompile Include="AnimationClipCache.cpp">
       <Filter>Source Files\Components\Mesh</Filter>
     </ClCompile>
+    <ClCompile Include="CycleAnimationTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Collision3D.cpp">
+      <Filter>Source Files\Components\Physics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Win.h">
@@ -531,6 +537,12 @@
     </ClInclude>
     <ClInclude Include="AnimationFadeTable.h">
       <Filter>Header Files\Components\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="CycleAnimationTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Collision3D.h">
+      <Filter>Header Files\Components\Physics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
