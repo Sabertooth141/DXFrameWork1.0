@@ -106,3 +106,19 @@ void GameObject::NotifyColliderLeave2D(const GameObject& other) const
 		comp.second->OnCollisionExit2D(other);
 	}
 }
+
+void GameObject::NotifyHitDealt(const HitEvent& event) const
+{
+	for (const auto& comp: components)
+	{
+		comp.second->OnHitDealt(event);
+	}
+}
+
+void GameObject::NotifyHitTaken(const HitEvent& event) const
+{
+	for (const auto& comp : components)
+	{
+		comp.second->OnHitTaken(event);
+	}
+}

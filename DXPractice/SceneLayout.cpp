@@ -219,19 +219,17 @@ SceneLayout::Result SceneLayout::Load(Scene& scene, const std::string& sceneName
 		}
 
 		TransformComponent* transform = obj->GetTransform();
-		if (const auto it = entry.find("rotation"); it != entry.end() && it->is_number())
+		if (const auto it = entry.find("rotation"); it != entry.end())
 		{
-			DirectX::XMFLOAT3 rot = transform->GetRotation();
 			DirectX::XMFLOAT3 deg;
 			if (JsonToFloat3(*it, deg))
 			{
-				rot = {
+				transform->SetRotation({
 					DirectX::XMConvertToRadians(deg.x),
 					DirectX::XMConvertToRadians(deg.y),
 					DirectX::XMConvertToRadians(deg.z)
-				};
+				});
 			}
-			transform->SetRotation(rot);
 		}
 
 		DirectX::XMFLOAT3 scale;

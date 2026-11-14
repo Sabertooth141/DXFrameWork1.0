@@ -2,7 +2,8 @@
  "version": 2,
  "scene": "Game",
  "objects": [
-  {"prefab":"dragon","name":"dragon","position":[7.925,-3.363,11.222],"rotation":[0.0,0.0,0.0],"scale":[0.01,0.01,0.01]},
-  {"prefab":"testLight","name":"testLight","position":[-1.963,2.424,-6.499],"rotation":[0.0,0.0,0.0],"scale":[1.0,1.0,1.0]}
+  {"prefab":"dragon","name":"dragon","position":[7.925,0.0,11.222],"rotation":[0.0,0.0,0.0],"scale":[0.01,0.01,0.01]},
+  {"prefab":"testLight","name":"testLight","position":[-1.963,2.424,-6.499],"rotation":[0.0,0.0,0.0],"scale":[1.0,1.0,1.0]},
+  {"prefab":"dragon","name":"dragon","position":[9.021,0.0,-11.218],"rotation":[0.0,174.999,0.0],"scale":[0.01,0.01,0.01]}
   ]
 }

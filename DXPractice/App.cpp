@@ -80,7 +80,7 @@ void App::Update(float deltaTime)
 			animationSystem.Update(deltaTime);
 			skeletalAnimationSystem.Update(deltaTime);
 			scriptSystem.LateUpdate(deltaTime);
-			hitDetectionSystem.Update();
+			hitDetectionSystem.Update(deltaTime);
 		}
 		scene->FlushPending();
 	}

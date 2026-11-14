@@ -14,6 +14,8 @@ public:
 	void Update(float deltaTime) override;
 	void LateUpdate(float deltaTime) override;
 
+	void OnHitDealt(const HitEvent& event) override;
+
 private:
 	struct ScriptStep
 	{

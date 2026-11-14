@@ -156,6 +156,7 @@ void RegisterPrefabs()
 		addHitbox("fire", "breath", "UpperMouth01", {1.f, 0.f, 0.f}, {4.f, 0.f, 0.f}, 0.6f, false);
 		addHitbox("fire", "breath", "UpperMouth01", {4.f, 0.f, 0.f}, {8.f, 0.f, 0.f}, 1.f, false);
 		addHitbox("fire", "breath", "UpperMouth01", {8.f, 0.f, 0.f}, {12.f, 0.f, 0.f}, 1.4f, false);
+		hitVolume.SetGroupRehitInterval("breath", 0.2f);
 
 		// wingL (attackWing): leading edge + finger bones, fat radius to cover the membrane between fingers
 		addHitbox("wing", "wingL", "Wing01_L", {}, {2.99f, 0.f, 0.f}, 0.5f, true);
@@ -193,8 +194,18 @@ void RegisterPrefabs()
 
 		// events, seconds on each clip's own timeline
 		// TODO: manual timing manipulation
+		// attkHand
 		animator->AddEvent("attackHand", 1.2f, "HitboxOn", "lunge");
 		animator->AddEvent("attackHand", 1.65f, "HitboxOff", "lunge");
+		// attkMouth
+		animator->AddEvent("attackMouth", 0.5f, "HitboxOn", "bite");
+		animator->AddEvent("attackMouth", 1.1f, "HitboxOff", "bite");
+		// attkWing
+		animator->AddEvent("attackWing", 0.8f, "HitboxOn", "wingL");
+		animator->AddEvent("attackWing", 1.2f, "HitboxOff", "wingL");
+
+		// locomotions
+		// walk
 		animator->AddEvent("Walk", 0.f, "Footstep");
 		animator->AddEvent("Walk", 0.64f, "Footstep");
 

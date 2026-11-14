@@ -49,7 +49,7 @@ struct HitShape
 	HitShapeDesc desc;
 	int nodeIndex = -1; // -1 == object root
 	int groupIndex = -1; // hitboxes only
-	bool isEnabeld = true; // hurtboxes only
+	bool isEnabled = true; // hurtboxes only
 
 	Capsule3D world{};
 	Capsule3D prevWorld{};

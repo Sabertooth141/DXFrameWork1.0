@@ -18,16 +18,13 @@ public:
 			});
 	}
 
-	void Update()
-	{
-		for (HitVolumeComponent* volume : volumes)
-		{
-			volume->ApplyAnimationEvents();
-			volume->UpdateWorldShapes();
-		}
-	}
+	void Update(float deltaTime);
+
+private:
+	void DetectPair(HitVolumeComponent& attacker, HitVolumeComponent& victim, std::vector<HitEvent>& outHits) const;
 
 private:
 	std::vector<HitVolumeComponent*> volumes;
+	float timeSec = 0.f; // game time
 };
 

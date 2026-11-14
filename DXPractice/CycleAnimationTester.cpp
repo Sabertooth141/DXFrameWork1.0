@@ -121,6 +121,11 @@ void CycleAnimationTester::LateUpdate(float deltaTime)
 	UpdateOverlay();
 }
 
+void CycleAnimationTester::OnHitDealt(const HitEvent& event)
+{
+	textRenderer->Log("[hit] %s #%u -> %s", event.hitboxGroup.c_str(), event.activation, event.hurtboxName.c_str());
+}
+
 void CycleAnimationTester::PlayCurrent()
 {
 	PlayByName(clipNames[currClipIndex]);

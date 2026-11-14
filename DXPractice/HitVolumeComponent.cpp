@@ -67,7 +67,7 @@ void HitVolumeComponent::SetHurtboxEnabled(const std::string& name, bool inIsEna
 	{
 		if (shape.desc.role == HitVolumeRole::HURTBOX && shape.desc.name == name)
 		{
-			shape.isEnabeld = inIsEnabled;
+			shape.isEnabled = inIsEnabled;
 			isFound = true;
 		}
 	}
@@ -80,7 +80,7 @@ void HitVolumeComponent::SetAllHurtboxEnabled(bool inIsEnabled)
 	{
 		if (shape.desc.role == HitVolumeRole::HURTBOX)
 		{
-			shape.isEnabeld = inIsEnabled;
+			shape.isEnabled = inIsEnabled;
 		}
 	}
 }
@@ -206,7 +206,7 @@ void HitVolumeComponent::DrawDebug(DebugRenderer& debugRenderer) const
 		XMFLOAT4 color;
 		if (shape.desc.role == HitVolumeRole::HURTBOX)
 		{
-			color = shape.isEnabeld ? hurtboxColor : hurtboxDisabledColor;
+			color = shape.isEnabled ? hurtboxColor : hurtboxDisabledColor;
 		}
 		else
 		{

@@ -556,6 +556,9 @@
     <ClInclude Include="HitDetectionSystem.h">
       <Filter>Header Files\Components\Physics</Filter>
     </ClInclude>
+    <ClInclude Include="HitEvent.h">
+      <Filter>Header Files\Components\Physics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="PixelShader.hlsl">

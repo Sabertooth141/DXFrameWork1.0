@@ -98,6 +98,8 @@ public:
 	void NotifyColliderEnter2D(const GameObject& other) const;
 	void NotifyColliderStay2D(const GameObject& other) const;
 	void NotifyColliderLeave2D(const GameObject& other) const;
+	void NotifyHitDealt(const HitEvent& event) const;
+	void NotifyHitTaken(const HitEvent& event) const;
 
 	Renderer& GetRenderer() const
 	{

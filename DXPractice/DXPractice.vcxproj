@@ -232,6 +232,7 @@
     <ClInclude Include="GameContext.h" />
     <ClInclude Include="GameScene.h" />
     <ClInclude Include="HitDetectionSystem.h" />
+    <ClInclude Include="HitEvent.h" />
     <ClInclude Include="HitVolumeComponent.h" />
     <ClInclude Include="IComponent.h" />
     <ClInclude Include="ConstantBuffer.h" />
