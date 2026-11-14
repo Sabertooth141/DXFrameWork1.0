@@ -34,3 +34,5 @@ SegmentClosest3D ClosestPointsPerSegment(DirectX::FXMVECTOR startPtA, DirectX::F
                                          DirectX::FXMVECTOR startPtB, DirectX::GXMVECTOR endPtB);
 
 CapsuleContact3D TestCapsuleVsCapsule(const Capsule3D& capA, const Capsule3D& capB);
+
+bool ComputeHorizontalPushOut(const Capsule3D& mover, const Capsule3D& blocker, DirectX::XMFLOAT3& outPush);

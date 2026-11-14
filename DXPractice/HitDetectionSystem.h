@@ -20,6 +20,11 @@ public:
 
 	void Update(float deltaTime);
 
+	const std::vector<HitVolumeComponent*>& GetVolumes() const
+	{
+		return volumes;
+	}
+
 private:
 	void DetectPair(HitVolumeComponent& attacker, HitVolumeComponent& victim, std::vector<HitEvent>& outHits) const;
 

@@ -9,6 +9,7 @@
 #include "GameObject.h"
 #include "HitVolumeComponent.h"
 #include "PhysicsTest.h"
+#include "PlayerController.h"
 #include "SkeletalAnimatorComponent.h"
 
 namespace
@@ -143,10 +144,10 @@ void RegisterPrefabs()
 		addHitbox("head", "lunge", "Head", {}, {0.f, 0.f, -1.9f}, 0.7f, false);
 		addHitbox("arm", "lunge", "UpperArm_L", {}, {1.76f, 0.f, 0.f}, 0.7f, false);
 		addHitbox("arm", "lunge", "UpperArm_R", {}, {1.76f, 0.f, 0.f}, 0.7f, false);
-		addHitbox("forearm", "lunge", "LowerArm_L", {}, { 1.72f, 0.f, 0.f }, 0.45f, true);
-		addHitbox("forearm", "lunge", "RowerArm_R", {}, { 1.72f, 0.f, 0.f }, 0.45f, true); // typo'd
-		addHitbox("claw", "lunge", "Hand_L", {}, { 1.4f, 0.f, 0.f }, 0.45f, true);
-		addHitbox("claw", "lunge", "Hand_R", {}, { 1.4f, 0.f, 0.f }, 0.45f, true);
+		addHitbox("forearm", "lunge", "LowerArm_L", {}, {1.72f, 0.f, 0.f}, 0.45f, true);
+		addHitbox("forearm", "lunge", "RowerArm_R", {}, {1.72f, 0.f, 0.f}, 0.45f, true); // typo'd
+		addHitbox("claw", "lunge", "Hand_L", {}, {1.4f, 0.f, 0.f}, 0.45f, true);
+		addHitbox("claw", "lunge", "Hand_R", {}, {1.4f, 0.f, 0.f}, 0.45f, true);
 
 		// bite (attackMouth): head + lower jaw, swept because the head snaps fast
 		addHitbox("head", "bite", "Head", {}, {0.f, 0.f, -1.9f}, 0.7f, true);
@@ -166,6 +167,11 @@ void RegisterPrefabs()
 		addHitbox("wing", "wingL", "WingMiddle04_L", {}, {5.40f, 0.f, 0.f}, 0.6f, true);
 		addHitbox("wing", "wingL", "WingRing04_L", {}, {4.07f, 0.f, 0.f}, 0.6f, true);
 		addHitbox("wing", "wingL", "WingPinky04_L", {}, {2.82f, 0.f, 0.f}, 0.6f, true);
+
+		hitVolume.AddShape({
+			.role = HitVolumeRole::BODY, .name = "torso", .boneName = "Spine01",
+			.localCenterA = {0.f, 0.f, 0.f}, .localCenterB = {3.7f, 0.f, 0.f}, .radius = 1.2f
+		});
 
 		// animations
 		struct ClipDef
@@ -213,5 +219,19 @@ void RegisterPrefabs()
 		animator->PlayClip("idle02");
 
 		object.AddComponent<CycleAnimationTester>();
+	});
+
+	// player
+	PrefabRegistry::Instance().RegisterModel("player", "../../assets/models/testCube.fbx", mat, [](GameObject& object)
+	{
+		object.GetTransform()->SetScale({0.6f, 1.8f, 0.35f});
+		object.SetTag(ObjectTag::PLAYER);
+		object.AddComponent<PlayerController>();
+
+		auto& hitVolume = object.AddComponent<HitVolumeComponent>();
+		hitVolume.AddShape({
+			.role = HitVolumeRole::HURTBOX, .name = "body",
+			.localCenterA = {0.f, -0.55f, 0.f}, .localCenterB = {0.f, 0.55f, 0.f}, .radius = 0.35f
+		});
 	});
 }

@@ -12,7 +12,8 @@ class DebugRenderer;
 enum class HitVolumeRole
 {
 	HURTBOX,
-	HITBOX
+	HITBOX,
+	BODY
 };
 
 struct HitRecord

@@ -196,3 +196,50 @@ CapsuleContact3D TestCapsuleVsCapsule(const Capsule3D& capA, const Capsule3D& ca
 	XMStoreFloat3(&result.contactPoint, (surfaceA + surfaceB) * 0.5f);
 	return result;
 }
+
+bool ComputeHorizontalPushOut(const Capsule3D& mover, const Capsule3D& blocker, DirectX::XMFLOAT3& outPush)
+{
+	using namespace DirectX;
+
+	const SegmentClosest3D closest = ClosestPointsPerSegment(
+		XMLoadFloat3(&mover.centerA), XMLoadFloat3(&mover.centerB),
+		XMLoadFloat3(&blocker.centerA), XMLoadFloat3(&blocker.centerB));
+
+	const float radiusSum = mover.radius + blocker.radius;
+	if (closest.distSq >= radiusSum * radiusSum)
+	{
+		return false;
+	}
+
+	// compute collision in 3d but only resolve in 2d
+	const float gapX = closest.pointAxisA.x - closest.pointAxisB.x;
+	const float gapY = closest.pointAxisA.y - closest.pointAxisB.y;
+	const float gapZ = closest.pointAxisA.z - closest.pointAxisB.z;
+	const float horizontalDist = sqrtf(gapX * gapX + gapZ * gapZ);
+
+	const float neededHorizontal = sqrtf(std::max(radiusSum * radiusSum - gapY * gapY, 0.f));
+	const float push = neededHorizontal - horizontalDist;
+
+	float dirX = 1.f;
+	float dirZ = 0.f;
+	if (horizontalDist > 1e-4f)
+	{
+		dirX = gapX / horizontalDist;
+		dirZ = gapZ / horizontalDist;
+	}
+	else
+	{
+		// directly above || below the blocker axis = push sideways
+		const float axisX = blocker.centerB.x - blocker.centerA.x;
+		const float axisZ = blocker.centerB.z - blocker.centerA.z;
+		const float axisLength = sqrtf(axisX * axisX + axisZ * axisZ);
+		if (axisLength > 1e-4f)
+		{
+			dirX = -axisZ / axisLength;
+			dirZ = axisX / axisLength;
+		}
+	}
+
+	outPush = { dirX * push, 0.f, dirZ * push };
+	return true;
+}

@@ -123,7 +123,9 @@ void CycleAnimationTester::LateUpdate(float deltaTime)
 
 void CycleAnimationTester::OnHitDealt(const HitEvent& event)
 {
-	textRenderer->Log("[hit] %s #%u -> %s", event.hitboxGroup.c_str(), event.activation, event.hurtboxName.c_str());
+	textRenderer->Log("[hit] %s %s #%u -> %s %s",
+	                  event.attacker->GetName().c_str(), event.hitboxGroup.c_str(), event.activation,
+	                  event.victim->GetName().c_str(), event.hurtboxName.c_str());
 }
 
 void CycleAnimationTester::PlayCurrent()
@@ -239,10 +241,10 @@ void CycleAnimationTester::UpdateOverlay()
 {
 	char header[192];
 	sprintf_s(header, "%s  %.3f / %.3f s%s%s%s\n",
-		animator->GetCurrClipName().c_str(), animator->GetCurrClipTime(), animator->GetCurrClipLength(),
-		isPaused ? "  [PAUSED  <- / -> 1/60s]" : "",
-		slowMotion ? "  x0.2" : "",
-		animator->IsFading() ? "  fading" : "");
+	          animator->GetCurrClipName().c_str(), animator->GetCurrClipTime(), animator->GetCurrClipLength(),
+	          isPaused ? "  [PAUSED  <- / -> 1/60s]" : "",
+	          slowMotion ? "  x0.2" : "",
+	          animator->IsFading() ? "  fading" : "");
 
 	std::string text = header;
 	if (!hitboxClip.empty())

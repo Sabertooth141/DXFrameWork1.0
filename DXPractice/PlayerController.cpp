@@ -1,152 +1,154 @@
 #include "PlayerController.h"
 
+#include "GameContext.h"
 #include "GameObject.h"
+#include "HitDetectionSystem.h"
+#include "HitVolumeComponent.h"
 #include "Keyboard.h"
-#include "Rigidbody2DComponent.h"
-#include "WindowSettings.h"
-
-void PlayerController::Start()
-{
-	MonoBehavior::Start();
-	posX = owner->GetTransform()->GetPosition().x;
-	posY = owner->GetTransform()->GetPosition().y;
-
-	inputX = 1.f;
-}
-
-void PlayerController::Update(float deltaTime)
-{
-	MonoBehavior::Update(deltaTime);
-
-	HandleInput(deltaTime);
-	HandleMovement(deltaTime);
-	HandleAnimation(deltaTime);
-	HandleBlockSpawn();
-}
 
 void PlayerController::Awake()
 {
 	MonoBehavior::Awake();
 
-	rb = owner->GetComponent<Rigidbody2DComponent>();
+	cam = &owner->GetContext().cam3D;
 }
 
-void PlayerController::OnDestroy()
+void PlayerController::Update(float deltaTime)
 {
-	MonoBehavior::OnDestroy();
+	Move(deltaTime);
+	ResolveCollisions();
+	ClampToArena();
 }
 
-void PlayerController::HandleInput(float deltaTime)
+DirectX::XMFLOAT3 PlayerController::HandleInput() const
 {
-	//inputX = 0;
-	//inputY = 0;
-	//if (keyboard->KeyIsPressed('D'))
-	//{
-	//	owner->GetComponent<AnimatorComponent>()->SetFlipX(false);
-	//	inputX += 1.f;
-	//}
-	//if (keyboard->KeyIsPressed('A'))
-	//{
-	//	owner->GetComponent<AnimatorComponent>()->SetFlipX(true);
-	//	inputX -= 1.f;
-	//}
+	float inputX = 0.f;
+	float inputZ = 0.f;
+	if (keyboard->KeyIsPressed('W'))
+	{
+		inputZ += 1.f;
+	}
+	if (keyboard->KeyIsPressed('S'))
+	{
+		inputZ -= 1.f;
+	}
+	if (keyboard->KeyIsPressed('D'))
+	{
+		inputX += 1.f;
+	}
+	if (keyboard->KeyIsPressed('A'))
+	{
+		inputX -= 1.f;
+	}
 
-	//if (keyboard->KeyIsPressed('W'))
-	//{
-	//	inputY += 1.f;
-	//}
-	//if (keyboard->KeyIsPressed('S'))
-	//{
-	//	inputY -= 1.f;
-	//}
+	if (inputX == 0.f && inputZ == 0.f)
+	{
+		return {};
+	}
 
-	//
+	const float sinYaw = sinf(cam->yaw);
+	const float cosYaw = cosf(cam->yaw);
+	const float dirX = sinYaw * inputZ + cosYaw * inputX;
+	const float dirZ = cosYaw * inputZ - sinYaw * inputX;
+
+	// normalize 
+	const float invLen = 1.f / sqrtf(dirX * dirX + dirZ * dirZ);
+	return {dirX * invLen, 0.f, dirZ * invLen};
 }
 
-void PlayerController::HandleAnimation(float deltaTime)
+void PlayerController::Move(float deltaTime)
 {
-	if (inputX > 0.f)
+	const DirectX::XMFLOAT3 dir = HandleInput();
+
+	if (dir.x == 0.f && dir.z == 0.f)
 	{
-		owner->GetComponent<AnimatorComponent>()->SetFlipX(false);
-	}
-	else if (inputX < 0.f)
-	{
-		owner->GetComponent<AnimatorComponent>()->SetFlipX(true);
+		return;
 	}
 
-	DirectX::XMFLOAT2 v = rb->GetVelocity();
-	const bool moving = std::abs(v.x) > 1.f;
-	if (!moving && owner->GetComponent<AnimatorComponent>()->GetCurrAnimName() != "CharIdle")
-	{
-		owner->GetComponent<AnimatorComponent>()->SetCurrAnimation("CharIdle");
-	}
-	else if (moving && owner->GetComponent<AnimatorComponent>()->GetCurrAnimName() != "CharMove")
-	{
-		owner->GetComponent<AnimatorComponent>()->SetCurrAnimation("CharMove");
-	}
-}
-
-void PlayerController::HandleMovement(float deltaTime)
-{
-	DirectX::XMFLOAT2 v = rb->GetVelocity();
-
-	const float decel = frictionX * deltaTime;
-
-	if (inputX == 0.f)
-	{
-		if (v.x > 0.f)
+	owner->GetTransform()->Translate(
 		{
-			v.x = std::max(0.f, v.x - decel);
-		}
-		else if (v.x < 0.f)
+			dir.x * moveSpeed * deltaTime, 0.f, dir.z * moveSpeed * deltaTime
+		});
+
+	TurnToward(dir, deltaTime);
+}
+
+void PlayerController::TurnToward(const DirectX::XMFLOAT3& dir, float deltaTime)
+{
+	TransformComponent* transform = owner->GetTransform();
+	DirectX::XMFLOAT3 rot = transform->GetRotation();
+
+	const float targetYaw = atan2f(dir.x, dir.z);
+
+	// shortest way around
+	const float diff = remainderf(targetYaw - rot.y, DirectX::XM_2PI);
+	const float maxStep = turnSpeed * deltaTime;
+	rot.y = remainderf(rot.y + std::clamp(diff, -maxStep, maxStep), DirectX::XM_2PI);
+
+	transform->SetRotation(rot);
+}
+
+void PlayerController::ResolveCollisions()
+{
+	TransformComponent* transform = owner->GetTransform();
+	DirectX::XMFLOAT3 position = transform->GetPosition();
+	bool isPushed = false;
+
+	for (const HitVolumeComponent* volume : owner->GetContext().hitDetectionSys.GetVolumes())
+	{
+		if (volume->owner == owner)
 		{
-			v.x = std::min(0.f, v.x + decel);
+			continue;
 		}
-	}
 
-	// clamp speed
-	v.x = std::clamp(v.x, -maxSpeedX, maxSpeedX);
-	v.y = std::clamp(v.y, -maxSpeedX, maxSpeedX);
-	rb->SetVelocity(v);
-
-	const float halfSprite = owner->GetTransform()->GetScale().x * 0.5f;
-	DirectX::XMFLOAT3 pos = owner->GetTransform()->GetPosition();
-	if (pos.x + halfSprite < -WIN_WIDTH / 2.f + bounceBackDsit)
-	{
-		inputX = 1.f;
-	}
-	else if (pos.x - halfSprite > WIN_WIDTH / 2.f - bounceBackDsit)
-	{
-		inputX = -1.f;
-	}
-
-	rb->AddForce({ moveForce * inputX, moveForce * inputY });
-	owner->GetTransform()->SetPosition(pos);
-}
-
-void PlayerController::HandleBlockSpawn()
-{
-	if (keyboard->KeyIsTriggered(' '))
-	{
-		if (hasSpawned)
+		for (const HitShape& shape : volume->GetShapes())
 		{
-			return;
+			if (shape.desc.role != HitVolumeRole::BODY || !shape.hasWorld)
+			{
+				continue;
+			}
+
+			DirectX::XMFLOAT3 pushDir{};
+			if (ComputeHorizontalPushOut(BuildBodyCapsule(position), shape.world, pushDir))
+			{
+				position.x += pushDir.x;
+				position.z += pushDir.z;
+				isPushed = true;
+			}
 		}
-		hasSpawned = true;
-		Instantiate("block", owner->GetTransform()->GetPosition());
 	}
-	if (keyboard->KeyIsReleased(' '))
+
+	if (isPushed)
 	{
-		hasSpawned = false;
+		transform->SetPosition(position);
 	}
 }
 
-void PlayerController::OnCollisionEnter2D(const GameObject& other)
+void PlayerController::ClampToArena()
 {
-	MonoBehavior::OnCollisionEnter2D(other);
+	TransformComponent* transform = owner->GetTransform();
+	DirectX::XMFLOAT3 position = transform->GetPosition();
+
+	const float offsetX = position.x - arenaCenterXZ.x;
+	const float offsetZ = position.z - arenaCenterXZ.y;
+	const float distSq = offsetX * offsetX + offsetZ * offsetZ;
+	const float maxDist = arenaRadius - bodyRadius;
+	if (distSq <= maxDist * maxDist)
+	{
+		return;
+	}
+
+	const float scale = maxDist / sqrtf(distSq);
+	position.x = arenaCenterXZ.x + offsetX * scale;
+	position.z = arenaCenterXZ.y + offsetZ * scale;
+	transform->SetPosition(position);
 }
 
-bool PlayerController::GetHasSpawned() const
+Capsule3D PlayerController::BuildBodyCapsule(DirectX::XMFLOAT3& position) const
 {
-	return hasSpawned;
+	return {
+		{position.x, position.y - bodyHalfSegment, position.z},
+		{position.x, position.y + bodyHalfSegment, position.z},
+		bodyRadius
+	};
 }
