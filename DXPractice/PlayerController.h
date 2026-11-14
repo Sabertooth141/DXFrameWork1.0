@@ -18,7 +18,7 @@ private:
 
 	void ResolveCollisions();
 	void ClampToArena();
-	Capsule3D BuildBodyCapsule(DirectX::XMFLOAT3& position) const;
+	Capsule3D BuildBodyCapsule(const DirectX::XMFLOAT3& position) const;
 
 public:
 	// locomotion

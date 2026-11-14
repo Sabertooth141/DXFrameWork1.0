@@ -144,7 +144,7 @@ void PlayerController::ClampToArena()
 	transform->SetPosition(position);
 }
 
-Capsule3D PlayerController::BuildBodyCapsule(DirectX::XMFLOAT3& position) const
+Capsule3D PlayerController::BuildBodyCapsule(const DirectX::XMFLOAT3& position) const
 {
 	return {
 		{position.x, position.y - bodyHalfSegment, position.z},

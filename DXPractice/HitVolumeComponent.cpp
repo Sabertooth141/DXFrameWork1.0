@@ -18,7 +18,7 @@ namespace
 	constexpr DirectX::XMFLOAT4 hurtboxDisabledColor{ 0.15f, 0.3f, 0.15f, 1.f };
 	constexpr DirectX::XMFLOAT4 hitboxActiveColor{ 1.f, 0.15f, 0.15f, 1.f };
 	constexpr DirectX::XMFLOAT4 hitboxInactiveColor{ 0.45f, 0.f, 0.f, 1.f };
-	constexpr DirectX::XMFLOAT4 bodyColor{ 0.2f, 0.6, 1.f, 1.f };
+	constexpr DirectX::XMFLOAT4 bodyColor{ 0.2f, 0.6f, 1.f, 1.f };
 }
 
 void HitVolumeComponent::OnAttach(GameContext& context)
