@@ -6,6 +6,29 @@
 #include "AnimationFadeTable.h"
 #include "HitVolumeComponent.h"
 
+namespace CharacterHelpers
+{
+	inline HitShapeDesc Hurtbox(const char* name, const char* bone, DirectX::XMFLOAT3 localCenterB, float radius)
+	{
+		return {
+			.role = HitVolumeRole::HURTBOX, .name = name, .boneName = bone,
+			.localCenterB = localCenterB, .radius = radius
+		};
+	}
+
+	// unused until the attacks are authored
+	[[maybe_unused]] inline HitShapeDesc Hitbox(const char* name, const char* group, const char* bone,
+	                                            DirectX::XMFLOAT3 localCenterA, DirectX::XMFLOAT3 localCenterB,
+	                                            float radius, bool isSweeping)
+	{
+		return {
+			.role = HitVolumeRole::HITBOX, .name = name, .groupName = group, .boneName = bone,
+			.localCenterA = localCenterA, .localCenterB = localCenterB,
+			.radius = radius, .isSweeping = isSweeping
+		};
+	}
+}
+
 class GameObject;
 
 struct ClipDef
