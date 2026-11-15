@@ -53,7 +53,7 @@ void RegisterPrefabs()
 	});
 
 	// dragon
-	PrefabRegistry::Instance().RegisterModel("dragon", "../../assets/models/dragon/DragonUsurperMesh.fbx", mat, [](GameObject& object)
+	PrefabRegistry::Instance().RegisterModel("dragon", "../../assets/models/scifiDragon/Mesh/Sci-Fi Dragon 4Wings Skin 1.fbx", mat, [](GameObject& object)
 	{
 		ApplyCharacterData(object, DragonData());
 		object.AddComponent<CycleAnimationTester>();

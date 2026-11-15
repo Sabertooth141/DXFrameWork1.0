@@ -65,12 +65,12 @@ void CycleAnimationTester::Update(float deltaTime)
 	{
 		StopSequences();
 		PlayByName("TakeOff");
-		chainTakeOffToFlyIdle = true;
+		chainTakeOffToHover = true;
 	}
 	if (keyboard->KeyIsTriggered('Y'))
 	{
-		// Idle1 -> Walk (0.3s), AttkHand lands halfway through that fade
-		StartScript({{0.f, "Idle1", 0.f}, {1.f, "Walk", -1.f}, {1.15f, "AttkHand", -1.f}});
+		// Idle1 -> WalkF (0.3s), Attk1 lands halfway through that fade
+		StartScript({{0.f, "Idle1", 0.f}, {1.f, "WalkF", -1.f}, {1.15f, "Attk1", -1.f}});
 	}
 	if (keyboard->KeyIsTriggered('M'))
 	{
@@ -80,7 +80,7 @@ void CycleAnimationTester::Update(float deltaTime)
 	// event testing
 	if (keyboard->KeyIsTriggered('U'))
 	{
-		StartScript({{0.f, "AttkHand", 0.f}, {0.5f, "GetHit", -1.f}});
+		StartScript({{0.f, "Attk1", 0.f}, {0.5f, "GetHitF", -1.f}});
 	}
 	if (keyboard->KeyIsTriggered('P'))
 	{
@@ -96,10 +96,10 @@ void CycleAnimationTester::Update(float deltaTime)
 		animator->Scrub(-stepSec);
 	}
 
-	if (chainTakeOffToFlyIdle && animator->IsFinished() && animator->GetCurrClipName() == "TakeOff")
+	if (chainTakeOffToHover && animator->IsFinished() && animator->GetCurrClipName() == "TakeOff")
 	{
-		chainTakeOffToFlyIdle = false;
-		PlayByName("FlyIdle");
+		chainTakeOffToHover = false;
+		PlayByName("Idle3"); // hover idle
 	}
 	UpdateScript(deltaTime * CurrentTimeScale());
 
@@ -179,7 +179,7 @@ void CycleAnimationTester::StopSequences()
 	script.clear();
 	scriptIndex = 0;
 	scriptTime = 0.f;
-	chainTakeOffToFlyIdle = false;
+	chainTakeOffToHover = false;
 }
 
 float CycleAnimationTester::CurrentTimeScale() const

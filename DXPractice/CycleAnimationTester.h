@@ -49,7 +49,7 @@ private:
 	std::vector<ScriptStep> script;
 	size_t scriptIndex = 0;
 	float scriptTime = 0.f;
-	bool chainTakeOffToFlyIdle = false;
+	bool chainTakeOffToHover = false;
 	bool slowMotion = false;
 
 	// event 

@@ -1,0 +1,219 @@
+Sci-Fi Dragon 4Wings skeleton (Sci-Fi Dragon 4Wings Skin 1.fbx)
+bind pose; pos = model-space position in meters at data.scale 0.01 (native size; all lengths scale linearly with data.scale)
+'-> child offset {x, y, z}' = offset to that child in this node's LOCAL rotation frame, meters
+  (rotation+position only, the same frame HitVolumeComponent uses: localCenterB = this offset puts the
+   capsule end on the child joint). [node] = not a skin bone.
+
+RootNode  [node]  pos(m) (0.000 0.000 0.000)
+    -> SciFi_Dragon_4Wings  offset {0.00, 0.00, 0.00}  dir (0.00 0.00 0.00) len 0.000 m
+    -> root  offset {0.00, 0.00, 0.00}  dir (0.00 0.00 0.00) len 0.000 m
+  SciFi_Dragon_4Wings  [node]  pos(m) (0.000 0.000 0.000)
+      -> Armor  offset {0.00, 0.00, 0.00}  dir (0.00 0.00 0.00) len 0.000 m
+      -> Body  offset {0.00, 0.00, 0.00}  dir (0.00 0.00 0.00) len 0.000 m
+    Armor  [node]  pos(m) (0.000 0.000 0.000)
+        -> polySurface57  offset {0.00, 0.00, 0.00}  dir (0.00 0.00 0.00) len 0.000 m
+        -> polySurface148  offset {0.00, 0.00, 0.00}  dir (0.00 0.00 0.00) len 0.000 m
+        -> polySurface221  offset {0.00, 0.00, 0.00}  dir (0.00 0.00 0.00) len 0.000 m
+        -> polySurface68  offset {0.00, 0.00, 0.00}  dir (0.00 0.00 0.00) len 0.000 m
+        -> polySurface128  offset {0.00, 0.00, 0.00}  dir (0.00 0.00 0.00) len 0.000 m
+        -> polySurface14  offset {0.00, 0.00, 0.00}  dir (0.00 0.00 0.00) len 0.000 m
+        -> polySurface257  offset {0.00, 0.00, 0.00}  dir (0.00 0.00 0.00) len 0.000 m
+        -> polySurface255  offset {0.00, 0.00, 0.00}  dir (0.00 0.00 0.00) len 0.000 m
+      polySurface57  [node]  pos(m) (0.000 0.000 0.000)  (leaf)
+      polySurface148  [node]  pos(m) (0.000 0.000 0.000)  (leaf)
+      polySurface221  [node]  pos(m) (0.000 0.000 0.000)  (leaf)
+      polySurface68  [node]  pos(m) (0.000 0.000 0.000)  (leaf)
+      polySurface128  [node]  pos(m) (0.000 0.000 0.000)  (leaf)
+      polySurface14  [node]  pos(m) (0.000 0.000 0.000)  (leaf)
+      polySurface257  [node]  pos(m) (0.000 0.000 0.000)  (leaf)
+      polySurface255  [node]  pos(m) (0.000 0.000 0.000)  (leaf)
+    Body  [node]  pos(m) (0.000 0.000 0.000)
+        -> polySurface223  offset {0.00, 0.00, 0.00}  dir (0.00 0.00 0.00) len 0.000 m
+        -> polySurface254  offset {0.00, 0.00, 0.00}  dir (0.00 0.00 0.00) len 0.000 m
+        -> polySurface247  offset {0.00, 0.00, 0.00}  dir (0.00 0.00 0.00) len 0.000 m
+        -> polySurface251  offset {0.00, 0.00, 0.00}  dir (0.00 0.00 0.00) len 0.000 m
+      polySurface223  [node]  pos(m) (0.000 0.000 0.000)  (leaf)
+      polySurface254  [node]  pos(m) (0.000 0.000 0.000)  (leaf)
+      polySurface247  [node]  pos(m) (0.000 0.000 0.000)  (leaf)
+      polySurface251  [node]  pos(m) (0.000 0.000 0.000)  (leaf)
+  root  [node]  pos(m) (0.000 0.000 0.000)
+      -> pelvis  offset {0.00, 1.79, 0.58}  dir (0.00 0.95 0.31) len 1.883 m
+    pelvis  pos(m) (0.000 1.791 0.582)
+        -> thigh_l  offset {0.09, -0.35, -0.20}  dir (0.22 -0.85 -0.48) len 0.412 m
+        -> tail  offset {-0.70, 0.00, 0.28}  dir (-0.93 0.00 0.37) len 0.754 m
+        -> thigh_r  offset {0.09, 0.35, -0.20}  dir (0.22 0.85 -0.48) len 0.412 m
+        -> spine_01  offset {0.31, 0.00, -0.01}  dir (1.00 0.00 -0.04) len 0.310 m
+      thigh_l  pos(m) (0.351 1.626 0.443)
+          -> calf_l  offset {0.48, -0.00, -0.00}  dir (1.00 -0.00 -0.00) len 0.480 m
+        calf_l  pos(m) (0.349 1.154 0.352)
+            -> calf_l1  offset {0.48, -0.00, 0.00}  dir (1.00 -0.00 0.00) len 0.479 m
+          calf_l1  pos(m) (0.332 1.020 0.811)
+              -> foot_l  offset {0.60, 0.00, -0.00}  dir (1.00 0.00 -0.00) len 0.601 m
+            foot_l  pos(m) (0.347 0.422 0.858)
+                -> ball_l  offset {0.41, 0.00, 0.00}  dir (1.00 0.00 0.00) len 0.410 m
+              ball_l  pos(m) (0.423 0.163 0.549)
+                  -> ball_l1  offset {0.14, 0.00, 0.00}  dir (1.00 0.00 0.00) len 0.135 m
+                ball_l1  pos(m) (0.438 0.115 0.424)  (leaf)
+      tail  pos(m) (-0.000 1.870 1.333)
+          -> Tail_l1  offset {0.22, 0.02, 0.36}  dir (0.51 0.05 0.86) len 0.425 m
+          -> Tail_r1  offset {-0.22, 0.02, 0.36}  dir (-0.51 0.05 0.86) len 0.425 m
+        Tail_l1  pos(m) (0.218 1.892 1.697)
+            -> Tail_l2  offset {-0.00, -0.00, 0.37}  dir (-0.00 -0.00 1.00) len 0.368 m
+          Tail_l2  pos(m) (0.290 1.892 2.057)
+              -> Tail_l3  offset {-0.00, -0.00, 0.36}  dir (-0.00 -0.00 1.00) len 0.363 m
+            Tail_l3  pos(m) (0.361 1.892 2.413)
+                -> Tail_l4  offset {-0.00, -0.00, 0.55}  dir (-0.00 -0.00 1.00) len 0.546 m
+              Tail_l4  pos(m) (0.468 1.892 2.948)
+                  -> Tail_l5  offset {-0.00, -0.00, 0.39}  dir (-0.00 -0.00 1.00) len 0.395 m
+                Tail_l5  pos(m) (0.545 1.892 3.335)
+                    -> Tail_l6  offset {-0.00, -0.00, 0.57}  dir (-0.00 -0.00 1.00) len 0.575 m
+                  Tail_l6  pos(m) (0.658 1.892 3.899)
+                      -> Tail_l7  offset {-0.00, -0.00, 0.56}  dir (-0.00 -0.00 1.00) len 0.558 m
+                    Tail_l7  pos(m) (0.767 1.892 4.447)
+                        -> Tail_l8  offset {-0.00, -0.00, 0.57}  dir (-0.00 -0.00 1.00) len 0.571 m
+                      Tail_l8  pos(m) (0.879 1.892 5.006)
+                          -> Tail_l9  offset {-0.00, -0.00, 0.62}  dir (-0.00 -0.00 1.00) len 0.623 m
+                        Tail_l9  pos(m) (1.001 1.892 5.617)  (leaf)
+        Tail_r1  pos(m) (-0.218 1.892 1.697)
+            -> Tail_r2  offset {-0.00, -0.00, -0.37}  dir (-0.00 -0.00 -1.00) len 0.368 m
+          Tail_r2  pos(m) (-0.290 1.892 2.057)
+              -> Tail_r3  offset {0.00, -0.00, -0.36}  dir (0.00 -0.00 -1.00) len 0.363 m
+            Tail_r3  pos(m) (-0.361 1.892 2.413)
+                -> Tail_r4  offset {-0.00, -0.00, -0.55}  dir (-0.00 -0.00 -1.00) len 0.546 m
+              Tail_r4  pos(m) (-0.468 1.892 2.948)
+                  -> Tail_r5  offset {0.00, -0.00, -0.39}  dir (0.00 -0.00 -1.00) len 0.395 m
+                Tail_r5  pos(m) (-0.545 1.892 3.335)
+                    -> Tail_r6  offset {-0.00, -0.00, -0.57}  dir (-0.00 -0.00 -1.00) len 0.575 m
+                  Tail_r6  pos(m) (-0.658 1.892 3.899)
+                      -> Tail_r7  offset {0.00, -0.00, -0.56}  dir (0.00 -0.00 -1.00) len 0.558 m
+                    Tail_r7  pos(m) (-0.767 1.892 4.447)
+                        -> Tail_r8  offset {-0.00, -0.00, -0.57}  dir (-0.00 -0.00 -1.00) len 0.571 m
+                      Tail_r8  pos(m) (-0.879 1.892 5.006)
+                          -> Tail_r9  offset {-0.00, -0.00, -0.62}  dir (-0.00 -0.00 -1.00) len 0.623 m
+                        Tail_r9  pos(m) (-1.001 1.892 5.617)  (leaf)
+      thigh_r  pos(m) (-0.351 1.626 0.443)
+          -> calf_r  offset {-0.48, -0.00, 0.00}  dir (-1.00 -0.00 0.00) len 0.480 m
+        calf_r  pos(m) (-0.349 1.154 0.352)
+            -> calf_r1  offset {-0.48, 0.00, 0.00}  dir (-1.00 0.00 0.00) len 0.479 m
+          calf_r1  pos(m) (-0.332 1.020 0.811)
+              -> foot_r  offset {-0.60, 0.00, -0.00}  dir (-1.00 0.00 -0.00) len 0.601 m
+            foot_r  pos(m) (-0.347 0.422 0.858)
+                -> ball_r  offset {-0.41, 0.00, 0.00}  dir (-1.00 0.00 0.00) len 0.410 m
+              ball_r  pos(m) (-0.423 0.163 0.549)
+                  -> ball_r1  offset {-0.14, -0.00, -0.00}  dir (-1.00 -0.00 -0.00) len 0.135 m
+                ball_r1  pos(m) (-0.438 0.115 0.424)  (leaf)
+      spine_01  pos(m) (0.000 1.862 0.281)
+          -> spine_02  offset {0.64, -0.00, -0.00}  dir (1.00 -0.00 -0.00) len 0.640 m
+          -> upperarm_Low_r  offset {0.33, 0.34, 0.15}  dir (0.66 0.69 0.31) len 0.498 m
+          -> upperarm_Low_l  offset {0.33, -0.34, 0.15}  dir (0.66 -0.69 0.31) len 0.498 m
+        spine_02  pos(m) (0.000 1.992 -0.346)
+            -> spine_03  offset {0.61, 0.00, -0.08}  dir (0.99 0.00 -0.13) len 0.616 m
+          spine_03  pos(m) (0.000 2.176 -0.934)
+              -> neck_01  offset {0.56, 0.00, 0.04}  dir (1.00 0.00 0.07) len 0.566 m
+              -> upperarm_High_r  offset {-0.03, 0.58, 0.33}  dir (-0.04 0.87 0.49) len 0.670 m
+              -> upperarm_High_l  offset {-0.03, -0.58, 0.33}  dir (-0.04 -0.87 0.49) len 0.670 m
+            neck_01  pos(m) (0.000 2.557 -1.353)
+                -> neck_02  offset {0.53, 0.00, 0.00}  dir (1.00 0.00 0.00) len 0.527 m
+              neck_02  pos(m) (0.000 2.964 -1.687)
+                  -> head  offset {0.55, 0.00, 0.00}  dir (1.00 0.00 0.00) len 0.552 m
+                head  pos(m) (0.000 3.363 -2.069)
+                    -> jaw  offset {0.12, -0.00, -0.44}  dir (0.27 -0.00 -0.96) len 0.455 m
+                  jaw  pos(m) (0.000 3.150 -2.471)
+                      -> Tongue  offset {0.00, 0.00, -0.16}  dir (0.00 0.02 -1.00) len 0.164 m
+                    Tongue  pos(m) (0.000 3.240 -2.609)
+                        -> Tongue1  offset {0.11, 0.00, 0.00}  dir (1.00 0.00 0.00) len 0.108 m
+                      Tongue1  pos(m) (0.000 3.185 -2.701)
+                          -> Tongue2  offset {0.14, 0.00, 0.00}  dir (1.00 0.00 0.00) len 0.141 m
+                        Tongue2  pos(m) (0.000 3.063 -2.771)  (leaf)
+            upperarm_High_r  pos(m) (-0.582 2.418 -0.708)
+                -> lowerarm_High_r  offset {-0.99, 0.00, -0.00}  dir (-1.00 0.00 -0.00) len 0.985 m
+                -> Wings_r5  offset {-1.51, -0.44, -0.05}  dir (-0.96 -0.28 -0.03) len 1.578 m
+              lowerarm_High_r  pos(m) (-1.498 2.500 -0.355)
+                  -> Hand_High_r  offset {-1.52, 0.00, 0.00}  dir (-1.00 0.00 0.00) len 1.521 m
+                Hand_High_r  pos(m) (-2.558 2.538 -1.444)
+                    -> Wings_r  offset {-0.15, -1.32, 0.06}  dir (-0.11 -0.99 0.04) len 1.334 m
+                  Wings_r  pos(m) (-3.610 2.563 -0.625)
+                      -> Wings_r1  offset {-1.39, 0.00, -0.00}  dir (-1.00 0.00 -0.00) len 1.389 m
+                    Wings_r1  pos(m) (-4.516 2.556 0.427)
+                        -> Wings_r2  offset {-1.39, -0.00, 0.00}  dir (-1.00 -0.00 0.00) len 1.389 m
+                      Wings_r2  pos(m) (-5.220 2.555 1.625)
+                          -> Wings_r3  offset {-1.33, -0.00, 0.00}  dir (-1.00 -0.00 0.00) len 1.328 m
+                        Wings_r3  pos(m) (-5.719 2.558 2.856)
+                            -> Wings_r4  offset {-0.88, 0.00, -0.00}  dir (-1.00 0.00 -0.00) len 0.883 m
+                          Wings_r4  pos(m) (-5.975 2.561 3.701)  (leaf)
+              Wings_r5  pos(m) (-1.837 2.493 0.247)
+                  -> Wings_r6  offset {-0.90, -0.00, 0.00}  dir (-1.00 -0.00 0.00) len 0.899 m
+                Wings_r6  pos(m) (-2.080 2.488 1.112)
+                    -> Wings_r7  offset {-0.90, 0.00, 0.00}  dir (-1.00 0.00 0.00) len 0.902 m
+                  Wings_r7  pos(m) (-2.166 2.487 2.010)
+                      -> Wings_r8  offset {-1.26, -0.00, -0.00}  dir (-1.00 -0.00 -0.00) len 1.257 m
+                    Wings_r8  pos(m) (-2.067 2.491 3.263)  (leaf)
+            upperarm_High_l  pos(m) (0.582 2.418 -0.708)
+                -> lowerarm_High_l  offset {0.99, 0.00, -0.00}  dir (1.00 0.00 -0.00) len 0.985 m
+                -> Wings_l5  offset {1.51, 0.44, 0.05}  dir (0.96 0.28 0.03) len 1.578 m
+              lowerarm_High_l  pos(m) (1.498 2.500 -0.355)
+                  -> Hand_High_l  offset {1.52, -0.00, 0.00}  dir (1.00 -0.00 0.00) len 1.521 m
+                Hand_High_l  pos(m) (2.558 2.538 -1.444)
+                    -> Wings_l  offset {0.15, 1.32, -0.06}  dir (0.11 0.99 -0.04) len 1.334 m
+                  Wings_l  pos(m) (3.610 2.563 -0.625)
+                      -> Wings_l1  offset {1.39, -0.00, -0.00}  dir (1.00 -0.00 -0.00) len 1.389 m
+                    Wings_l1  pos(m) (4.516 2.556 0.427)
+                        -> Wings_l2  offset {1.39, -0.00, -0.00}  dir (1.00 -0.00 -0.00) len 1.389 m
+                      Wings_l2  pos(m) (5.220 2.555 1.625)
+                          -> Wings_l3  offset {1.33, -0.00, 0.00}  dir (1.00 -0.00 0.00) len 1.328 m
+                        Wings_l3  pos(m) (5.719 2.558 2.856)
+                            -> Wings_l4  offset {0.88, 0.00, 0.00}  dir (1.00 0.00 0.00) len 0.883 m
+                          Wings_l4  pos(m) (5.975 2.561 3.701)  (leaf)
+              Wings_l5  pos(m) (1.837 2.493 0.247)
+                  -> Wings_l6  offset {0.90, -0.00, -0.00}  dir (1.00 -0.00 -0.00) len 0.899 m
+                Wings_l6  pos(m) (2.080 2.488 1.112)
+                    -> Wings_l7  offset {0.90, 0.00, 0.00}  dir (1.00 0.00 0.00) len 0.902 m
+                  Wings_l7  pos(m) (2.166 2.487 2.010)
+                      -> Wings_l8  offset {1.26, -0.00, 0.00}  dir (1.00 -0.00 0.00) len 1.257 m
+                    Wings_l8  pos(m) (2.067 2.491 3.263)  (leaf)
+        upperarm_Low_r  pos(m) (-0.344 2.078 -0.008)
+            -> lowerarm_Low_r  offset {-0.78, 0.00, 0.00}  dir (-1.00 0.00 0.00) len 0.781 m
+            -> Wings_r14  offset {-1.18, -0.41, -0.04}  dir (-0.95 -0.33 -0.03) len 1.252 m
+          lowerarm_Low_r  pos(m) (-1.009 2.132 0.398)
+              -> Hand_Low_r  offset {-1.43, 0.00, -0.00}  dir (-1.00 0.00 -0.00) len 1.435 m
+            Hand_Low_r  pos(m) (-2.232 2.157 -0.352)
+                -> Wings_r9  offset {-0.25, -1.08, 0.02}  dir (-0.23 -0.97 0.02) len 1.108 m
+              Wings_r9  pos(m) (-3.012 2.147 0.435)
+                  -> Wings_r10  offset {-0.81, -0.00, -0.00}  dir (-1.00 -0.00 -0.00) len 0.807 m
+                Wings_r10  pos(m) (-3.513 2.144 1.068)
+                    -> Wings_r11  offset {-0.84, 0.00, 0.00}  dir (-1.00 0.00 0.00) len 0.842 m
+                  Wings_r11  pos(m) (-3.958 2.142 1.784)
+                      -> Wings_r12  offset {-1.06, -0.00, -0.00}  dir (-1.00 -0.00 -0.00) len 1.055 m
+                    Wings_r12  pos(m) (-4.371 2.141 2.755)
+                        -> Wings_r13  offset {-1.22, -0.00, -0.00}  dir (-1.00 -0.00 -0.00) len 1.218 m
+                      Wings_r13  pos(m) (-4.695 2.145 3.929)  (leaf)
+          Wings_r14  pos(m) (-1.140 2.143 0.956)
+              -> Wings_r15  offset {-0.69, 0.00, -0.00}  dir (-1.00 0.00 -0.00) len 0.688 m
+            Wings_r15  pos(m) (-1.181 2.143 1.643)
+                -> Wings_r16  offset {-0.65, -0.00, 0.00}  dir (-1.00 -0.00 0.00) len 0.651 m
+              Wings_r16  pos(m) (-1.116 2.144 2.290)
+                  -> Wings_r17  offset {-0.75, 0.00, 0.00}  dir (-1.00 0.00 0.00) len 0.749 m
+                Wings_r17  pos(m) (-0.943 2.146 3.019)  (leaf)
+        upperarm_Low_l  pos(m) (0.344 2.078 -0.008)
+            -> lowerarm_Low_l  offset {0.78, -0.00, 0.00}  dir (1.00 -0.00 0.00) len 0.781 m
+            -> Wings_l14  offset {1.18, 0.41, 0.04}  dir (0.95 0.33 0.03) len 1.252 m
+          lowerarm_Low_l  pos(m) (1.009 2.132 0.398)
+              -> Hand_Low_l  offset {1.43, -0.00, -0.00}  dir (1.00 -0.00 -0.00) len 1.435 m
+            Hand_Low_l  pos(m) (2.232 2.157 -0.352)
+                -> Wings_l9  offset {0.25, 1.08, -0.02}  dir (0.23 0.97 -0.02) len 1.108 m
+              Wings_l9  pos(m) (3.012 2.147 0.435)
+                  -> Wings_l10  offset {0.81, 0.00, 0.00}  dir (1.00 0.00 0.00) len 0.807 m
+                Wings_l10  pos(m) (3.513 2.144 1.068)
+                    -> Wings_l11  offset {0.84, -0.00, -0.00}  dir (1.00 -0.00 -0.00) len 0.842 m
+                  Wings_l11  pos(m) (3.958 2.142 1.784)
+                      -> Wings_l12  offset {1.06, -0.00, -0.00}  dir (1.00 -0.00 -0.00) len 1.055 m
+                    Wings_l12  pos(m) (4.371 2.141 2.755)
+                        -> Wings_l13  offset {1.22, -0.00, 0.00}  dir (1.00 -0.00 0.00) len 1.218 m
+                      Wings_l13  pos(m) (4.695 2.145 3.929)  (leaf)
+          Wings_l14  pos(m) (1.140 2.143 0.956)
+              -> Wings_l15  offset {0.69, -0.00, 0.00}  dir (1.00 -0.00 0.00) len 0.688 m
+            Wings_l15  pos(m) (1.181 2.143 1.643)
+                -> Wings_l16  offset {0.65, -0.00, -0.00}  dir (1.00 -0.00 -0.00) len 0.651 m
+              Wings_l16  pos(m) (1.116 2.144 2.290)
+                  -> Wings_l17  offset {0.75, -0.00, -0.00}  dir (1.00 -0.00 -0.00) len 0.749 m
+                Wings_l17  pos(m) (0.943 2.146 3.019)  (leaf)
