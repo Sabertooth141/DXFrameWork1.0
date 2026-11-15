@@ -183,6 +183,11 @@ void SkeletalAnimatorComponent::AddClip(std::shared_ptr<const AnimationClip> inC
 	}
 
 	const std::string name = inClip->name;
+	if (clipEntries.contains(name))
+	{
+		OutputDebugStringA(("[SkeletalAnimator] clip name '" + name + "' already registered, overwriting\n").c_str());
+		assert(false && "duplicate clip name");
+	}
 	clipEntries[name] = {std::move(inClip), inLoop};
 }
 

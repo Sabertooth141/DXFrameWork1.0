@@ -46,7 +46,10 @@ std::shared_ptr<const AnimationClip> LoadAnimationClip(const std::string& path, 
 	const aiAnimation* anim = scene->mAnimations[0];
 
 	auto clip = std::make_shared<AnimationClip>();
-	clip->name = std::filesystem::path(path).stem().string();
+	// "Rig@ClipName.fbx" -> "ClipName"; no '@' -> whole stem (case kept)
+	const std::string stem = std::filesystem::path(path).stem().string();
+	const size_t atPos = stem.find_last_of('@');
+	clip->name = atPos != std::string::npos ? stem.substr(atPos + 1) : stem;
 	clip->duration = static_cast<float>(anim->mDuration);
 	// read tps if 0 then use fallback
 	clip->ticksPerSecond = anim->mTicksPerSecond > 0.0f

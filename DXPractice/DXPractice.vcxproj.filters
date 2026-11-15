@@ -233,6 +233,12 @@
     <ClCompile Include="PhysicsTest.cpp">
       <Filter>Source Files\Scripts</Filter>
     </ClCompile>
+    <ClCompile Include="CharacterData.cpp">
+      <Filter>Source Files\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="DragonData.cpp">
+      <Filter>Source Files\GameObject</Filter>
+    </ClCompile>
     <ClCompile Include="PrefabRegistry.cpp">
       <Filter>Source Files\GameObject</Filter>
     </ClCompile>
@@ -462,6 +468,9 @@
     </ClInclude>
     <ClInclude Include="PhysicsTest.h">
       <Filter>Header Files\Scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="CharacterData.h">
+      <Filter>Header Files\GameObject</Filter>
     </ClInclude>
     <ClInclude Include="PrefabRegistry.h">
       <Filter>Header Files\GameObject</Filter>
