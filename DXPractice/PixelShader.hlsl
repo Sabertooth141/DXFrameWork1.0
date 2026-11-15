@@ -28,10 +28,11 @@ SamplerState sampler0 : register(s0);
 float4 main(
 	float3 worldPos : POSITION,
 	float3 normal : NORMAL,
-	float2 texcoord : TEXCOORD
+	float2 texcoord : TEXCOORD,
+	bool isFrontFace : SV_IsFrontFace
 ) : SV_TARGET
 {
-	normal = normalize(normal);
+	normal = normalize(isFrontFace ? normal : -normal );
 
 	float3 vToL = lightPos - worldPos;
 	float dist = length(vToL);

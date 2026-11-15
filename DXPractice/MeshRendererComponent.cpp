@@ -29,6 +29,15 @@ void MeshRendererComponent::Render(Renderer& renderer)
 	{
 		mesh->Draw(renderer);
 	}
+
+	if (doubleSided)
+	{
+		renderer.SetCullEnabled(true);
+	}
+	else
+	{
+		renderer.SetCullEnabled(false);
+	}
 }
 
 void MeshRendererComponent::OnAttach(GameContext& context)

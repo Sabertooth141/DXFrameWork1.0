@@ -56,6 +56,7 @@ void RegisterPrefabs()
 	PrefabRegistry::Instance().RegisterModel("dragon", "../../assets/models/scifiDragon/Mesh/Sci-Fi Dragon 4Wings Skin 1.fbx", mat, [](GameObject& object)
 	{
 		ApplyCharacterData(object, DragonData());
+		object.GetComponent<MeshRendererComponent>()->doubleSided = true;
 		object.AddComponent<CycleAnimationTester>();
 	});
 

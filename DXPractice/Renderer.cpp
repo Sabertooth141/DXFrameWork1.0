@@ -120,6 +120,17 @@ Renderer::Renderer(HWND hWnd, int width, int height)
 	bdAlpha.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 	pDevice->CreateBlendState(&bdAlpha, &pBlendAlpha);
 
+	pContext->OMSetBlendState(pBlendOff.Get(), nullptr, 0xFFFFFFFF);
+
+	CD3D11_RASTERIZER_DESC rsBack(D3D11_DEFAULT);
+	pDevice->CreateRasterizerState(&rsBack, &pRSCullBack);
+
+	CD3D11_RASTERIZER_DESC rsNone(D3D11_DEFAULT);
+	rsNone.CullMode = D3D11_CULL_NONE;
+	pDevice->CreateRasterizerState(&rsNone, &pRSCullNone);
+
+	pContext->RSSetState(pRSCullBack.Get());
+
 	// alpha blend OFF for 3D
 	D3D11_BLEND_DESC bdOff = {};
 	bdOff.RenderTarget[0].BlendEnable = FALSE;
@@ -187,6 +198,11 @@ void Renderer::SetAlphaEnabled(bool enabled)
 	pContext->OMSetBlendState(enabled ? pBlendAlpha.Get() : pBlendOff.Get(), nullptr, 0xFFFFFFFF);
 }
 
+void Renderer::SetCullEnabled(bool enabled)
+{
+	pContext->RSSetState((enabled ? pRSCullBack : pRSCullNone).Get());
+}
+
 void Renderer::SetSpriteFlip(bool flipX, bool flipY)
 {
 	D3D11_MAPPED_SUBRESOURCE msr;
@@ -233,7 +249,6 @@ void Renderer::DrawIndexed(UINT count)
 {
 	pContext->DrawIndexed(count, 0, 0);
 }
-
 
 void Renderer::Set2DViewRange(float range)  //視野の拡大
 {

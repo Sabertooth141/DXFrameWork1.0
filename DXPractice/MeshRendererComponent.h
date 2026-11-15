@@ -11,4 +11,5 @@ public:
 public:
 	bool isEnabled = true;
 	bool castShadows = true;
+	bool doubleSided = false;
 };

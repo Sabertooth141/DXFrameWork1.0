@@ -65,6 +65,7 @@ public:
 
 	void SetDepthEnabled(bool enabled);
 	void SetAlphaEnabled(bool enabled);
+	void SetCullEnabled(bool enabled);
 	void SetSpriteFlip(bool flipX, bool flipY);
 	void SetView(DirectX::XMMATRIX inView);
 
@@ -99,6 +100,10 @@ private:
 
 	// buffer for flipX/Y
 	Microsoft::WRL::ComPtr<ID3D11Buffer> pCBSpriteData;
+
+	// rasterizerstates
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState> pRSCullBack;
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState> pRSCullNone;
 
 	DirectX::XMMATRIX viewMatrix;
 
