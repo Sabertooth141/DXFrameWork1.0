@@ -1,19 +1,55 @@
 #include "EditorUI.h"
 
 #include <imgui.h>
+#include <algorithm>
+#include <cctype>
+#include <cfloat>
+#include <string_view>
 
 #include "BoxCollider2D.h"
 #include "Camera2D.h"
 #include "GameObject.h"
+#include "HitVolumeComponent.h"
 #include "Keyboard.h"
 #include "Mouse.h"
 #include "PrefabRegistry.h"
 #include "Scene.h"
 #include "SceneManager.h"
+#include "SkeletalAnimatorComponent.h"
 #include "WindowSettings.h"
 
 namespace
 {
+	// hit volume inspector (order = HitVolumeRole)
+	const char* hitRoleNames[] = { "Hurtbox", "Hitbox", "Body" };
+
+	bool InputString(const char* label, std::string& value)
+	{
+		char buffer[128];
+		strncpy_s(buffer, value.c_str(), _TRUNCATE);
+		if (ImGui::InputText(label, buffer, sizeof(buffer)))
+		{
+			value = buffer;
+			return true;
+		}
+		return false;
+	}
+
+	// case-insensitive substring match for the bone filter ("wing" finds "Wings_l1")
+	bool ContainsNoCase(const std::string& text, const char* filter)
+	{
+		if (!filter || !filter[0])
+		{
+			return true;
+		}
+		const std::string_view needle(filter);
+		const auto it = std::search(text.begin(), text.end(), needle.begin(), needle.end(), [](char a, char b)
+			{
+				return std::tolower(static_cast<unsigned char>(a)) == std::tolower(static_cast<unsigned char>(b));
+			});
+		return it != text.end();
+	}
+
 	constexpr float iconRadius = 8.f;
 	constexpr float nearClip = 0.1f;
 
@@ -45,14 +81,14 @@ namespace
 		const float y = static_cast<float>(WIN_HEIGHT) * 0.5f - screen.y;
 		if (screenSpace)
 		{
-			return {x, y};
+			return { x, y };
 		}
 
-		return {x + cam.x, y + cam.y};
+		return { x + cam.x, y + cam.y };
 	}
 
 	bool IntersectRayPlane(const Ray& ray, DirectX::XMFLOAT3 planePoint, DirectX::XMFLOAT3 planeNormal,
-	                       DirectX::XMVECTOR& outHit)
+		DirectX::XMVECTOR& outHit)
 	{
 		const DirectX::XMVECTOR normal = DirectX::XMLoadFloat3(&planeNormal);
 		const float denominator = DirectX::XMVectorGetX(DirectX::XMVector3Dot(ray.dir, normal));
@@ -78,8 +114,8 @@ namespace
 	{
 		DirectX::XMFLOAT3 out;
 		DirectX::XMStoreFloat3(&out, DirectX::XMVectorAdd(DirectX::XMLoadFloat3(&cam3D.pos),
-		                                                  DirectX::XMVectorScale(
-			                                                  cam3D.GetCamForward(), placeDistance)));
+			DirectX::XMVectorScale(
+				cam3D.GetCamForward(), placeDistance)));
 		return out;
 	}
 
@@ -90,7 +126,7 @@ namespace
 			world.x -= cam.x;
 			world.y -= cam.y;
 		}
-		return {world.x + WIN_WIDTH * 0.5f, WIN_HEIGHT * 0.5f - world.y};
+		return { world.x + WIN_WIDTH * 0.5f, WIN_HEIGHT * 0.5f - world.y };
 	}
 
 	// スプライトは -0.5〜0.5 の四角形を Transform でスケール・回転したもの
@@ -106,12 +142,12 @@ namespace
 		const float rotCos = std::cos(objRot.z);
 		const float rotSin = std::sin(objRot.z);
 
-		const DirectX::XMFLOAT2 local[4] = {{-halfX, -halfY}, {halfX, -halfY}, {halfX, halfY}, {-halfX, halfY}};
+		const DirectX::XMFLOAT2 local[4] = { { -halfX, -halfY },{ halfX, -halfY },{ halfX, halfY },{ -halfX, halfY } };
 		for (int i = 0; i < 4; ++i)
 			outCorners[i] = {
 				objPos.x + local[i].x * rotCos - local[i].y * rotSin,
 				objPos.y + local[i].x * rotSin + local[i].y * rotCos
-			};
+		};
 	}
 
 	bool ObjHitTest(GameObject& obj, DirectX::XMFLOAT2 cursorPos)
@@ -139,7 +175,7 @@ namespace
 		{
 			if (stop)
 			{
-				rb->SetVelocity({0.f, 0.f});
+				rb->SetVelocity({ 0.f, 0.f });
 				rb->SetAngularVel(0.f);
 			}
 
@@ -163,7 +199,7 @@ namespace
 			DirectX::XMVectorSet(mousePos.x, mousePos.y, 1.f, 0.f), 0.f, 0.f, screenWidth, screenHeight, 0.f, 1.f,
 			proj, view, DirectX::XMMatrixIdentity());
 
-		return {nearPt, DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(farPt, nearPt))};
+		return { nearPt, DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(farPt, nearPt)) };
 	}
 
 	bool WorldToScreen3D(DirectX::XMFLOAT3 worldPos, GameContext& context, ImVec2& out)
@@ -294,9 +330,9 @@ void EditorUI::ValidateSelection(Scene& scene)
 
 	const auto& objInScene = scene.GetObjects();
 	const bool isObjAlive = std::ranges::any_of(objInScene, [this](const auto& obj)
-	{
-		return obj.get() == selectedObject;
-	});
+		{
+			return obj.get() == selectedObject;
+		});
 
 	if (!isObjAlive)
 	{
@@ -311,12 +347,12 @@ bool EditorUI::BeginDrag3D(GameContext& context, DirectX::XMFLOAT2 mouseScreenPo
 	isDragVertical = ImGui::GetIO().KeyShift;
 
 	draggingPoint = pos;
-	dragPlaneNormal = {0.f, 1.f, 0.f};
+	dragPlaneNormal = { 0.f, 1.f, 0.f };
 	if (isDragVertical)
 	{
 		const DirectX::XMVECTOR forward = context.cam3D.GetCamForward();
 		const DirectX::XMVECTOR flat = DirectX::XMVectorSet(DirectX::XMVectorGetX(forward), 0.f,
-		                                                    DirectX::XMVectorGetZ(forward), 0.f);
+			DirectX::XMVectorGetZ(forward), 0.f);
 		const bool isLookingStraightDown = DirectX::XMVectorGetX(DirectX::XMVector3LengthSq(flat)) < 1e-4f;
 		DirectX::XMStoreFloat3(&dragPlaneNormal, DirectX::XMVector3Normalize(isLookingStraightDown ? forward : flat));
 	}
@@ -421,8 +457,8 @@ void EditorUI::HandleEditorCamera(Camera3D& cam, const Keyboard& keyboard, Mouse
 
 void EditorUI::DrawHierarchy(Scene& scene)
 {
-	ImGui::SetNextWindowPos({10, 110.f}, ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize({200.f, 300.f}, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowPos({ 10, 110.f }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 200.f, 300.f }, ImGuiCond_FirstUseEver);
 	if (ImGui::Begin("ヒエラルキー"))
 	{
 		ImGui::TextDisabled("%zu objects", scene.GetObjects().size());
@@ -446,8 +482,8 @@ void EditorUI::DrawHierarchy(Scene& scene)
 
 void EditorUI::DrawInspector(Scene& scene)
 {
-	ImGui::SetNextWindowPos({540.f, 170.f}, ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize({250.f, 420.f}, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowPos({ 540.f, 170.f }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 250.f, 420.f }, ImGuiCond_FirstUseEver);
 	if (!ImGui::Begin("インスペクター"))
 	{
 		ImGui::End();
@@ -487,8 +523,8 @@ void EditorUI::DrawInspector(Scene& scene)
 
 		DirectX::XMFLOAT3 pos = transform->GetPosition();
 		const bool isPosChanged = is2D
-			                          ? ImGui::DragFloat2("位置", &pos.x, 1.f)
-			                          : ImGui::DragFloat3("位置", &pos.x, 0.05f);
+			? ImGui::DragFloat2("位置", &pos.x, 1.f)
+			: ImGui::DragFloat3("位置", &pos.x, 0.05f);
 		if (isPosChanged)
 		{
 			transform->SetPosition(pos);
@@ -501,8 +537,8 @@ void EditorUI::DrawInspector(Scene& scene)
 			DirectX::XMConvertToDegrees(rot.x), DirectX::XMConvertToDegrees(rot.y), DirectX::XMConvertToDegrees(rot.z)
 		};
 		const bool isRotChanged = is2D
-			                          ? ImGui::DragFloat("回転（度）", &deg.z, 0.5f) // 2D: Z only
-			                          : ImGui::DragFloat3("回転（度）", &deg.x, 0.5f);
+			? ImGui::DragFloat("回転（度）", &deg.z, 0.5f) // 2D: Z only
+			: ImGui::DragFloat3("回転（度）", &deg.x, 0.5f);
 		if (isRotChanged)
 		{
 			rot = {
@@ -515,8 +551,8 @@ void EditorUI::DrawInspector(Scene& scene)
 
 		DirectX::XMFLOAT3 scale = transform->GetScale();
 		const bool isScaleChanged = is2D
-			                            ? ImGui::DragFloat2("スケール", &scale.x, 0.5f)
-			                            : ImGui::DragFloat3("スケール", &scale.x, 0.01f);
+			? ImGui::DragFloat2("スケール", &scale.x, 0.5f)
+			: ImGui::DragFloat3("スケール", &scale.x, 0.01f);
 		if (isScaleChanged)
 		{
 			transform->SetScale(scale);
@@ -609,6 +645,12 @@ void EditorUI::DrawInspector(Scene& scene)
 		}
 	}
 
+	// hit volumes
+	if (auto* volume = selectedObjRef.GetComponent<HitVolumeComponent>())
+	{
+		DrawHitVolumeInspector(selectedObjRef, *volume);
+	}
+
 	// Animator
 	if (auto* anim = selectedObjRef.GetComponent<AnimatorComponent>())
 	{
@@ -636,10 +678,247 @@ void EditorUI::DrawInspector(Scene& scene)
 	ImGui::End();
 }
 
+void EditorUI::DrawHitVolumeInspector(GameObject& object, HitVolumeComponent& volume)
+{
+	if (hitVolumeObject != &object)
+	{
+		hitVolumeObject = &object;
+		selectedHitShape = -1;
+		boneFilter[0] = '\0';
+		hitVolumeMessage = volume.GetLoadMessage();
+		hitVolumeMessageOk = true;
+	}
+
+	if (!ImGui::CollapsingHeader("HitVolume", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		volume.highlightedShape = -1;
+		return;
+	}
+	// the inspector already has "名前" / "削除" widgets: separate ID scope so they do not collide
+	ImGui::PushID("HitVolume");
+
+	// Edit a copy of the data and rebuild the component when anything changed.
+	// Rebuilding everything is cheap (a few dozen shapes) and keeps one code path:
+	// the editor, file loading and the code fallback all go through Build().
+	HitVolumeDesc desc = volume.ExportDesc();
+	bool isChanged = false;
+
+	// file
+	const std::string& path = volume.GetDataPath();
+	ImGui::TextDisabled("%s", path.empty() ? "（ファイルなし：コードで定義）" : path.c_str());
+	ImGui::BeginDisabled(path.empty());
+	if (ImGui::Button("保存"))
+	{
+		hitVolumeMessageOk = volume.SaveFile(hitVolumeMessage);
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("元に戻す"))
+	{
+		hitVolumeMessageOk = volume.ReloadFile(hitVolumeMessage);
+		selectedHitShape = -1;
+		desc = volume.ExportDesc();
+	}
+	ImGui::EndDisabled();
+	if (!hitVolumeMessage.empty())
+	{
+		const ImVec4 color = hitVolumeMessageOk ? ImVec4(0.6f, 0.9f, 0.6f, 1.f) : ImVec4(1.f, 0.5f, 0.4f, 1.f);
+		ImGui::TextColored(color, "%s", hitVolumeMessage.c_str());
+	}
+	ImGui::TextDisabled("F2 でデバッグ表示（選択中 = 黄、ボーンなし = 紫）");
+	ImGui::Checkbox("ボーン軸を表示", &volume.isShowingBoneAxes);
+
+	// add
+	const auto addShape = [&](HitShapeDesc shape)
+		{
+			desc.shapes.push_back(std::move(shape));
+			selectedHitShape = static_cast<int>(desc.shapes.size()) - 1;
+			isChanged = true;
+		};
+	if (ImGui::Button("+ Hurtbox"))
+	{
+		addShape({ .role = HitVolumeRole::HURTBOX, .name = "hurtbox", .radius = 0.3f });
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("+ Hitbox"))
+	{
+		addShape({ .role = HitVolumeRole::HITBOX, .name = "hitbox", .groupName = "new", .radius = 0.3f });
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("+ Body"))
+	{
+		addShape({ .role = HitVolumeRole::BODY, .name = "body", .radius = 0.5f });
+	}
+
+	// groups (settings shared by every hitbox in the group)
+	if (!desc.groups.empty() && ImGui::TreeNode("グループ（再ヒット間隔）"))
+	{
+		for (HitGroupDesc& group : desc.groups)
+		{
+			ImGui::PushID(group.name.c_str());
+			isChanged |= ImGui::DragFloat(group.name.c_str(), &group.rehitIntervalSec, 0.01f, 0.f, 10.f, "%.2f s");
+			ImGui::PopID();
+		}
+		ImGui::TextDisabled("0 = 1 回の発動で 1 回だけヒット");
+		ImGui::TreePop();
+	}
+
+	// shape list
+	const std::vector<HitShape>& runtimeShapes = volume.GetShapes(); // same order as desc.shapes
+	if (ImGui::BeginListBox("##shapes", { -FLT_MIN, 8.f * ImGui::GetTextLineHeightWithSpacing() }))
+	{
+		for (int i = 0; i < static_cast<int>(desc.shapes.size()); i++)
+		{
+			const HitShapeDesc& shape = desc.shapes[i];
+			const bool isBoneMissing = i < static_cast<int>(runtimeShapes.size()) && runtimeShapes[i].isBoneMissing;
+
+			char label[192];
+			sprintf_s(label, "%-7s %s  (%s)", hitRoleNames[static_cast<int>(shape.role)], shape.name.c_str(),
+				shape.boneName.empty() ? "ルート" : shape.boneName.c_str());
+
+			ImGui::PushID(i);
+			if (isBoneMissing)
+			{
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.f, 0.4f, 1.f, 1.f));
+			}
+			if (ImGui::Selectable(label, i == selectedHitShape))
+			{
+				selectedHitShape = i == selectedHitShape ? -1 : i;
+			}
+			if (isBoneMissing)
+			{
+				ImGui::PopStyleColor();
+			}
+			ImGui::PopID();
+		}
+		ImGui::EndListBox();
+	}
+
+	// selected shape
+	if (selectedHitShape >= static_cast<int>(desc.shapes.size()))
+	{
+		selectedHitShape = -1;
+	}
+
+	int removeIndex = -1;
+	if (selectedHitShape >= 0)
+	{
+		HitShapeDesc& shape = desc.shapes[selectedHitShape];
+		ImGui::SeparatorText("選択中のシェイプ");
+
+		int role = static_cast<int>(shape.role);
+		if (ImGui::Combo("種類", &role, hitRoleNames, IM_ARRAYSIZE(hitRoleNames)))
+		{
+			shape.role = static_cast<HitVolumeRole>(role);
+			isChanged = true;
+		}
+
+		isChanged |= InputString("名前", shape.name);
+
+		// group: type a new name, or pick an existing one from the arrow
+		if (shape.role == HitVolumeRole::HITBOX)
+		{
+			isChanged |= InputString("グループ", shape.groupName);
+			ImGui::SameLine();
+			if (ImGui::BeginCombo("##groupPick", nullptr, ImGuiComboFlags_NoPreview))
+			{
+				for (const HitGroupDesc& group : desc.groups)
+				{
+					if (ImGui::Selectable(group.name.c_str(), group.name == shape.groupName))
+					{
+						shape.groupName = group.name;
+						isChanged = true;
+					}
+				}
+				ImGui::EndCombo();
+			}
+		}
+
+		// bone: filterable list of every skeleton node
+		const auto* animator = object.GetComponent<SkeletalAnimatorComponent>();
+		const char* bonePreview = shape.boneName.empty() ? "（ルート）" : shape.boneName.c_str();
+		if (ImGui::BeginCombo("ボーン", bonePreview, ImGuiComboFlags_HeightLarge))
+		{
+			if (ImGui::IsWindowAppearing())
+			{
+				ImGui::SetKeyboardFocusHere();
+			}
+			ImGui::InputTextWithHint("##boneFilter", "検索", boneFilter, sizeof(boneFilter));
+
+			if (ImGui::Selectable("（ルート）", shape.boneName.empty()))
+			{
+				shape.boneName.clear();
+				isChanged = true;
+			}
+			if (animator)
+			{
+				for (const SkeletonNode& node : animator->GetSkeleton().nodes)
+				{
+					if (!ContainsNoCase(node.name, boneFilter))
+					{
+						continue;
+					}
+					if (ImGui::Selectable(node.name.c_str(), node.name == shape.boneName))
+					{
+						shape.boneName = node.name;
+						isChanged = true;
+					}
+				}
+			}
+			ImGui::EndCombo();
+		}
+		if (selectedHitShape < static_cast<int>(runtimeShapes.size()) && runtimeShapes[selectedHitShape].isBoneMissing)
+		{
+			ImGui::TextColored({ 1.f, 0.4f, 1.f, 1.f }, "ボーン \"%s\" が見つかりません", shape.boneName.c_str());
+		}
+
+		// offsets are in the bone's local frame (meters), shown as the axes in the viewport
+		isChanged |= ImGui::DragFloat3("A", &shape.localCenterA.x, 0.01f, 0.f, 0.f, "%.3f");
+		isChanged |= ImGui::DragFloat3("B", &shape.localCenterB.x, 0.01f, 0.f, 0.f, "%.3f");
+		if (ImGui::SmallButton("B = A（球）"))
+		{
+			shape.localCenterB = shape.localCenterA;
+			isChanged = true;
+		}
+		isChanged |= ImGui::DragFloat("半径", &shape.radius, 0.005f, 0.01f, 20.f, "%.3f");
+		shape.radius = std::max(shape.radius, 0.01f);
+
+		if (shape.role == HitVolumeRole::HITBOX)
+		{
+			isChanged |= ImGui::Checkbox("スイープ（速い攻撃）", &shape.isSweeping);
+		}
+
+		if (ImGui::Button("複製"))
+		{
+			HitShapeDesc copy = shape; // copy before push_back: it may reallocate
+			addShape(std::move(copy));
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("削除"))
+		{
+			removeIndex = selectedHitShape;
+		}
+	}
+
+	if (removeIndex >= 0)
+	{
+		desc.shapes.erase(desc.shapes.begin() + removeIndex);
+		selectedHitShape = -1;
+		isChanged = true;
+	}
+
+	if (isChanged)
+	{
+		volume.Build(desc);
+	}
+	volume.highlightedShape = selectedHitShape;
+
+	ImGui::PopID();
+}
+
 void EditorUI::DrawToolbar(SceneManager& sceneManager)
 {
-	ImGui::SetNextWindowPos({540.f, 10.f}, ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize({250.f, 150.f}, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowPos({ 540.f, 10.f }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 250.f, 150.f }, ImGuiCond_FirstUseEver);
 	if (ImGui::Begin("エディター"))
 	{
 		ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
@@ -649,11 +928,11 @@ void EditorUI::DrawToolbar(SceneManager& sceneManager)
 		ImGui::BeginDisabled(isTransitioning);
 		if (mode == Mode::EDIT)
 		{
-			ImGui::PushStyleColor(ImGuiCol_Button, {0.2f, 0.55f, 0.25f, 1.f});
-			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, {0.2f, 0.65f, 0.3f, 1.f});
-			ImGui::PushStyleColor(ImGuiCol_ButtonActive, {0.15f, 0.45f, 0.2f, 1.f});
+			ImGui::PushStyleColor(ImGuiCol_Button, { 0.2f, 0.55f, 0.25f, 1.f });
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, { 0.2f, 0.65f, 0.3f, 1.f });
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, { 0.15f, 0.45f, 0.2f, 1.f });
 
-			const bool isPlayPressed = ImGui::Button("プレイ", {90.f, 0.f});
+			const bool isPlayPressed = ImGui::Button("プレイ", { 90.f, 0.f });
 			ImGui::PopStyleColor(3);
 
 			if (isPlayPressed)
@@ -662,15 +941,15 @@ void EditorUI::DrawToolbar(SceneManager& sceneManager)
 			}
 
 			ImGui::SameLine();
-			ImGui::TextColored({0.6f, 0.85f, 1.f, 1.f}, "編集モード中");
+			ImGui::TextColored({ 0.6f, 0.85f, 1.f, 1.f }, "編集モード中");
 		}
 		else
 		{
-			ImGui::PushStyleColor(ImGuiCol_Button, {0.6f, 0.25f, 0.2f, 1.f});
-			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, {0.7f, 0.3f, 0.25f, 1.f});
-			ImGui::PushStyleColor(ImGuiCol_ButtonActive, {0.5f, 0.2f, 0.15f, 1.f});
+			ImGui::PushStyleColor(ImGuiCol_Button, { 0.6f, 0.25f, 0.2f, 1.f });
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, { 0.7f, 0.3f, 0.25f, 1.f });
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, { 0.5f, 0.2f, 0.15f, 1.f });
 
-			const bool isStopPressed = ImGui::Button("編集モード", {90.f, 0.f});
+			const bool isStopPressed = ImGui::Button("編集モード", { 90.f, 0.f });
 			ImGui::PopStyleColor(3);
 
 			if (isStopPressed)
@@ -681,17 +960,17 @@ void EditorUI::DrawToolbar(SceneManager& sceneManager)
 			ImGui::SameLine();
 			if (isPaused)
 			{
-				ImGui::TextColored({1.f, 0.7f, 0.3f, 1.f}, "プレイ中（一時停止）");
+				ImGui::TextColored({ 1.f, 0.7f, 0.3f, 1.f }, "プレイ中（一時停止）");
 			}
 			else
 			{
-				ImGui::TextColored({1.f, 0.7f, 0.3f, 1.f}, "プレイ中");
+				ImGui::TextColored({ 1.f, 0.7f, 0.3f, 1.f }, "プレイ中");
 			}
 		}
 		ImGui::EndDisabled();
 
 		ImGui::BeginDisabled(mode != Mode::PLAY);
-		if (ImGui::Button(isPaused ? "再開" : "一時停止", {90.f, 0.f,}))
+		if (ImGui::Button(isPaused ? "再開" : "一時停止", { 90.f, 0.f, }))
 		{
 			isPaused = !isPaused;
 			isDragging = false;
@@ -756,7 +1035,7 @@ void EditorUI::HandleViewportMouse(Scene& scene, GameContext& context)
 	}
 
 	const ImGuiIO& io = ImGui::GetIO();
-	const DirectX::XMFLOAT2 mouse = {io.MousePos.x, io.MousePos.y};
+	const DirectX::XMFLOAT2 mouse = { io.MousePos.x, io.MousePos.y };
 	const DirectX::XMFLOAT2 cam = context.cam2D.GetPosition();
 
 	if (!io.WantCaptureMouse && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -799,7 +1078,7 @@ void EditorUI::HandleViewportMouse(Scene& scene, GameContext& context)
 	TransformComponent* transform = selectedObject->GetTransform();
 	const DirectX::XMFLOAT3 pos = transform->GetPosition();
 	const DirectX::XMFLOAT2 worldPos = ScreenToWorld(mouse, cam, IsObjectScreenSpace(*selectedObject));
-	transform->SetPosition({worldPos.x + objDragOffset.x, worldPos.y + objDragOffset.y, pos.z});
+	transform->SetPosition({ worldPos.x + objDragOffset.x, worldPos.y + objDragOffset.y, pos.z });
 	WakeObjRb(*selectedObject, true);
 }
 
@@ -817,8 +1096,8 @@ void EditorUI::DrawSelectionOutline(GameContext& context)
 		const bool isScreenSpace = IsObjectScreenSpace(*selectedObject);
 
 		drawList->AddQuad(WorldToScreen(corners[0], cam, isScreenSpace), WorldToScreen(corners[1], cam, isScreenSpace),
-		                  WorldToScreen(corners[2], cam, isScreenSpace), WorldToScreen(corners[3], cam, isScreenSpace),
-		                  IM_COL32(255, 200, 0, 255), 2.f);
+			WorldToScreen(corners[2], cam, isScreenSpace), WorldToScreen(corners[3], cam, isScreenSpace),
+			IM_COL32(255, 200, 0, 255), 2.f);
 
 		return;
 	}
@@ -830,9 +1109,9 @@ void EditorUI::DrawSelectionOutline(GameContext& context)
 		obb.GetCorners(corners);
 
 		static constexpr int edges[12][2] = {
-			{0, 1}, {1, 2}, {2, 3}, {3, 0},
-			{4, 5}, {5, 6}, {6, 7}, {7, 4},
-			{0, 4}, {1, 5}, {2, 6}, {3, 7}
+			{ 0, 1 },{ 1, 2 },{ 2, 3 },{ 3, 0 },
+			{ 4, 5 },{ 5, 6 },{ 6, 7 },{ 7, 4 },
+			{ 0, 4 },{ 1, 5 },{ 2, 6 },{ 3, 7 }
 		};
 
 		for (const auto& edge : edges)
@@ -881,25 +1160,25 @@ void EditorUI::DrawLayoutSave(SceneManager& sceneManager)
 	}
 
 	const auto drawStatus = [](bool isValid, const std::string& logMessage, bool highlight = false)
-	{
-		ImVec4 color = {1.f, 0.4f, 0.4f, 1.f};
-
-		if (isValid)
 		{
-			if (highlight)
-			{
-				color = {0.4f, 0.9f, 0.4f, 1.f};
-			}
-			else
-			{
-				color = ImGui::GetStyle().Colors[ImGuiCol_TextDisabled];
-			}
-		}
+			ImVec4 color = { 1.f, 0.4f, 0.4f, 1.f };
 
-		ImGui::PushStyleColor(ImGuiCol_Text, color);
-		ImGui::TextWrapped("%s", logMessage.c_str());
-		ImGui::PopStyleColor();
-	};
+			if (isValid)
+			{
+				if (highlight)
+				{
+					color = { 0.4f, 0.9f, 0.4f, 1.f };
+				}
+				else
+				{
+					color = ImGui::GetStyle().Colors[ImGuiCol_TextDisabled];
+				}
+			}
+
+			ImGui::PushStyleColor(ImGuiCol_Text, color);
+			ImGui::TextWrapped("%s", logMessage.c_str());
+			ImGui::PopStyleColor();
+		};
 
 	const SceneLayout::Result& load = sceneManager.GetLastLayoutLoad();
 	if (!load.message.empty())
@@ -1026,7 +1305,7 @@ void EditorUI::DrawObjectIcon(Scene& scene, GameContext& context)
 
 		drawList->AddCircleFilled(screenPos, iconRadius * 0.6f, color);
 		drawList->AddCircle(screenPos, iconRadius, color, 0, 1.5f);
-		drawList->AddText({screenPos.x + iconRadius + 3.f, screenPos.y - 8.f}, color, obj.GetName().c_str());
+		drawList->AddText({ screenPos.x + iconRadius + 3.f, screenPos.y - 8.f }, color, obj.GetName().c_str());
 	}
 }
 
@@ -1056,22 +1335,22 @@ GameObject* EditorUI::Pick2D(Scene& scene, const Camera2D& camera, const DirectX
 
 	// topmost first: higher layer first, then higher sort order
 	std::ranges::stable_sort(candidates, [](GameObject* a, GameObject* b)
-	{
-		auto* animA = a->GetComponent<AnimatorComponent>();
-		auto* animB = b->GetComponent<AnimatorComponent>();
-
-		const int layerA = animA ? static_cast<int>(animA->GetRenderLayer()) : 0;
-		const int layerB = animB ? static_cast<int>(animB->GetRenderLayer()) : 0;
-
-		if (layerA != layerB)
 		{
-			return layerA > layerB;
-		}
+			auto* animA = a->GetComponent<AnimatorComponent>();
+			auto* animB = b->GetComponent<AnimatorComponent>();
 
-		const int orderA = animA ? animA->GetSortOrder() : 0;
-		const int orderB = animB ? animB->GetSortOrder() : 0;
-		return orderA > orderB;
-	});
+			const int layerA = animA ? static_cast<int>(animA->GetRenderLayer()) : 0;
+			const int layerB = animB ? static_cast<int>(animB->GetRenderLayer()) : 0;
+
+			if (layerA != layerB)
+			{
+				return layerA > layerB;
+			}
+
+			const int orderA = animA ? animA->GetSortOrder() : 0;
+			const int orderB = animB ? animB->GetSortOrder() : 0;
+			return orderA > orderB;
+		});
 
 	for (int pass = 0; pass < 2; pass++)
 	{
@@ -1166,9 +1445,9 @@ void EditorUI::EnterPlayMode(SceneManager& sceneManager)
 	const SceneLayout::Result& load = sceneManager.GetLastLayoutLoad();
 
 	const bool hasLayoutObj = std::ranges::any_of(scene->GetObjects(), [scene](const auto& obj)
-	{
-		return obj->IsLayoutObject() && !scene->IsPendingDestroy(obj.get());
-	});
+		{
+			return obj->IsLayoutObject() && !scene->IsPendingDestroy(obj.get());
+		});
 
 	if (!load.valid || load.skippedCount > 0)
 	{

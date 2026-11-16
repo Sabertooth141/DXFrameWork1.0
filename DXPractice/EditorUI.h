@@ -10,6 +10,7 @@ class GameObject;
 class Scene;
 class Camera2D;
 class SceneManager;
+class HitVolumeComponent;
 
 class EditorUI
 {
@@ -54,6 +55,7 @@ private:
 	// UI widgets
 	void DrawHierarchy(Scene& scene);
 	void DrawInspector(Scene& scene);
+	void DrawHitVolumeInspector(GameObject& object, HitVolumeComponent& volume);
 	void DrawToolbar(SceneManager& sceneManager);
 	void HandleViewportMouse(Scene& scene, GameContext& context);
 	void DrawSelectionOutline(GameContext& context);
@@ -96,12 +98,19 @@ private:
 	DirectX::XMFLOAT2 objDragOffset = {}; // 2d
 
 	DirectX::XMFLOAT3 draggingPoint = {};
-	DirectX::XMFLOAT3 dragPlaneNormal = {0.f, 1.f, 0.f};
+	DirectX::XMFLOAT3 dragPlaneNormal = { 0.f, 1.f, 0.f };
 	DirectX::XMFLOAT3 drag3DOffset = {};
 	bool isDragVertical = false;
 
 	std::string saveMessage;
 	bool saveValid = true;
+
+	// hit volume inspector
+	const GameObject* hitVolumeObject = nullptr; // selection resets when this changes
+	int selectedHitShape = -1;
+	char boneFilter[64] = {};
+	std::string hitVolumeMessage;
+	bool hitVolumeMessageOk = true;
 
 	Mode mode = Mode::PLAY;
 	std::string playModeStartScene;

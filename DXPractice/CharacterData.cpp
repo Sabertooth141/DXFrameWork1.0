@@ -13,15 +13,22 @@ void ApplyCharacterData(GameObject& object, const CharacterData& data)
 	auto* animator = object.GetComponent<SkeletalAnimatorComponent>();
 	assert(animator && "character data needs a SkeletalAnimatorComponent");
 
-	// hit volumes (groups exist only after their first hitbox is added, so rehits come after)
-	auto& hitVolume = object.AddComponent<HitVolumeComponent>();
-	for (const HitShapeDesc& shape : data.shapes)
-	{
-		hitVolume.AddShape(shape);
-	}
+	// hit volumes: the JSON file wins; the code tables are the fallback until it exists
+	HitVolumeDesc fallback;
+	fallback.shapes = data.shapes;
 	for (const GroupRehitDef& rehit : data.rehits)
 	{
-		hitVolume.SetGroupRehitInterval(rehit.group, rehit.intervalSec);
+		fallback.groups.push_back({ rehit.group, rehit.intervalSec });
+	}
+
+	auto& hitVolume = object.AddComponent<HitVolumeComponent>();
+	if (data.hitVolumePath.empty())
+	{
+		hitVolume.Build(fallback);
+	}
+	else
+	{
+		hitVolume.LoadFile(data.hitVolumePath, fallback);
 	}
 
 	// animations (events need their clip registered first)

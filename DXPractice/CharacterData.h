@@ -18,8 +18,8 @@ namespace CharacterHelpers
 
 	// unused until the attacks are authored
 	[[maybe_unused]] inline HitShapeDesc Hitbox(const char* name, const char* group, const char* bone,
-	                                            DirectX::XMFLOAT3 localCenterA, DirectX::XMFLOAT3 localCenterB,
-	                                            float radius, bool isSweeping)
+		DirectX::XMFLOAT3 localCenterA, DirectX::XMFLOAT3 localCenterB,
+		float radius, bool isSweeping)
 	{
 		return {
 			.role = HitVolumeRole::HITBOX, .name = name, .groupName = group, .boneName = bone,
@@ -65,6 +65,10 @@ struct CharacterData
 	std::string animDir; // clip path = animDir + name + ".fbx"
 	std::string initialClip;
 
+	// hit volumes come from this JSON file (edited in the inspector).
+	// shapes / rehits below are only the fallback while the file does not exist yet:
+	// press Save once in the inspector, then they can be deleted from the character table.
+	std::string hitVolumePath;
 	std::vector<HitShapeDesc> shapes;
 	std::vector<GroupRehitDef> rehits;
 

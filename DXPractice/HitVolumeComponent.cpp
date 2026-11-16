@@ -1,13 +1,16 @@
 #include "HitVolumeComponent.h"
 
+#include <algorithm>
+
 #include "DebugRenderer.h"
 #include "GameContext.h"
 #include "GameObject.h"
 #include "HitDetectionSystem.h"
+#include "HitVolumeFile.h"
 #include "SkeletalAnimatorComponent.h"
 
 namespace
-{	
+{
 	const std::string hitboxOnEvent = "HitboxOn";
 	const std::string hitboxOffEvent = "HitboxOff";
 
@@ -19,6 +22,10 @@ namespace
 	constexpr DirectX::XMFLOAT4 hitboxActiveColor{ 1.f, 0.15f, 0.15f, 1.f };
 	constexpr DirectX::XMFLOAT4 hitboxInactiveColor{ 0.45f, 0.f, 0.f, 1.f };
 	constexpr DirectX::XMFLOAT4 bodyColor{ 0.2f, 0.6f, 1.f, 1.f };
+	constexpr DirectX::XMFLOAT4 highlightColor{ 1.f, 0.9f, 0.1f, 1.f };
+	constexpr DirectX::XMFLOAT4 boneMissingColor{ 1.f, 0.f, 1.f, 1.f };
+
+	const std::string defaultGroupName = "default";
 }
 
 void HitVolumeComponent::OnAttach(GameContext& context)
@@ -34,21 +41,113 @@ int HitVolumeComponent::AddShape(const HitShapeDesc& desc)
 	HitShape shape;
 	shape.desc = desc;
 
+	// shapes now come from an editable file, so a wrong bone name must not crash:
+	// the shape follows the root instead and is drawn magenta
 	if (!desc.boneName.empty())
 	{
-		assert(animator && "bone-attached hit shape needs a SkeletalAnimatorComponent");
-		shape.nodeIndex = animator->FindNodeIndex(desc.boneName);
-		assert(shape.nodeIndex >= 0 && "hit shape bone not found");
+		if (animator)
+		{
+			shape.nodeIndex = animator->FindNodeIndex(desc.boneName);
+		}
+		shape.isBoneMissing = shape.nodeIndex < 0;
 	}
 
 	if (desc.role == HitVolumeRole::HITBOX)
 	{
-		assert(!desc.groupName.empty() && "every hitbox needs a group");
-		shape.groupIndex = FindOrAddGroup(desc.groupName);
+		if (shape.desc.groupName.empty())
+		{
+			shape.desc.groupName = defaultGroupName; // every hitbox needs a group
+		}
+		shape.groupIndex = FindOrAddGroup(shape.desc.groupName);
 	}
 
 	hitShapes.push_back(std::move(shape));
 	return static_cast<int>(hitShapes.size() - 1);
+}
+
+void HitVolumeComponent::Build(const HitVolumeDesc& desc)
+{
+	hitShapes.clear();
+	hitGroups.clear();
+
+	// groups first so their rehit intervals are set before hitboxes reference them
+	for (const HitGroupDesc& group : desc.groups)
+	{
+		hitGroups[FindOrAddGroup(group.name)].rehitIntervalSec = group.rehitIntervalSec;
+	}
+	for (const HitShapeDesc& shape : desc.shapes)
+	{
+		AddShape(shape);
+	}
+}
+
+HitVolumeDesc HitVolumeComponent::ExportDesc() const
+{
+	HitVolumeDesc desc;
+	desc.shapes.reserve(hitShapes.size());
+	for (const HitShape& shape : hitShapes)
+	{
+		desc.shapes.push_back(shape.desc);
+	}
+
+	// only groups that still have a hitbox, so deleted groups do not pile up in the file
+	for (size_t i = 0; i < hitGroups.size(); i++)
+	{
+		const bool isUsed = std::any_of(hitShapes.begin(), hitShapes.end(), [i](const HitShape& shape)
+			{
+				return shape.groupIndex == static_cast<int>(i);
+			});
+		if (isUsed)
+		{
+			desc.groups.push_back({ hitGroups[i].name, hitGroups[i].rehitIntervalSec });
+		}
+	}
+	return desc;
+}
+
+void HitVolumeComponent::LoadFile(const std::string& path, const HitVolumeDesc& fallback)
+{
+	dataPath = path;
+
+	HitVolumeDesc loaded;
+	const HitVolumeFile::Result result = HitVolumeFile::Load(path, loaded);
+	if (result.ok)
+	{
+		Build(loaded);
+		loadMessage = result.message;
+		return;
+	}
+
+	Build(fallback);
+	loadMessage = result.fileFound
+		? result.message + "（コードの定義を使用）"
+		: "ファイルなし：コードの定義を使用（保存で作成）";
+	OutputDebugStringA(("[HitVolume] " + path + ": " + loadMessage + "\n").c_str());
+}
+
+bool HitVolumeComponent::ReloadFile(std::string& outMessage)
+{
+	HitVolumeDesc loaded;
+	const HitVolumeFile::Result result = HitVolumeFile::Load(dataPath, loaded);
+	outMessage = result.message;
+	if (result.ok)
+	{
+		Build(loaded);
+	}
+	return result.ok;
+}
+
+bool HitVolumeComponent::SaveFile(std::string& outMessage) const
+{
+	if (dataPath.empty())
+	{
+		outMessage = "保存先なし（LoadFile で登録されていません）";
+		return false;
+	}
+
+	const HitVolumeFile::Result result = HitVolumeFile::Save(dataPath, ExportDesc());
+	outMessage = result.message;
+	return result.ok;
 }
 
 void HitVolumeComponent::SetGroupRehitInterval(const std::string& groupName, float intervalSec)
@@ -115,8 +214,8 @@ void HitVolumeComponent::ApplyAnimationEvents()
 			continue;
 		}
 
+		// a group can disappear while editing (last hitbox deleted), so skip instead of asserting
 		const int index = FindGroup(event.param);
-		assert(index >= 0 && "HitboxOn/Off param is not a hitbox group on this object");
 		if (index >= 0)
 		{
 			ActivateGroup(index, isOn, event.clipName);
@@ -153,7 +252,7 @@ void HitVolumeComponent::RecordHit(int groupIndex, const GameObject* victim, flo
 		}
 	}
 
-	hitGroups[groupIndex].hitRecords.push_back({victim, currTime});
+	hitGroups[groupIndex].hitRecords.push_back({ victim, currTime });
 }
 
 void HitVolumeComponent::UpdateWorldShapes()
@@ -197,15 +296,26 @@ void HitVolumeComponent::DrawDebug(DebugRenderer& debugRenderer) const
 {
 	using namespace DirectX;
 
-	for (const HitShape& shape : hitShapes)
+	for (size_t i = 0; i < hitShapes.size(); i++)
 	{
+		const HitShape& shape = hitShapes[i];
 		if (!shape.hasWorld)
 		{
 			continue;
 		}
 
+		const bool isHighlighted = static_cast<int>(i) == highlightedShape;
+
 		XMFLOAT4 color;
-		if (shape.desc.role == HitVolumeRole::HURTBOX)
+		if (isHighlighted)
+		{
+			color = highlightColor;
+		}
+		else if (shape.isBoneMissing)
+		{
+			color = boneMissingColor;
+		}
+		else if (shape.desc.role == HitVolumeRole::HURTBOX)
 		{
 			color = shape.isEnabled ? hurtboxColor : hurtboxDisabledColor;
 		}
@@ -220,7 +330,8 @@ void HitVolumeComponent::DrawDebug(DebugRenderer& debugRenderer) const
 
 		debugRenderer.DrawCapsule3D(shape.world.centerA, shape.world.centerB, shape.world.radius, color);
 
-		if (!isShowingBoneAxes || shape.nodeIndex < 0)
+		// the selected shape always shows its bone axes: A/B offsets are in that frame
+		if ((!isShowingBoneAxes && !isHighlighted) || shape.nodeIndex < 0)
 		{
 			continue;
 		}
@@ -232,7 +343,7 @@ void HitVolumeComponent::DrawDebug(DebugRenderer& debugRenderer) const
 		const XMVECTOR axes[3] = {
 			XMVectorSet(1.f, 0.f, 0.f, 0.f), XMVectorSet(0.f, 1.f, 0.f, 0.f), XMVectorSet(0.f, 0.f, 1.f, 0.f)
 		};
-		const XMFLOAT4 axisColors[3] = {{1.f, 0.f, 0.f, 1.f}, {0.f, 1.f, 0.f, 1.f}, {0.f, 0.4f, 1.f, 1.f}};
+		const XMFLOAT4 axisColors[3] = { { 1.f, 0.f, 0.f, 1.f },{ 0.f, 1.f, 0.f, 1.f },{ 0.f, 0.4f, 1.f, 1.f } };
 
 		for (int i = 0; i < 3; i++)
 		{
@@ -264,7 +375,7 @@ int HitVolumeComponent::FindOrAddGroup(const std::string& inGroupName)
 		return index;
 	}
 
-	hitGroups.push_back({.name = inGroupName});
+	hitGroups.push_back({ .name = inGroupName });
 	return static_cast<int>(hitGroups.size() - 1);
 }
 

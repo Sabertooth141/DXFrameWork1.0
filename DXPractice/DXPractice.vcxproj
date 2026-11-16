@@ -156,6 +156,7 @@
     <ClCompile Include="AnimationClip.cpp" />
     <ClCompile Include="AnimationClipCache.cpp" />
     <ClCompile Include="AnimatorComponent.cpp" />
+    <ClCompile Include="AnimSetFile.cpp" />
     <ClCompile Include="App.cpp" />
     <ClCompile Include="Bindable.cpp" />
     <ClCompile Include="BitmapFont.cpp" />
@@ -173,6 +174,7 @@
     <ClCompile Include="GameScene.cpp" />
     <ClCompile Include="HitDetectionSystem.cpp" />
     <ClCompile Include="HitVolumeComponent.cpp" />
+    <ClCompile Include="HitVolumeFile.cpp" />
     <ClCompile Include="ImGuiLayer.cpp" />
     <ClCompile Include="IndexBuffer.cpp" />
     <ClCompile Include="InputLayout.cpp" />
@@ -217,6 +219,7 @@
     <ClInclude Include="AnimationFadeTable.h" />
     <ClInclude Include="AnimationSystem.h" />
     <ClInclude Include="AnimatorComponent.h" />
+    <ClInclude Include="AnimSetFile.h" />
     <ClInclude Include="App.h" />
     <ClInclude Include="Bindable.h" />
     <ClInclude Include="BitmapFont.h" />
@@ -237,6 +240,7 @@
     <ClInclude Include="HitDetectionSystem.h" />
     <ClInclude Include="HitEvent.h" />
     <ClInclude Include="HitVolumeComponent.h" />
+    <ClInclude Include="HitVolumeFile.h" />
     <ClInclude Include="IComponent.h" />
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="Drawable.h" />

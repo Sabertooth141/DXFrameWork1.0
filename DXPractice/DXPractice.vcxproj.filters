@@ -124,6 +124,12 @@
     <Filter Include="Source Files\Scene\GameScenes">
       <UniqueIdentifier>{d562d34a-4c96-4603-ba9d-c860ad0eb9d4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Editor\AnimationEditor">
+      <UniqueIdentifier>{465133ca-09f0-4ee6-98fd-3de0c85bb652}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Editor\AnimationEditor">
+      <UniqueIdentifier>{5e333adc-a57e-4eb5-a714-ab9bce0a493d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Image Include="small.ico">
@@ -304,6 +310,12 @@
     </ClCompile>
     <ClCompile Include="HitDetectionSystem.cpp">
       <Filter>Source Files\Components\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="HitVolumeFile.cpp">
+      <Filter>Source Files\Editor\AnimationEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="AnimSetFile.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -567,6 +579,12 @@
     </ClInclude>
     <ClInclude Include="HitEvent.h">
       <Filter>Header Files\Components\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="HitVolumeFile.h">
+      <Filter>Header Files\Editor\AnimationEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimSetFile.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
