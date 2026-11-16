@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "AnimationFadeTable.h"
+#include "AnimationFadeTable.h" // AnimationFadeTable::any for FadeDef
 #include "HitVolumeComponent.h"
 
 namespace CharacterHelpers
@@ -62,8 +62,6 @@ struct GroupRehitDef
 struct CharacterData
 {
 	float scale = 1.f;
-	std::string animDir; // clip path = animDir + name + ".fbx"
-	std::string initialClip;
 
 	// hit volumes come from this JSON file (edited in the inspector).
 	// shapes / rehits below are only the fallback while the file does not exist yet:
@@ -72,9 +70,15 @@ struct CharacterData
 	std::vector<HitShapeDesc> shapes;
 	std::vector<GroupRehitDef> rehits;
 
+	// animations (clips, fades, events) come from this JSON file, same idea:
+	// everything below is the fallback until the file is saved from the inspector.
+	std::string animSetPath;
+	std::string animDir; // clip path = animDir + name + ".fbx"
+	std::string initialClip;
+	float defaultFadeSec = 0.2f;
 	std::vector<ClipDef> clips;
 	std::vector<EventDef> events;
-	std::shared_ptr<const AnimationFadeTable> fadeTable;
+	std::vector<FadeDef> fades;
 };
 
 // needs the SkeletalAnimatorComponent already on the object (RegisterModel with a skinned mesh)

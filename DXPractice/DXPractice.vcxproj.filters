@@ -317,6 +317,9 @@
     <ClCompile Include="AnimSetFile.cpp">
       <Filter>Source Files\Editor\AnimationEditor</Filter>
     </ClCompile>
+    <ClCompile Include="AnimSetComponent.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Win.h">
@@ -585,6 +588,9 @@
     </ClInclude>
     <ClInclude Include="AnimSetFile.h">
       <Filter>Header Files\Editor\AnimationEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimSetComponent.h">
+      <Filter>Header Files\Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

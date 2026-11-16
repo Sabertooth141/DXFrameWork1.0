@@ -156,6 +156,7 @@
     <ClCompile Include="AnimationClip.cpp" />
     <ClCompile Include="AnimationClipCache.cpp" />
     <ClCompile Include="AnimatorComponent.cpp" />
+    <ClCompile Include="AnimSetComponent.cpp" />
     <ClCompile Include="AnimSetFile.cpp" />
     <ClCompile Include="App.cpp" />
     <ClCompile Include="Bindable.cpp" />
@@ -219,6 +220,7 @@
     <ClInclude Include="AnimationFadeTable.h" />
     <ClInclude Include="AnimationSystem.h" />
     <ClInclude Include="AnimatorComponent.h" />
+    <ClInclude Include="AnimSetComponent.h" />
     <ClInclude Include="AnimSetFile.h" />
     <ClInclude Include="App.h" />
     <ClInclude Include="Bindable.h" />

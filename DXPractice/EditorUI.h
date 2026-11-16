@@ -11,6 +11,7 @@ class Scene;
 class Camera2D;
 class SceneManager;
 class HitVolumeComponent;
+class AnimSetComponent;
 
 class EditorUI
 {
@@ -56,6 +57,7 @@ private:
 	void DrawHierarchy(Scene& scene);
 	void DrawInspector(Scene& scene);
 	void DrawHitVolumeInspector(GameObject& object, HitVolumeComponent& volume);
+	void DrawAnimSetInspector(GameObject& object, AnimSetComponent& animSet);
 	void DrawToolbar(SceneManager& sceneManager);
 	void HandleViewportMouse(Scene& scene, GameContext& context);
 	void DrawSelectionOutline(GameContext& context);
@@ -111,6 +113,14 @@ private:
 	char boneFilter[64] = {};
 	std::string hitVolumeMessage;
 	bool hitVolumeMessageOk = true;
+
+	// anim set inspector
+	const GameObject* animSetObject = nullptr; // selection resets when this changes
+	int selectedAnimFade = -1;
+	int selectedAnimEvent = -1;
+	std::string animEventClipFilter; // empty = every clip
+	std::string animSetMessage;
+	bool animSetMessageOk = true;
 
 	Mode mode = Mode::PLAY;
 	std::string playModeStartScene;

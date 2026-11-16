@@ -94,6 +94,16 @@ public:
 	bool PlayClip(const std::string& name, float fadeSec = -1.f);
 	void AddEvent(const std::string& clipName, float timeSec, const std::string& eventName, const std::string& param = {});
 
+	// for data-driven setup / the editor (AnimSetComponent)
+	bool HasClip(const std::string& name) const
+	{
+		return clipEntries.contains(name);
+	}
+
+	float GetClipLength(const std::string& name) const; // seconds, 0 if unknown
+	void SetClipLoop(const std::string& name, bool inLoop); // applies the next time the clip is played
+	void ClearEvents(); // every clip's markers, before re-adding them
+
 	const std::vector<FiredAnimationEvent>& GetFiredEvents() const
 	{
 		return firedEvents;
@@ -125,11 +135,11 @@ public:
 	}
 
 	const std::string& GetCurrClipName() const;
-	
+
 	// sorted
 	std::vector<std::string> GetClipNames() const;
 
-	
+
 	const Skeleton& GetSkeleton() const
 	{
 		return *skeleton;

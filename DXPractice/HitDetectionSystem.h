@@ -19,6 +19,7 @@ public:
 	}
 
 	void Update(float deltaTime);
+	void UpdateShapesOnly();
 
 	const std::vector<HitVolumeComponent*>& GetVolumes() const
 	{

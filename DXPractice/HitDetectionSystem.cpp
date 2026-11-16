@@ -71,6 +71,14 @@ void HitDetectionSystem::Update(float deltaTime)
 	}
 }
 
+void HitDetectionSystem::UpdateShapesOnly()
+{
+	for (HitVolumeComponent* volume : volumes)
+	{
+		volume->UpdateWorldShapes();
+	}
+}
+
 void HitDetectionSystem::DetectPair(HitVolumeComponent& attacker, HitVolumeComponent& victim, std::vector<HitEvent>& outHits) const
 {
 	const std::vector<HitGroup>& groups = attacker.GetGroups();

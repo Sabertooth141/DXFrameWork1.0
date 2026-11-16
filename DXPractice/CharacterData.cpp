@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-#include "AnimationClipCache.h"
+#include "AnimSetComponent.h"
 #include "GameObject.h"
 #include "SkeletalAnimatorComponent.h"
 
@@ -31,19 +31,23 @@ void ApplyCharacterData(GameObject& object, const CharacterData& data)
 		hitVolume.LoadFile(data.hitVolumePath, fallback);
 	}
 
-	// animations (events need their clip registered first)
+	// animations: the JSON file wins; the code tables are the fallback until it exists
+	AnimSetDesc animFallback;
+	animFallback.animDir = data.animDir;
+	animFallback.initialClip = data.initialClip;
+	animFallback.defaultFadeSec = data.defaultFadeSec;
 	for (const ClipDef& clip : data.clips)
 	{
-		animator->AddClip(
-			AnimationClipCache::LoadClip(data.animDir + clip.name + ".fbx", animator->GetSkeleton()),
-			clip.loop);
+		animFallback.clips.push_back({ clip.name, clip.loop });
 	}
-	animator->SetFadeTable(data.fadeTable);
-
+	for (const FadeDef& fade : data.fades)
+	{
+		animFallback.fades.push_back({ fade.from, fade.to, fade.sec });
+	}
 	for (const EventDef& event : data.events)
 	{
-		animator->AddEvent(event.clip, event.timeSec, event.event, event.param);
+		animFallback.events.push_back({ event.clip, event.timeSec, event.event, event.param });
 	}
 
-	animator->PlayClip(data.initialClip);
+	object.AddComponent<AnimSetComponent>().LoadFile(data.animSetPath, animFallback);
 }

@@ -82,6 +82,11 @@ void App::Update(float deltaTime)
 			scriptSystem.LateUpdate(deltaTime);
 			hitDetectionSystem.Update(deltaTime);
 		}
+		else
+		{
+			// for collider debug in editor mode
+			hitDetectionSystem.UpdateShapesOnly();
+		}
 		scene->FlushPending();
 	}
 	sceneManager.Update(deltaTime); // switch happens here
