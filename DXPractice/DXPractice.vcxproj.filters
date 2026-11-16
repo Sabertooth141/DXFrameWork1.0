@@ -315,7 +315,7 @@
       <Filter>Source Files\Editor\AnimationEditor</Filter>
     </ClCompile>
     <ClCompile Include="AnimSetFile.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Editor\AnimationEditor</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -584,7 +584,7 @@
       <Filter>Header Files\Editor\AnimationEditor</Filter>
     </ClInclude>
     <ClInclude Include="AnimSetFile.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Editor\AnimationEditor</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
