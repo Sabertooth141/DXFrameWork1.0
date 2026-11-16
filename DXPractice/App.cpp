@@ -68,6 +68,8 @@ void App::Init()
 
 void App::Update(float deltaTime)
 {
+	gameContext.wantsCursorlock = false;
+
 	Scene* scene = sceneManager.GetCurrScene();
 	if (scene && !sceneManager.IsTransitioning())
 	{
@@ -125,7 +127,7 @@ void App::Draw(float deltaTime)
 	}
 
 	editor.Draw(sceneManager, gameContext);
-	const bool wantCursorLock = editor.WantsCursorLocked();
+	const bool wantCursorLock = editor.WantsCursorLocked() || gameContext.wantsCursorlock;
 
 	// true means mismatch -> change to lock / unlock
 	if (wantCursorLock == wnd.CursorEnabled())

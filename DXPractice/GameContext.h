@@ -35,6 +35,8 @@ struct GameContext
 	Keyboard& keyboard;
 	Mouse& mouse;
 
+	bool wantsCursorlock = false;
+
 	Scene* currScene = nullptr;
 	SceneManager* sceneManager = nullptr;
 	GlobalContext globalContext;
