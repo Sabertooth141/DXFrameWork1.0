@@ -171,6 +171,7 @@
     <ClCompile Include="DragonAI.cpp" />
     <ClCompile Include="DragonCalmState.cpp" />
     <ClCompile Include="DragonData.cpp" />
+    <ClCompile Include="DragonPerception.cpp" />
     <ClCompile Include="Drawable.cpp" />
     <ClCompile Include="EditorUI.cpp" />
     <ClCompile Include="EditorViewport.cpp" />
@@ -243,6 +244,7 @@
     <ClInclude Include="CycleAnimationTester.h" />
     <ClInclude Include="DebugRenderer.h" />
     <ClInclude Include="DragonAI.h" />
+    <ClInclude Include="DragonPerception.h" />
     <ClInclude Include="DragonStates.h" />
     <ClInclude Include="DragonState.h" />
     <ClInclude Include="EditorUI.h" />

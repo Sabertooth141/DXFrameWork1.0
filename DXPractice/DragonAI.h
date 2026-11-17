@@ -2,6 +2,7 @@
 #include <array>
 #include <memory>
 
+#include "DragonPerception.h"
 #include "DragonState.h"
 #include "MonoBehavior.h"
 
@@ -36,10 +37,16 @@ public:
 		return *transform;
 	}
 
+	const Perception& GetPerception() const
+	{
+		return perception;
+	}
+
 private:
 	void RegisterStates();
 	void ApplyPendingTransition();
 	DragonState* GetState(StateID id) const;
+	const GameObject* FindPlayer() const;
 
 private:
 	static constexpr StateID noState = StateID::COUNT;
@@ -49,6 +56,7 @@ private:
 	StateID currStateID = noState;
 	StateID pendingStateID = noState;
 	float timeInState = 0.f;
+	Perception perception;
 
 	SkeletalAnimatorComponent* animator = nullptr;
 	TransformComponent* transform = nullptr;

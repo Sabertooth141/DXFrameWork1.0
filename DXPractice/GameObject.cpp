@@ -79,7 +79,7 @@ bool GameObject::GetWorldBounds(DirectX::BoundingOrientedBox& out) const
 
 	DirectX::BoundingOrientedBox localBox;
 	DirectX::BoundingOrientedBox::CreateFromBoundingBox(localBox, localBounds);
-	localBox.Transform(out, GetTransform()->GetMatrix());
+	localBox.Transform(out, DirectX::XMLoadFloat4x4(&boundsCorrection) * GetTransform()->GetMatrix());
 	return true;
 }
 

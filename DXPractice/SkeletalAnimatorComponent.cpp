@@ -42,7 +42,7 @@ namespace
 	}
 
 	DirectX::XMVECTOR SampleVectorKeyInfo(const std::vector<VectorKeyInfo>& keys, float ticks, unsigned& cursor,
-		DirectX::FXMVECTOR fallback)
+	                                      DirectX::FXMVECTOR fallback)
 	{
 		if (keys.empty())
 		{
@@ -58,7 +58,7 @@ namespace
 		const float progress = SegmentProgress(keys[keyIndex], keys[keyIndex + 1], ticks);
 
 		return DirectX::XMVectorLerp(DirectX::XMLoadFloat3(&keys[keyIndex].value),
-			DirectX::XMLoadFloat3(&keys[keyIndex + 1].value), progress);
+		                             DirectX::XMLoadFloat3(&keys[keyIndex + 1].value), progress);
 	}
 
 	DirectX::XMVECTOR BlendRotation(DirectX::FXMVECTOR startRot, DirectX::FXMVECTOR finishRot, float weight)
@@ -75,7 +75,7 @@ namespace
 	}
 
 	DirectX::XMVECTOR SampleRotation(const std::vector<QuatKeyInfo>& keys, float ticks, unsigned& cursor,
-		DirectX::FXMVECTOR fallback)
+	                                 DirectX::FXMVECTOR fallback)
 	{
 		if (keys.empty())
 		{
@@ -100,14 +100,14 @@ namespace
 	{
 		LocalTRS out;
 		DirectX::XMStoreFloat3(&out.translation,
-			DirectX::XMVectorLerp(DirectX::XMLoadFloat3(&startTRS.translation),
-				DirectX::XMLoadFloat3(&finishTRS.translation), weight));
+		                       DirectX::XMVectorLerp(DirectX::XMLoadFloat3(&startTRS.translation),
+		                                             DirectX::XMLoadFloat3(&finishTRS.translation), weight));
 		DirectX::XMStoreFloat4(&out.rotation,
-			BlendRotation(DirectX::XMLoadFloat4(&startTRS.rotation),
-				DirectX::XMLoadFloat4(&finishTRS.rotation), weight));
+		                       BlendRotation(DirectX::XMLoadFloat4(&startTRS.rotation),
+		                                     DirectX::XMLoadFloat4(&finishTRS.rotation), weight));
 		DirectX::XMStoreFloat3(&out.scale,
-			DirectX::XMVectorLerp(DirectX::XMLoadFloat3(&startTRS.scale),
-				DirectX::XMLoadFloat3(&finishTRS.scale), weight));
+		                       DirectX::XMVectorLerp(DirectX::XMLoadFloat3(&startTRS.scale),
+		                                             DirectX::XMLoadFloat3(&finishTRS.scale), weight));
 
 		return out;
 	}
@@ -188,7 +188,7 @@ void SkeletalAnimatorComponent::AddClip(std::shared_ptr<const AnimationClip> inC
 		OutputDebugStringA(("[SkeletalAnimator] clip name '" + name + "' already registered, overwriting\n").c_str());
 		assert(false && "duplicate clip name");
 	}
-	clipEntries[name] = { std::move(inClip), inLoop };
+	clipEntries[name] = {std::move(inClip), inLoop};
 }
 
 bool SkeletalAnimatorComponent::PlayClip(const std::string& name, float fadeSec)
@@ -210,12 +210,12 @@ bool SkeletalAnimatorComponent::PlayClip(const std::string& name, float fadeSec)
 	if (fade.isActive)
 	{
 		sprintf_s(msg, "[SkeletalAnimator] %s -> %s (fade %.2fs, interrupting fade at w=%.2f)\n",
-			GetCurrClipName().c_str(), name.c_str(), fadeSec, fade.elapsedSec / fade.durationSec);
+		          GetCurrClipName().c_str(), name.c_str(), fadeSec, fade.elapsedSec / fade.durationSec);
 	}
 	else
 	{
 		sprintf_s(msg, "[SkeletalAnimator] %s -> %s (fade %.2fs)\n",
-			GetCurrClipName().c_str(), name.c_str(), fadeSec);
+		          GetCurrClipName().c_str(), name.c_str(), fadeSec);
 	}
 	OutputDebugStringA(msg);
 #endif
@@ -223,7 +223,7 @@ bool SkeletalAnimatorComponent::PlayClip(const std::string& name, float fadeSec)
 	// report interrupt if not exited properly
 	if (playback.clip && !playback.isFinished)
 	{
-		pendingEvents.push_back({ FiredEventType::INTERRUPTED, playback.clip->name,{}, playback.timeInSec });
+		pendingEvents.push_back({FiredEventType::INTERRUPTED, playback.clip->name, {}, playback.timeInSec});
 	}
 
 	StartFade(fadeSec);
@@ -248,7 +248,7 @@ void SkeletalAnimatorComponent::AddEvent(const std::string& clipName, float time
 
 	// find position by time
 	auto pointer = std::ranges::upper_bound(entry.events, timeSec, {}, &AnimationEvent::timeSec);
-	entry.events.insert(pointer, AnimationEvent{ timeSec, eventName, param });
+	entry.events.insert(pointer, AnimationEvent{timeSec, eventName, param});
 }
 
 float SkeletalAnimatorComponent::GetClipLength(const std::string& name) const
@@ -373,7 +373,7 @@ void SkeletalAnimatorComponent::ClampToRange(float startSec, float finishSec, bo
 
 		if (isAfterStart)
 		{
-			pendingEvents.push_back({ FiredEventType::MARKER, playback.clip->name, event.eventName, event.timeSec, event.param });
+			pendingEvents.push_back({FiredEventType::MARKER, playback.clip->name, event.eventName, event.timeSec, event.param});
 		}
 	}
 }
@@ -415,6 +415,7 @@ DirectX::XMMATRIX SkeletalAnimatorComponent::GetNodeWorldMatrix(int nodeIndex) c
 
 	return DirectX::XMLoadFloat4x4(&globalPose[nodeIndex]) *
 		DirectX::XMLoadFloat4x4(&skeleton->meshSpaceInverse) *
+		DirectX::XMLoadFloat4x4(&modelCorrection) *
 		owner->GetTransform()->GetMatrix();
 }
 
@@ -429,6 +430,15 @@ DirectX::XMMATRIX SkeletalAnimatorComponent::GetBoneWorldMatrix(const std::strin
 	{
 		return owner->GetTransform()->GetMatrix();
 	}
+}
+
+void SkeletalAnimatorComponent::SetModelYaw(float yawRad)
+{
+	const DirectX::XMMATRIX rotation = DirectX::XMMatrixRotationY(yawRad);
+	DirectX::XMStoreFloat4x4(&modelCorrection, rotation);
+
+	// keep the editor's pick box facing the same way as the mesh
+	owner->SetBoundsCorrection(rotation);
 }
 
 void SkeletalAnimatorComponent::StartPlayback(const ClipEntry& entry)
@@ -512,14 +522,14 @@ void SkeletalAnimatorComponent::SampleClip(ClipPlayback& clipPlayback, std::vect
 
 		// trs holds the bind values here, they double as the fallback for empty key lists
 		DirectX::XMStoreFloat3(&trs.translation,
-			SampleVectorKeyInfo(channel.positions, ticks, cursor.position,
-				DirectX::XMLoadFloat3(&trs.translation)));
+		                       SampleVectorKeyInfo(channel.positions, ticks, cursor.position,
+		                                           DirectX::XMLoadFloat3(&trs.translation)));
 		DirectX::XMStoreFloat4(&trs.rotation,
-			SampleRotation(channel.rotations, ticks, cursor.rotation,
-				DirectX::XMLoadFloat4(&trs.rotation)));
+		                       SampleRotation(channel.rotations, ticks, cursor.rotation,
+		                                      DirectX::XMLoadFloat4(&trs.rotation)));
 		DirectX::XMStoreFloat3(&trs.scale,
-			SampleVectorKeyInfo(channel.scales, ticks, cursor.scale,
-				DirectX::XMLoadFloat3(&trs.scale)));
+		                       SampleVectorKeyInfo(channel.scales, ticks, cursor.scale,
+		                                           DirectX::XMLoadFloat3(&trs.scale)));
 	}
 }
 
@@ -574,8 +584,8 @@ void SkeletalAnimatorComponent::ComputeGlobals()
 		const int parentIndex = skeleton->nodes[i].parent;
 
 		const DirectX::XMMATRIX global = (parentIndex < 0)
-			? local
-			: local * DirectX::XMLoadFloat4x4(&globalPose[parentIndex]);
+			                                 ? local
+			                                 : local * DirectX::XMLoadFloat4x4(&globalPose[parentIndex]);
 		DirectX::XMStoreFloat4x4(&globalPose[i], global);
 	}
 }
@@ -583,6 +593,9 @@ void SkeletalAnimatorComponent::ComputeGlobals()
 void SkeletalAnimatorComponent::ComputePalette()
 {
 	const DirectX::XMMATRIX meshSpaceInverse = DirectX::XMLoadFloat4x4(&skeleton->meshSpaceInverse);
+	const DirectX::XMMATRIX toModel =
+		DirectX::XMLoadFloat4x4(&skeleton->meshSpaceInverse) *
+		DirectX::XMLoadFloat4x4(&modelCorrection);
 
 	for (size_t boneIndex = 0; boneIndex < skeleton->bones.size(); boneIndex++)
 	{
@@ -590,7 +603,7 @@ void SkeletalAnimatorComponent::ComputePalette()
 		const DirectX::XMMATRIX finalMatrix =
 			DirectX::XMLoadFloat4x4(&bone.offset) *
 			DirectX::XMLoadFloat4x4(&globalPose[bone.node]) *
-			meshSpaceInverse;
+			toModel;
 
 		DirectX::XMStoreFloat4x4(&palette.bones[boneIndex], DirectX::XMMatrixTranspose(finalMatrix));
 	}

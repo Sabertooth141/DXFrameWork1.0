@@ -130,6 +130,10 @@ public:
 	}
 
 	bool GetWorldBounds(DirectX::BoundingOrientedBox& out) const;
+	void SetBoundsCorrection(DirectX::FXMMATRIX correction)
+	{
+		DirectX::XMStoreFloat4x4(&boundsCorrection, correction);
+	}
 
 private:
 	ObjectTag tag = ObjectTag::DEFAULT;
@@ -150,4 +154,10 @@ private:
 	// for 3d editor selecting
 	DirectX::BoundingBox localBounds{};
 	bool hasLocalBounds = false;
+	DirectX::XMFLOAT4X4 boundsCorrection{
+	1.f, 0.f, 0.f, 0.f,
+	0.f, 1.f, 0.f, 0.f,
+	0.f, 0.f, 1.f, 0.f,
+	0.f, 0.f, 0.f, 1.f
+	};
 };

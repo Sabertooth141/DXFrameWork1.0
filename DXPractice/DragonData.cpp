@@ -39,6 +39,7 @@ namespace
 	{
 		CharacterData data;
 		data.scale = 0.015f; // model is in cm; 0.015 -> ~14.7 m long, ~18 m wingspan
+		data.modelYawDeg = 180.f;
 		data.animDir = "../../assets/models/scifiDragon/Animations/";
 		data.initialClip = "Idle1";
 		data.hitVolumePath = "../../data/hitvolumes/dragon.json";

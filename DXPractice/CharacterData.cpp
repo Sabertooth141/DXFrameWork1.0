@@ -12,13 +12,14 @@ void ApplyCharacterData(GameObject& object, const CharacterData& data)
 
 	auto* animator = object.GetComponent<SkeletalAnimatorComponent>();
 	assert(animator && "character data needs a SkeletalAnimatorComponent");
+	animator->SetModelYaw(DirectX::XMConvertToRadians(data.modelYawDeg));
 
 	// hit volumes: the JSON file wins; the code tables are the fallback until it exists
 	HitVolumeDesc fallback;
 	fallback.shapes = data.shapes;
 	for (const GroupRehitDef& rehit : data.rehits)
 	{
-		fallback.groups.push_back({ rehit.group, rehit.intervalSec });
+		fallback.groups.push_back({rehit.group, rehit.intervalSec});
 	}
 
 	auto& hitVolume = object.AddComponent<HitVolumeComponent>();
@@ -38,15 +39,15 @@ void ApplyCharacterData(GameObject& object, const CharacterData& data)
 	animFallback.defaultFadeSec = data.defaultFadeSec;
 	for (const ClipDef& clip : data.clips)
 	{
-		animFallback.clips.push_back({ clip.name, clip.loop });
+		animFallback.clips.push_back({clip.name, clip.loop});
 	}
 	for (const FadeDef& fade : data.fades)
 	{
-		animFallback.fades.push_back({ fade.from, fade.to, fade.sec });
+		animFallback.fades.push_back({fade.from, fade.to, fade.sec});
 	}
 	for (const EventDef& event : data.events)
 	{
-		animFallback.events.push_back({ event.clip, event.timeSec, event.event, event.param });
+		animFallback.events.push_back({event.clip, event.timeSec, event.event, event.param});
 	}
 
 	object.AddComponent<AnimSetComponent>().LoadFile(data.animSetPath, animFallback);

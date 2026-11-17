@@ -149,6 +149,7 @@ public:
 
 	DirectX::XMMATRIX GetNodeWorldMatrix(int nodeIndex) const;
 	DirectX::XMMATRIX GetBoneWorldMatrix(const std::string& name) const;
+	void SetModelYaw(float yawRad);
 
 private:
 	void StartPlayback(const ClipEntry& entry);
@@ -180,6 +181,12 @@ private:
 	ClipPlayback playback;
 	PoseFade fade;
 	float timeScale = 1.f; // for slow mo
+	DirectX::XMFLOAT4X4 modelCorrection{
+	1.f, 0.f, 0.f, 0.f,
+	0.f, 1.f, 0.f, 0.f,
+	0.f, 0.f, 1.f, 0.f,
+	0.f, 0.f, 0.f, 1.f
+	};
 
 	// for event firing push into pending and fire at the end of frame
 	std::vector<FiredAnimationEvent> pendingEvents;

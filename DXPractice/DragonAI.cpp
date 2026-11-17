@@ -2,6 +2,7 @@
 
 #include "DragonStates.h"
 #include "GameObject.h"
+#include "Scene.h"
 #include "TextRenderer.h"
 #include "SkeletalAnimatorComponent.h"
 
@@ -30,6 +31,15 @@ void DragonAI::Start()
 void DragonAI::Update(float deltaTime)
 {
 	timeInState += deltaTime;
+
+	if (const GameObject* player = FindPlayer())
+	{
+		perception.Update(transform->GetPosition(), transform->GetRotation().y, player->GetTransform()->GetPosition());
+	}
+	else
+	{
+		perception.ClearTarget();
+	}
 
 	if (pendingStateID == noState)
 	{
@@ -96,4 +106,23 @@ DragonState* DragonAI::GetState(StateID id) const
 	}
 
 	return states[ToIndex(id)].get();
+}
+
+const GameObject* DragonAI::FindPlayer() const
+{
+	const Scene* scene = owner->GetContext().currScene;
+	if (!scene)
+	{
+		return nullptr;
+	}
+
+	for (const auto& object : scene->GetObjects())
+	{
+		if (object->GetTag() == ObjectTag::PLAYER && !scene->IsPendingDestroy(object.get()))
+		{
+			return object.get();
+		}
+	}
+
+	return nullptr;
 }
