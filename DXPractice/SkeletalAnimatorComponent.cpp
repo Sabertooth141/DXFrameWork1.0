@@ -437,6 +437,10 @@ void SkeletalAnimatorComponent::SetModelYaw(float yawRad)
 	const DirectX::XMMATRIX rotation = DirectX::XMMatrixRotationY(yawRad);
 	DirectX::XMStoreFloat4x4(&modelCorrection, rotation);
 
+	// the palette may not be rebuilt by Tick (edit mode doesn't tick animators),
+	// so rebuild it now from the current globals
+	ComputePalette();
+
 	// keep the editor's pick box facing the same way as the mesh
 	owner->SetBoundsCorrection(rotation);
 }
@@ -592,7 +596,7 @@ void SkeletalAnimatorComponent::ComputeGlobals()
 
 void SkeletalAnimatorComponent::ComputePalette()
 {
-	const DirectX::XMMATRIX meshSpaceInverse = DirectX::XMLoadFloat4x4(&skeleton->meshSpaceInverse);
+	DirectX::XMLoadFloat4x4(&skeleton->meshSpaceInverse);
 	const DirectX::XMMATRIX toModel =
 		DirectX::XMLoadFloat4x4(&skeleton->meshSpaceInverse) *
 		DirectX::XMLoadFloat4x4(&modelCorrection);

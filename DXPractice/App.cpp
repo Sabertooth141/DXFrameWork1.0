@@ -153,6 +153,14 @@ void App::Draw(float deltaTime)
 	}
 
 	editor.Draw(sceneManager, gameContext);
+
+#ifndef NDEBUG
+	if (editor.IsVisible())
+	{
+		scriptSystem.DrawDebugUI();
+	}
+#endif
+
 	const bool wantCursorLock = editor.WantsCursorLocked() || gameContext.wantsCursorlock;
 
 	// true means mismatch -> change to lock / unlock
@@ -193,6 +201,10 @@ void App::DebugRender(Scene& scene)
 	{
 		return;
 	}
+
+#ifndef NDEBUG
+	scriptSystem.DrawDebugGizmos(debugRenderer);
+#endif
 
 	for (auto& object : scene.GetObjects())
 	{

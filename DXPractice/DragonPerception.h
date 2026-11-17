@@ -2,6 +2,8 @@
 #include <cstdint>
 #include <DirectXMath.h>
 
+class DebugRenderer;
+
 enum class DistanceBand : uint8_t
 {
 	CLOSE,
@@ -25,6 +27,10 @@ struct Perception
 	void Update(const DirectX::XMFLOAT3& selfPos, float selfYaw, const DirectX::XMFLOAT3& targetPos);
 	void ClearTarget();
 
+#ifndef NDEBUG
+	void DrawDebug(DebugRenderer& debugRenderer, const DirectX::XMFLOAT3& selfPos, float selfYaw) const;
+#endif
+
 	// band and sector
 	float closeMax = 5.f;
 	float midMax = 12.f;
@@ -37,6 +43,7 @@ struct Perception
 	bool hasTarget = false;
 	float distance = 0.f;
 	float angleDeg = 0.f;
+	DirectX::XMFLOAT3 targetPos{};
 
 	DistanceBand band = DistanceBand::DISTANT;
 	DirSector sector = DirSector::FRONT;

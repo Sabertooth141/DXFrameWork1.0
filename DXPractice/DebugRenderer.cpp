@@ -131,7 +131,7 @@ void DebugRenderer::DrawBatch(Renderer& renderer, const std::vector<DebugVertex>
 void DebugRenderer::DrawLine3D(DirectX::XMFLOAT3 start, DirectX::XMFLOAT3 end, DirectX::XMFLOAT4 color)
 {
 	vertices3D.push_back({start, color});
-	vertices3D.push_back({ end, color });
+	vertices3D.push_back({end, color});
 }
 
 void DebugRenderer::DrawSphere3D(DirectX::XMFLOAT3 center, float radius, DirectX::XMFLOAT4 color)
@@ -198,6 +198,15 @@ void DebugRenderer::DrawCapsule3D(DirectX::XMFLOAT3 centerA, DirectX::XMFLOAT3 c
 	DrawArc3D(posCenterB, vDir, dir, radius, 0.f, XM_PI, half, color);
 	DrawArc3D(posCenterA, uDir, -dir, radius, 0.f, XM_PI, half, color);
 	DrawArc3D(posCenterA, vDir, -dir, radius, 0.f, XM_PI, half, color);
+}
+
+void DebugRenderer::DrawCircleXZ(DirectX::XMFLOAT3 center, float radius, DirectX::XMFLOAT4 color, int segments)
+{
+	using namespace DirectX;
+
+	DrawArc3D(XMLoadFloat3(&center),
+	          XMVectorSet(1.f, 0.f, 0.f, 0.f), XMVectorSet(0.f, 0.f, 1.f, 0.f),
+	          radius, 0.f, XM_2PI, segments, color);
 }
 
 void DebugRenderer::DrawArc3D(DirectX::FXMVECTOR center, DirectX::FXMVECTOR axisX, DirectX::FXMVECTOR axisY, float radius, float startRad, float endRad, int segments, DirectX::XMFLOAT4 color)

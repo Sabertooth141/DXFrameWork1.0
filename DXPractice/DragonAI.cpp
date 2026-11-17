@@ -1,5 +1,7 @@
 #include "DragonAI.h"
 
+#include <imgui.h>
+
 #include "DragonStates.h"
 #include "GameObject.h"
 #include "Scene.h"
@@ -72,6 +74,52 @@ void DragonAI::RequestStateTransition(StateID nextStateID)
 
 	pendingStateID = nextStateID;
 }
+
+#ifndef NDEBUG
+void DragonAI::DrawDebugUI()
+{
+	const std::string title = "DragonAI##" + owner->GetName();
+	ImGui::Begin(title.c_str());
+
+	ImGui::SeparatorText("State");
+	ImGui::Text("state    %s", ToString(currStateID));
+	ImGui::Text("time     %.2f s", timeInState);
+
+	ImGui::SeparatorText("Perception");
+	if (perception.hasTarget)
+	{
+		ImGui::Text("distance %.2f m   (%s)", perception.distance, ToString(perception.band));
+		ImGui::Text("angle    %+.1f deg (%s)", perception.angleDeg, ToString(perception.sector));
+	}
+	else
+	{
+		ImGui::TextDisabled("no target");
+	}
+
+	// live tuning: copy values that feel right back into DragonPerception.h
+	if (ImGui::CollapsingHeader("Perception tuning"))
+	{
+		ImGui::DragFloat("close max", &perception.closeMax, 0.1f, 0.f, perception.midMax, "%.1f m");
+		ImGui::DragFloat("mid max", &perception.midMax, 0.1f, perception.closeMax, 50.f, "%.1f m");
+		ImGui::DragFloat("front half", &perception.frontHalfDeg, 0.5f, 0.f, perception.backStartDeg, "%.0f deg");
+		ImGui::DragFloat("back start", &perception.backStartDeg, 0.5f, perception.frontHalfDeg, 180.f, "%.0f deg");
+		ImGui::DragFloat("distance hysteresis", &perception.distanceHysteresis, 0.05f, 0.f, 3.f, "%.2f m");
+		ImGui::DragFloat("angle hysteresis", &perception.angleHysteresis, 0.5f, 0.f, 30.f, "%.0f deg");
+	}
+
+	ImGui::End();
+}
+
+void DragonAI::DrawDebugGizmos(DebugRenderer& debugRenderer) const
+{
+	perception.DrawDebug(debugRenderer, transform->GetPosition(), transform->GetRotation().y);
+
+	if (const DragonState* state = GetState(currStateID))
+	{
+		state->DrawDebug(*this, debugRenderer);
+	}
+}
+#endif
 
 void DragonAI::RegisterStates()
 {

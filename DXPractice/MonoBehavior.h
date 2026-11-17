@@ -4,6 +4,7 @@
 
 #include "IComponent.h"
 
+class DebugRenderer;
 class TextRenderer;
 class Mouse;
 class Keyboard;
@@ -30,6 +31,17 @@ public:
 	virtual void OnDestroy()
 	{
 	}
+
+#ifndef NDEBUG
+	virtual void DrawDebugUI()
+	{
+	}
+
+	virtual void DrawDebugGizmos(DebugRenderer& debugRenderer) const
+	{
+	}
+
+#endif
 
 	void OnAttach(GameContext& context) override;
 

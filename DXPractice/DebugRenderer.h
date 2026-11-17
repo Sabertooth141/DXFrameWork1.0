@@ -32,6 +32,7 @@ public:
 	void DrawLine3D(DirectX::XMFLOAT3 start, DirectX::XMFLOAT3 end, DirectX::XMFLOAT4 color);
 	void DrawSphere3D(DirectX::XMFLOAT3 center, float radius, DirectX::XMFLOAT4 color);
 	void DrawCapsule3D(DirectX::XMFLOAT3 centerA, DirectX::XMFLOAT3 centerB, float radius, DirectX::XMFLOAT4 color);
+	void DrawCircleXZ(DirectX::XMFLOAT3 center, float radius, DirectX::XMFLOAT4 color, int segments = 48);
 
 	void Flush3D(Renderer& renderer, DirectX::FXMMATRIX view);
 

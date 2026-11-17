@@ -17,6 +17,7 @@
 	X(DEAD)
 #include <cstdint>
 
+class DebugRenderer;
 class DragonAI;
 
 enum class StateID : uint8_t
@@ -77,4 +78,10 @@ public:
 	{
 		return true;
 	}
+
+#ifndef NDEBUG
+	virtual void DrawDebug(const DragonAI& ai, DebugRenderer& debugRenderer) const
+	{
+	}
+#endif
 };

@@ -14,8 +14,14 @@ class DragonAI : public MonoBehavior
 public:
 	void Start() override;
 	void Update(float deltaTime) override;
-	
+
 	void RequestStateTransition(StateID nextStateID);
+
+#ifndef NDEBUG
+	void DrawDebugUI() override;
+	void DrawDebugGizmos(DebugRenderer& debugRenderer) const override;
+#endif
+
 
 	StateID GetCurrStateID() const
 	{
@@ -49,7 +55,7 @@ private:
 	const GameObject* FindPlayer() const;
 
 private:
-	static constexpr StateID noState = StateID::COUNT;
+	static constexpr auto noState = StateID::COUNT;
 
 	std::array<std::unique_ptr<DragonState>, ToIndex(StateID::COUNT)> states;
 
@@ -61,4 +67,3 @@ private:
 	SkeletalAnimatorComponent* animator = nullptr;
 	TransformComponent* transform = nullptr;
 };
-

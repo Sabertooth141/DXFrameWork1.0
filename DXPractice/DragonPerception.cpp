@@ -2,6 +2,8 @@
 
 #include <cmath>
 
+#include "DebugRenderer.h"
+
 void Perception::Update(const DirectX::XMFLOAT3& selfPos, float selfYaw, const DirectX::XMFLOAT3& targetPos)
 {
 	hasTarget = true;
@@ -18,12 +20,53 @@ void Perception::Update(const DirectX::XMFLOAT3& selfPos, float selfYaw, const D
 
 	band = ClassifyBand(distance);
 	sector = ClassifySector(angleDeg);
+
+	this->targetPos = targetPos;
 }
 
 void Perception::ClearTarget()
 {
 	hasTarget = false;
 }
+
+#ifndef NDEBUG
+void Perception::DrawDebug(DebugRenderer& debugRenderer, const DirectX::XMFLOAT3& selfPos, float selfYaw) const
+{
+	const DirectX::XMFLOAT3 center{selfPos.x, selfPos.y + 0.05f, selfPos.z};
+
+	const DirectX::XMFLOAT4 gray{0.6f, 0.6f, 0.6f, 1.f};
+	const DirectX::XMFLOAT4 yellow{1.f, 0.85f, 0.2f, 1.f};
+	const DirectX::XMFLOAT4 green{0.2f, 1.f, 0.3f, 1.f};
+	const DirectX::XMFLOAT4 red{1.f, 0.25f, 0.2f, 1.f};
+	const DirectX::XMFLOAT4 blue{0.3f, 0.6f, 1.f, 1.f};
+
+	// point at an angle relative to the dragon's forward (+ = right), same convention as angleDeg
+	const auto pointAt = [&](float relDeg, float radius)
+	{
+		const float yaw = selfYaw + DirectX::XMConvertToRadians(relDeg);
+		return DirectX::XMFLOAT3{center.x + sinf(yaw) * radius, center.y, center.z + cosf(yaw) * radius};
+	};
+
+	// band rings: the outer edge of the current band in yellow
+	debugRenderer.DrawCircleXZ(center, closeMax, band == DistanceBand::CLOSE ? yellow : gray);
+	debugRenderer.DrawCircleXZ(center, midMax, band == DistanceBand::MID ? yellow : gray);
+
+	// sector edges out to the mid ring, forward in blue
+	for (const float edgeDeg : {frontHalfDeg, -frontHalfDeg, backStartDeg, -backStartDeg})
+	{
+		debugRenderer.DrawLine3D(center, pointAt(edgeDeg, midMax), gray);
+	}
+	debugRenderer.DrawLine3D(center, pointAt(0.f, closeMax), blue);
+
+	// line to the target, colored by sector
+	if (hasTarget)
+	{
+		const DirectX::XMFLOAT4 sectorColor =
+			sector == DirSector::FRONT ? green : sector == DirSector::BACK ? red : yellow;
+		debugRenderer.DrawLine3D(center, {targetPos.x, center.y, targetPos.z}, sectorColor);
+	}
+}
+#endif
 
 DistanceBand Perception::ClassifyBand(float dist) const
 {

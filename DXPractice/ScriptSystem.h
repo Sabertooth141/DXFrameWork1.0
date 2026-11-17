@@ -47,6 +47,31 @@ public:
 		}
 	}
 
+#ifndef NDEBUG
+	void DrawDebugUI()
+	{
+		for (auto* script : activeScripts)
+		{
+			// not started = pointers not looked up yet; disabled = may have bailed out in Start
+			if (script->IsStarted() && script->IsEnabled())
+			{
+				script->DrawDebugUI();
+			}
+		}
+	}
+
+	void DrawDebugGizmos(DebugRenderer& debugRenderer) const
+	{
+		for (const auto* script : activeScripts)
+		{
+			if (script->IsStarted() && script->IsEnabled())
+			{
+				script->DrawDebugGizmos(debugRenderer);
+			}
+		}
+	}
+#endif
+
 	void UnregisterScript(MonoBehavior* script)
 	{
 		script->OnDestroy();
