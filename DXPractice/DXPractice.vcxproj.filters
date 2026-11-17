@@ -338,6 +338,18 @@
     <ClCompile Include="HealthComponent.cpp">
       <Filter>Source Files\Scripts\Entity</Filter>
     </ClCompile>
+    <ClCompile Include="DragonAI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DragonCalmState.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DragonPerception.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LocomotionComponent.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Win.h">
@@ -624,6 +636,21 @@
     </ClInclude>
     <ClInclude Include="HealthComponent.h">
       <Filter>Header Files\Scripts\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="DragonAI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DragonPerception.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DragonStates.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DragonState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LocomotionComponent.h">
+      <Filter>Header Files\Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,17 +1,18 @@
 #include "PrefabRegistry.h"
 
-#include <memory>
-
 #include "BoxCollider2D.h"
 #include "CameraController.h"
 #include "CharacterData.h"
 #include "CycleAnimationTester.h"
-#include "DragonAI.h"
 #include "GameObject.h"
 #include "HealthComponent.h"
 #include "HitVolumeComponent.h"
 #include "PhysicsTest.h"
 #include "PlayerController.h"
+#include "LocomotionComponent.h"
+#include "DragonAI.h"
+
+class DragonAI;
 
 void RegisterPrefabs()
 {
@@ -72,6 +73,7 @@ void RegisterPrefabs()
 		object.GetTransform()->SetScale({0.6f, 1.8f, 0.35f});
 		object.SetTag(ObjectTag::PLAYER);
 		object.AddComponent<PlayerController>();
+		object.AddComponent<LocomotionComponent>();
 		object.AddComponent<CameraController>();
 		object.AddComponent<HealthComponent>(100.f);
 
