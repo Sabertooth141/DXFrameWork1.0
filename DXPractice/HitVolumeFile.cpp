@@ -111,6 +111,8 @@ HitVolumeFile::Result HitVolumeFile::Load(const std::string& path, HitVolumeDesc
 			HitGroupDesc group;
 			group.name = GetString(entry, "name");
 			group.rehitIntervalSec = GetFloat(entry, "rehitIntervalSec", 0.f);
+			group.damageScale = GetFloat(entry, "damageScale", group.damageScale);
+			group.staggerScale = GetFloat(entry, "staggerScale", group.staggerScale);
 			if (!group.name.empty())
 			{
 				desc.groups.push_back(std::move(group));
@@ -170,6 +172,8 @@ HitVolumeFile::Result HitVolumeFile::Save(const std::string& path, const HitVolu
 		nlohmann::ordered_json entry;
 		entry["name"] = group.name;
 		entry["rehitIntervalSec"] = Round3(group.rehitIntervalSec);
+		entry["damageScale"] = Round3(group.damageScale);
+		entry["staggerScale"] = Round3(group.staggerScale);
 		groups.push_back(std::move(entry));
 	}
 

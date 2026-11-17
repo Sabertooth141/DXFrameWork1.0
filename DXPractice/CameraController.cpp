@@ -51,7 +51,12 @@ void CameraController::HandleOrbitInput()
 {
 	const Mouse::RawDelta delta = mouse->ConsumeRawDelta();
 
-	owner->GetContext().wantsCursorlock = true;
+	bool isOrbit = mouse->RightPressed();
+	owner->GetContext().wantsCursorlock = isOrbit;
+	if (!isOrbit)
+	{
+		return;
+	}
 
 	yaw = remainderf(yaw + static_cast<float>(delta.x) * lookSens, DirectX::XM_2PI);
 

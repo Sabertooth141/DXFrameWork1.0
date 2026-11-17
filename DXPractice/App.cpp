@@ -4,6 +4,7 @@
 #include "CollisionTests.h"
 #include "GameObject.h"
 #include "GameScene.h"
+#include "HealthComponent.h"
 #include "Material.h"
 #include "ModelReader.h"
 #include "PrefabRegistry.h"
@@ -106,6 +107,31 @@ void App::HandleInput(float deltaTime)
 	{
 		isShowingColliders = !isShowingColliders;
 	}
+
+	// health: F4 = everyone back to full, F5 = enemies to 51% (one hit away from the phase change)
+	const bool isResettingHealth = wnd.keyboard.KeyIsTriggered(VK_F4);
+	const bool isSettingEnemyHalf = wnd.keyboard.KeyIsTriggered(VK_F5);
+	Scene* scene = sceneManager.GetCurrScene();
+	if (scene && (isResettingHealth || isSettingEnemyHalf))
+	{
+		for (const auto& object : scene->GetObjects())
+		{
+			HealthComponent* health = object->GetComponent<HealthComponent>();
+			if (!health)
+			{
+				continue;
+			}
+
+			if (isResettingHealth)
+			{
+				health->Reset();
+			}
+			if (isSettingEnemyHalf && object->GetTag() == ObjectTag::ENEMY)
+			{
+				health->SetHpRatio(0.51f);
+			}
+		}
+	}
 #endif
 }
 
@@ -205,9 +231,6 @@ void App::DebugRender(Scene& scene)
 
 void App::DebugTextRender(Scene& scene, float deltaTime)
 {
-	textRenderer.DebugLine("%.1f fps  (%.2f ms)", deltaTime > 0.f ? 1.f / deltaTime : 0.f, deltaTime * 1000.f);
-	textRenderer.DebugLine("scene %s", sceneManager.GetCurrSceneName().c_str());
-	textRenderer.DebugLine("objects %zu", scene.GetObjects().size());
 	if (editor.IsEditMode())
 	{
 		textRenderer.DebugLine(TextColor::Yellow, "EDIT MODE - game stopped (F1 > Play)");

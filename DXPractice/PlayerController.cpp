@@ -2,6 +2,7 @@
 
 #include "GameContext.h"
 #include "GameObject.h"
+#include "HealthComponent.h"
 #include "HitDetectionSystem.h"
 #include "HitVolumeComponent.h"
 #include "Keyboard.h"
@@ -11,6 +12,20 @@ void PlayerController::Awake()
 	MonoBehavior::Awake();
 
 	cam = &owner->GetContext().cam3D;
+}
+
+void PlayerController::Start()
+{
+	MonoBehavior::Start();
+
+	health = owner->GetComponent<HealthComponent>();
+	if (health)
+	{
+		health->onDeath = [this]()
+		{
+			health->Reset();
+		};
+	}
 }
 
 void PlayerController::Update(float deltaTime)

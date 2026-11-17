@@ -63,7 +63,7 @@ private:
 	void DrawSelectionOutline(GameContext& context);
 	void DrawLayoutSave(SceneManager& sceneManager);
 	void DrawPrefabPalette(Scene& scene, GameContext& context);
-	void DrawPhysicsDebug(PhysicsSystem& physics);
+	void DrawDebug(Scene& scene);
 	void DrawObjectIcon(Scene& scene, GameContext& context);
 
 	// selection / drag

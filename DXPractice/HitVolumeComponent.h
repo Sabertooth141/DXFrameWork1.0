@@ -27,9 +27,13 @@ struct HitGroup
 	std::string name;
 	bool isActive = false;
 	unsigned activationCount = 0;
-	float rehitIntervalSec = 0.f; // 0 = once per activation
 	std::string activatedByClip;
 	std::vector<HitRecord> hitRecords;
+
+	float rehitIntervalSec = 0.f; // 0 = once per activation
+	// for damage / stagger meter
+	float damageScale = 1.f;
+	float staggerScale = 1.f;
 };
 
 struct HitShapeDesc
@@ -50,6 +54,9 @@ struct HitGroupDesc
 {
 	std::string name;
 	float rehitIntervalSec = 0.f; // 0 = once per activation
+	// for damage / stagger meter
+	float damageScale = 1.f;
+	float staggerScale = 1.f;
 };
 
 // everything a HitVolumeComponent is built from (what the JSON file holds)
@@ -136,7 +143,6 @@ public:
 	void DrawDebug(DebugRenderer& debugRenderer) const;
 
 public:
-	bool isShowingBoneAxes = true;
 	int highlightedShape = -1; // editor selection, drawn in yellow
 
 private:

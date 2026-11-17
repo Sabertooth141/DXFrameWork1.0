@@ -130,6 +130,12 @@
     <Filter Include="Source Files\Editor\AnimationEditor">
       <UniqueIdentifier>{5e333adc-a57e-4eb5-a714-ab9bce0a493d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Scripts\Entity">
+      <UniqueIdentifier>{11a94769-2d57-4f06-b6ab-91672f996833}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Scripts\Entity">
+      <UniqueIdentifier>{c8283f30-96fd-448e-8046-348f41147d1a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Image Include="small.ico">
@@ -319,6 +325,9 @@
     </ClCompile>
     <ClCompile Include="AnimSetComponent.cpp">
       <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="HealthComponent.cpp">
+      <Filter>Source Files\Scripts\Entity</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -591,6 +600,9 @@
     </ClInclude>
     <ClInclude Include="AnimSetComponent.h">
       <Filter>Header Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="HealthComponent.h">
+      <Filter>Header Files\Scripts\Entity</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

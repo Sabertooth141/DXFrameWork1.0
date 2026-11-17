@@ -173,6 +173,7 @@
     <ClCompile Include="EditorUI.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GameScene.cpp" />
+    <ClCompile Include="HealthComponent.cpp" />
     <ClCompile Include="HitDetectionSystem.cpp" />
     <ClCompile Include="HitVolumeComponent.cpp" />
     <ClCompile Include="HitVolumeFile.cpp" />
@@ -239,6 +240,7 @@
     <ClInclude Include="EditorUI.h" />
     <ClInclude Include="GameContext.h" />
     <ClInclude Include="GameScene.h" />
+    <ClInclude Include="HealthComponent.h" />
     <ClInclude Include="HitDetectionSystem.h" />
     <ClInclude Include="HitEvent.h" />
     <ClInclude Include="HitVolumeComponent.h" />

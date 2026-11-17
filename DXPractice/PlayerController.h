@@ -3,12 +3,14 @@
 #include "IComponent.h"
 #include "MonoBehavior.h"
 
+class HealthComponent;
 class Camera3D;
 
 class PlayerController : public MonoBehavior
 {
 public:
 	void Awake() override;
+	void Start() override;
 	void Update(float deltaTime) override;
 
 private:
@@ -35,5 +37,6 @@ public:
 
 private:
 	const Camera3D* cam = nullptr;
+	HealthComponent* health = nullptr;
 };
 

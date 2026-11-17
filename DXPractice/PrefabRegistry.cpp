@@ -7,6 +7,7 @@
 #include "CharacterData.h"
 #include "CycleAnimationTester.h"
 #include "GameObject.h"
+#include "HealthComponent.h"
 #include "HitVolumeComponent.h"
 #include "PhysicsTest.h"
 #include "PlayerController.h"
@@ -60,6 +61,7 @@ void RegisterPrefabs()
 		object.SetTag(ObjectTag::ENEMY);
 		object.GetComponent<MeshRendererComponent>()->doubleSided = true;
 		object.AddComponent<CycleAnimationTester>();
+		object.AddComponent<HealthComponent>(1000.f);
 	});
 
 	// player
@@ -69,6 +71,7 @@ void RegisterPrefabs()
 		object.SetTag(ObjectTag::PLAYER);
 		object.AddComponent<PlayerController>();
 		object.AddComponent<CameraController>();
+		object.AddComponent<HealthComponent>(100.f);
 
 		// fallback until data/hitvolumes/player.json is saved from the inspector
 		HitVolumeDesc fallback;
