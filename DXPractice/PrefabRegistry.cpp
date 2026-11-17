@@ -6,6 +6,7 @@
 #include "CameraController.h"
 #include "CharacterData.h"
 #include "CycleAnimationTester.h"
+#include "DragonAI.h"
 #include "GameObject.h"
 #include "HealthComponent.h"
 #include "HitVolumeComponent.h"
@@ -60,7 +61,8 @@ void RegisterPrefabs()
 		ApplyCharacterData(object, DragonData());
 		object.SetTag(ObjectTag::ENEMY);
 		object.GetComponent<MeshRendererComponent>()->doubleSided = true;
-		object.AddComponent<CycleAnimationTester>();
+		//object.AddComponent<CycleAnimationTester>();
+		object.AddComponent<DragonAI>();
 		object.AddComponent<HealthComponent>(1000.f);
 	});
 
