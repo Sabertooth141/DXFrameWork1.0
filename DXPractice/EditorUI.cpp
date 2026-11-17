@@ -611,15 +611,6 @@ void EditorUI::DrawDebug(Scene& scene)
 	ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
 	ImGui::Text("objects %zu", scene.GetObjects().size());
 
-	ImGui::SeparatorText("ObjectsHp");
-	for (const auto& object : scene.GetObjects())
-	{
-		if (const HealthComponent* health = object->GetComponent<HealthComponent>())
-		{
-			ImGui::Text("%s HP %.0f / %.0f", object->GetName().c_str(), health->GetCurrHp(), health->GetMaxHp());
-		}
-	}
-
 	ImGui::End();
 }
 

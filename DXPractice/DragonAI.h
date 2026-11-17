@@ -6,6 +6,7 @@
 #include "DragonState.h"
 #include "MonoBehavior.h"
 
+class HealthComponent;
 class SkeletalAnimatorComponent;
 class TransformComponent;
 
@@ -50,6 +51,10 @@ public:
 
 private:
 	void RegisterStates();
+	void BindHealthCallbacks();
+	void CheckAnyStateTransition();
+	bool ForceStateTransition(StateID nextStateID);
+	bool CanCurrentBeInterrupted(InterruptStateKind kind) const;
 	void ApplyPendingTransition();
 	DragonState* GetState(StateID id) const;
 	const GameObject* FindPlayer() const;
@@ -66,4 +71,10 @@ private:
 
 	SkeletalAnimatorComponent* animator = nullptr;
 	TransformComponent* transform = nullptr;
+	HealthComponent* health = nullptr;
+
+	// flags by health callbacks
+	bool isDeathPending = false;
+	bool isPhaseChangePending = false;
+	float staggerMeter = 0.f;
 };

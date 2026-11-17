@@ -4,6 +4,7 @@
 
 #include "DragonStates.h"
 #include "GameObject.h"
+#include "HealthComponent.h"
 #include "Scene.h"
 #include "TextRenderer.h"
 #include "SkeletalAnimatorComponent.h"
@@ -25,6 +26,7 @@ void DragonAI::Start()
 	}
 
 	RegisterStates();
+	BindHealthCallbacks();
 
 	RequestStateTransition(StateID::CALM);
 	ApplyPendingTransition();
@@ -42,6 +44,8 @@ void DragonAI::Update(float deltaTime)
 	{
 		perception.ClearTarget();
 	}
+
+	CheckAnyStateTransition();
 
 	if (pendingStateID == noState)
 	{
@@ -85,6 +89,19 @@ void DragonAI::DrawDebugUI()
 	ImGui::Text("state    %s", ToString(currStateID));
 	ImGui::Text("time     %.2f s", timeInState);
 
+	ImGui::SeparatorText("Health Flags");
+	if (health)
+	{
+		ImGui::Text("hp       %.0f / %.0f", health->GetCurrHp(), health->GetMaxHp());
+		ImGui::Text("dead     %s", isDeathPending ? "PENDING" : "-");
+		ImGui::Text("phase    %s", isPhaseChangePending ? "PENDING" : "-");
+		ImGui::Text("stagger  %.1f", staggerMeter);
+	}
+	else
+	{
+		ImGui::TextDisabled("no HealthComponent");
+	}
+
 	ImGui::SeparatorText("Perception");
 	if (perception.hasTarget)
 	{
@@ -124,6 +141,73 @@ void DragonAI::DrawDebugGizmos(DebugRenderer& debugRenderer) const
 void DragonAI::RegisterStates()
 {
 	states[ToIndex(StateID::CALM)] = std::make_unique<DragonCalmState>();
+}
+
+void DragonAI::BindHealthCallbacks()
+{
+	health = owner->GetComponent<HealthComponent>();
+
+	if (!health)
+	{
+		return;
+	}
+
+	health->onDamaged = [this](float damage, float stagger)
+	{
+		staggerMeter += stagger;
+	};
+
+	health->onThreasholdCrossed = [this]()
+	{
+		isPhaseChangePending = true;
+	};
+
+	health->onDeath = [this]()
+	{
+		isDeathPending = true;
+	};
+}
+
+void DragonAI::CheckAnyStateTransition()
+{
+	// death check
+	if (isDeathPending)
+	{
+		if (currStateID != StateID::DEAD)
+		{
+			ForceStateTransition(StateID::DEAD);
+		}
+		return;
+	}
+
+	// phase change check
+	if (isPhaseChangePending && CanCurrentBeInterrupted(InterruptStateKind::PHASE_CHANGE))
+	{
+		if (ForceStateTransition(StateID::TAKE_OFF))
+		{
+			isPhaseChangePending = false;
+		}
+		return;
+	}
+
+	// TODO: stagger
+}
+
+bool DragonAI::ForceStateTransition(StateID nextStateID)
+{
+	if (!GetState(nextStateID))
+	{
+		return false;
+	}
+
+	pendingStateID = nextStateID;
+	return true;
+}
+
+bool DragonAI::CanCurrentBeInterrupted(InterruptStateKind kind) const
+{
+	const DragonState* currState = GetState(currStateID);
+	return !currState || currState->CanBeInterrupted(kind);
 }
 
 void DragonAI::ApplyPendingTransition()
