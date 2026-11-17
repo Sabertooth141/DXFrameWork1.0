@@ -269,6 +269,15 @@
     <ClCompile Include="EditorUI.cpp">
       <Filter>Source Files\Editor</Filter>
     </ClCompile>
+    <ClCompile Include="EditorViewport.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="HitVolumeInspector.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="AnimSetInspector.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
     <ClCompile Include="ImGuiLayer.cpp">
       <Filter>Source Files\Editor</Filter>
     </ClCompile>
@@ -515,6 +524,18 @@
       <Filter>Header Files\Text</Filter>
     </ClInclude>
     <ClInclude Include="EditorUI.h">
+      <Filter>Header Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorUtils.h">
+      <Filter>Header Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorViewport.h">
+      <Filter>Header Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="HitVolumeInspector.h">
+      <Filter>Header Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimSetInspector.h">
       <Filter>Header Files\Editor</Filter>
     </ClInclude>
     <ClInclude Include="ImGuiLayer.h">

@@ -2,115 +2,24 @@
 
 #include <imgui.h>
 #include <algorithm>
-#include <cctype>
-#include <cfloat>
-#include <string_view>
 
 #include "AnimSetComponent.h"
 #include "BoxCollider2D.h"
-#include "Camera2D.h"
+#include "EditorUtils.h"
 #include "GameObject.h"
 #include "HealthComponent.h"
 #include "HitVolumeComponent.h"
-#include "Keyboard.h"
-#include "Mouse.h"
 #include "PrefabRegistry.h"
 #include "Scene.h"
 #include "SceneManager.h"
-#include "SkeletalAnimatorComponent.h"
-#include "WindowSettings.h"
+
+using EditorUtils::Is2DObject;
+using EditorUtils::WakeObjRb;
 
 namespace
 {
-	// hit volume inspector (order = HitVolumeRole)
-	const char* hitRoleNames[] = {"Hurtbox", "Hitbox", "Body"};
-
-	bool InputString(const char* label, std::string& value)
-	{
-		char buffer[128];
-		strncpy_s(buffer, value.c_str(), _TRUNCATE);
-		if (ImGui::InputText(label, buffer, sizeof(buffer)))
-		{
-			value = buffer;
-			return true;
-		}
-		return false;
-	}
-
-	// case-insensitive substring match for the bone filter ("wing" finds "Wings_l1")
-	bool ContainsNoCase(const std::string& text, const char* filter)
-	{
-		if (!filter || !filter[0])
-		{
-			return true;
-		}
-		const std::string_view needle(filter);
-		const auto it = std::search(text.begin(), text.end(), needle.begin(), needle.end(), [](char a, char b)
-		{
-			return std::tolower(static_cast<unsigned char>(a)) == std::tolower(static_cast<unsigned char>(b));
-		});
-		return it != text.end();
-	}
-
-	constexpr float iconRadius = 8.f;
-	constexpr float nearClip = 0.1f;
-
 	// 3d prefab placement
 	constexpr float placeDistance = 5.f; // distance infront of camera for prefab placement
-	constexpr float maxDragDistance = 500.f; // distance before object becomes unresponsive to drag
-
-	bool Is2DObject(GameObject& obj)
-	{
-		return obj.GetComponent<AnimatorComponent>() != nullptr;
-	}
-
-	struct Ray
-	{
-		DirectX::XMVECTOR origin;
-		DirectX::XMVECTOR dir;
-	};
-
-	bool IsObjectScreenSpace(GameObject& obj)
-	{
-		auto* anim = obj.GetComponent<AnimatorComponent>();
-		return anim && anim->IsScreenSpaceEnabled();
-	}
-
-	// screen: topleft x+ y+ to bottomright, world: x+ left to right, y+ bottom to top, z+ close to far
-	DirectX::XMFLOAT2 ScreenToWorld(DirectX::XMFLOAT2 screen, DirectX::XMFLOAT2 cam, bool screenSpace)
-	{
-		const float x = screen.x - static_cast<float>(WIN_WIDTH) * 0.5f;
-		const float y = static_cast<float>(WIN_HEIGHT) * 0.5f - screen.y;
-		if (screenSpace)
-		{
-			return {x, y};
-		}
-
-		return {x + cam.x, y + cam.y};
-	}
-
-	bool IntersectRayPlane(const Ray& ray, DirectX::XMFLOAT3 planePoint, DirectX::XMFLOAT3 planeNormal,
-	                       DirectX::XMVECTOR& outHit)
-	{
-		const DirectX::XMVECTOR normal = DirectX::XMLoadFloat3(&planeNormal);
-		const float denominator = DirectX::XMVectorGetX(DirectX::XMVector3Dot(ray.dir, normal));
-		// 
-		if (std::abs(denominator) < 1e-3f)
-		{
-			return false;
-		}
-
-		const DirectX::XMVECTOR toPlane = DirectX::XMVectorSubtract(DirectX::XMLoadFloat3(&planePoint), ray.origin);
-		const float projectedDist = DirectX::XMVectorGetX(DirectX::XMVector3Dot(toPlane, normal)) / denominator;
-
-		if (projectedDist < 0.f || projectedDist > maxDragDistance)
-		{
-			return false;
-		}
-
-		outHit = DirectX::XMVectorAdd(ray.origin, DirectX::XMVectorScale(ray.dir, projectedDist));
-		return true;
-	}
 
 	DirectX::XMFLOAT3 Spawn3DInFront(const Camera3D& cam3D)
 	{
@@ -119,114 +28,6 @@ namespace
 		                                                  DirectX::XMVectorScale(
 			                                                  cam3D.GetCamForward(), placeDistance)));
 		return out;
-	}
-
-	ImVec2 WorldToScreen(DirectX::XMFLOAT2 world, DirectX::XMFLOAT2 cam, bool screenSpace)
-	{
-		if (!screenSpace)
-		{
-			world.x -= cam.x;
-			world.y -= cam.y;
-		}
-		return {world.x + WIN_WIDTH * 0.5f, WIN_HEIGHT * 0.5f - world.y};
-	}
-
-	// スプライトは -0.5〜0.5 の四角形を Transform でスケール・回転したもの
-	void GetObjCorners(GameObject& obj, DirectX::XMFLOAT2 outCorners[4])
-	{
-		const TransformComponent* objTransform = obj.GetTransform();
-		const DirectX::XMFLOAT3 objPos = objTransform->GetPosition();
-		const DirectX::XMFLOAT3 objRot = objTransform->GetRotation();
-		const DirectX::XMFLOAT3 objScale = objTransform->GetScale();
-
-		const float halfX = objScale.x * 0.5f;
-		const float halfY = objScale.y * 0.5f;
-		const float rotCos = std::cos(objRot.z);
-		const float rotSin = std::sin(objRot.z);
-
-		const DirectX::XMFLOAT2 local[4] = {{-halfX, -halfY}, {halfX, -halfY}, {halfX, halfY}, {-halfX, halfY}};
-		for (int i = 0; i < 4; ++i)
-			outCorners[i] = {
-				objPos.x + local[i].x * rotCos - local[i].y * rotSin,
-				objPos.y + local[i].x * rotSin + local[i].y * rotCos
-			};
-	}
-
-	bool ObjHitTest(GameObject& obj, DirectX::XMFLOAT2 cursorPos)
-	{
-		const TransformComponent* t = obj.GetTransform();
-		const DirectX::XMFLOAT3 pos = t->GetPosition();
-		const DirectX::XMFLOAT3 rot = t->GetRotation();
-		const DirectX::XMFLOAT3 sc = t->GetScale();
-
-		// クリック位置をオブジェクトのローカル空間へ
-		const float dx = cursorPos.x - pos.x;
-		const float dy = cursorPos.y - pos.y;
-		const float c = std::cos(-rot.z);
-		const float s = std::sin(-rot.z);
-		const float lx = dx * c - dy * s;
-		const float ly = dx * s + dy * c;
-
-		return std::abs(lx) <= std::abs(sc.x) * 0.5f && std::abs(ly) <= std::abs(sc.y) * 0.5f;
-	}
-
-	// エディタから動かしたらスリープ中の剛体を起こす
-	void WakeObjRb(GameObject& obj, bool stop)
-	{
-		if (auto* rb = obj.GetComponent<Rigidbody2DComponent>())
-		{
-			if (stop)
-			{
-				rb->SetVelocity({0.f, 0.f});
-				rb->SetAngularVel(0.f);
-			}
-
-			rb->Wake();
-		}
-	}
-
-	// raycast from screen to world
-	Ray ScreenToRay(DirectX::XMFLOAT2 mousePos, GameContext& context)
-	{
-		const DirectX::XMMATRIX view = context.cam3D.GetView();
-		const DirectX::XMMATRIX proj = context.renderer.Get3DProj();
-
-		const float screenWidth = static_cast<float>(context.renderer.screenWidth);
-		const float screenHeight = static_cast<float>(context.renderer.screenHeight);
-
-		const DirectX::XMVECTOR nearPt = DirectX::XMVector3Unproject(
-			DirectX::XMVectorSet(mousePos.x, mousePos.y, 0.f, 0.f), 0.f, 0.f, screenWidth, screenHeight, 0.f, 1.f,
-			proj, view, DirectX::XMMatrixIdentity());
-		const DirectX::XMVECTOR farPt = DirectX::XMVector3Unproject(
-			DirectX::XMVectorSet(mousePos.x, mousePos.y, 1.f, 0.f), 0.f, 0.f, screenWidth, screenHeight, 0.f, 1.f,
-			proj, view, DirectX::XMMatrixIdentity());
-
-		return {nearPt, DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(farPt, nearPt))};
-	}
-
-	bool WorldToScreen3D(DirectX::XMFLOAT3 worldPos, GameContext& context, ImVec2& out)
-	{
-		const DirectX::XMMATRIX viewProj = context.cam3D.GetView() * context.renderer.Get3DProj();
-		const DirectX::XMVECTOR clip = DirectX::XMVector4Transform(
-			DirectX::XMVectorSet(worldPos.x, worldPos.y, worldPos.z, 1.f), viewProj);
-
-		const float clipW = DirectX::XMVectorGetW(clip);
-
-		// refuse anything close to near plane of clip space
-		if (clipW < nearClip)
-		{
-			return false;
-		}
-
-		const float normDeviceCoordX = DirectX::XMVectorGetX(clip) / clipW; // -1 ... 1
-		const float normDeviceCoordY = DirectX::XMVectorGetY(clip) / clipW; // -1 ... 1 (+y up)
-
-		out =
-		{
-			(normDeviceCoordX * 0.5f + 0.5f) * static_cast<float>(context.renderer.screenWidth),
-			(0.5f - normDeviceCoordY * 0.5f) * static_cast<float>(context.renderer.screenHeight) // +y down
-		};
-		return true;
 	}
 }
 
@@ -257,25 +58,32 @@ void EditorUI::Draw(SceneManager& sceneManager, GameContext& context)
 	ImGui::EndDisabled();
 
 	DrawLayoutSave(sceneManager);
-	DrawObjectIcon(*scene, context);
+	viewport.DrawObjectIcons(*scene, context);
 
 	if (!isTransitioning && CanEditViewport())
 	{
-		HandleEditorCamera(context.cam3D, context.keyboard, context.mouse);
+		viewport.HandleFlyCamera(context.cam3D, context.keyboard, context.mouse);
 	}
 	else
 	{
-		isFlying = false;
+		viewport.StopFlying();
 	}
 
 	if (!isTransitioning)
 	{
-		HandleViewportMouse(*scene, context);
+		if (CanEditViewport())
+		{
+			viewport.HandleMouse(*scene, context, selectedObject);
+		}
+		else
+		{
+			viewport.CancelDrag();
+		}
 	}
 
 	if (selectedObject)
 	{
-		DrawSelectionOutline(context);
+		viewport.DrawSelectionOutline(*selectedObject, context);
 	}
 }
 
@@ -285,9 +93,9 @@ void EditorUI::ToggleVisible()
 	if (!isVisible)
 	{
 		isPaused = false;
-		isDragging = false;
+		viewport.CancelDrag();
 		stepRequested = false;
-		isFlying = false;
+		viewport.StopFlying();
 		return;
 	}
 	isPaused = true;
@@ -321,7 +129,7 @@ void EditorUI::ValidateSelection(Scene& scene)
 	{
 		lastScene = &scene;
 		selectedObject = nullptr;
-		isDragging = false;
+		viewport.CancelDrag();
 		return;
 	}
 
@@ -339,122 +147,8 @@ void EditorUI::ValidateSelection(Scene& scene)
 	if (!isObjAlive)
 	{
 		selectedObject = nullptr;
-		isDragging = false;
+		viewport.CancelDrag();
 	}
-}
-
-bool EditorUI::BeginDrag3D(GameContext& context, DirectX::XMFLOAT2 mouseScreenPos)
-{
-	const DirectX::XMFLOAT3 pos = selectedObject->GetTransform()->GetPosition();
-	isDragVertical = ImGui::GetIO().KeyShift;
-
-	draggingPoint = pos;
-	dragPlaneNormal = {0.f, 1.f, 0.f};
-	if (isDragVertical)
-	{
-		const DirectX::XMVECTOR forward = context.cam3D.GetCamForward();
-		const DirectX::XMVECTOR flat = DirectX::XMVectorSet(DirectX::XMVectorGetX(forward), 0.f,
-		                                                    DirectX::XMVectorGetZ(forward), 0.f);
-		const bool isLookingStraightDown = DirectX::XMVectorGetX(DirectX::XMVector3LengthSq(flat)) < 1e-4f;
-		DirectX::XMStoreFloat3(&dragPlaneNormal, DirectX::XMVector3Normalize(isLookingStraightDown ? forward : flat));
-	}
-
-	DirectX::XMVECTOR hit;
-	if (!IntersectRayPlane(ScreenToRay(mouseScreenPos, context), draggingPoint, dragPlaneNormal, hit))
-	{
-		return false;
-	}
-
-	DirectX::XMStoreFloat3(&drag3DOffset, DirectX::XMVectorSubtract(DirectX::XMLoadFloat3(&pos), hit));
-	return true;
-}
-
-void EditorUI::UpdateDrag3D(GameContext& context, DirectX::XMFLOAT2 mouseScreenPos)
-{
-	// if shift pressed or released -> rebuild normal / stop dragging
-	if (ImGui::GetIO().KeyShift != isDragVertical && !BeginDrag3D(context, mouseScreenPos))
-	{
-		isDragging = false;
-		return;
-	}
-
-	DirectX::XMVECTOR hit;
-	if (!IntersectRayPlane(ScreenToRay(mouseScreenPos, context), draggingPoint, dragPlaneNormal, hit))
-	{
-		return;
-	}
-
-	DirectX::XMFLOAT3 newPos;
-	DirectX::XMStoreFloat3(&newPos, DirectX::XMVectorAdd(hit, DirectX::XMLoadFloat3(&drag3DOffset)));
-	selectedObject->GetTransform()->SetPosition(newPos);
-	WakeObjRb(*selectedObject, true);
-}
-
-void EditorUI::HandleEditorCamera(Camera3D& cam, const Keyboard& keyboard, Mouse& mouse)
-{
-	const ImGuiIO& io = ImGui::GetIO();
-	if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && !io.WantCaptureMouse)
-	{
-		isFlying = true;
-		mouse.ConsumeRawDelta();
-	}
-	if (!ImGui::IsMouseDown(ImGuiMouseButton_Right))
-	{
-		isFlying = false;
-	}
-
-	if (!isFlying)
-	{
-		return;
-	}
-
-	const Mouse::RawDelta delta = mouse.ConsumeRawDelta();
-	cam.Rotate(static_cast<float>(delta.x) * lookSens, static_cast<float>(-delta.y) * lookSens);
-
-	const DirectX::XMVECTOR forward = cam.GetCamForward();
-	const DirectX::XMVECTOR right = cam.GetCamRight();
-	const DirectX::XMVECTOR up = DirectX::XMVectorSet(0.f, 1.f, 0.f, 0.f);
-
-	DirectX::XMVECTOR move = DirectX::XMVectorZero();
-	if (keyboard.KeyIsPressed('W'))
-	{
-		move = DirectX::XMVectorAdd(move, forward);
-	}
-	if (keyboard.KeyIsPressed('S'))
-	{
-		move = DirectX::XMVectorSubtract(move, forward);
-	}
-	if (keyboard.KeyIsPressed('D'))
-	{
-		move = DirectX::XMVectorAdd(move, right);
-	}
-	if (keyboard.KeyIsPressed('A'))
-	{
-		move = DirectX::XMVectorSubtract(move, right);
-	}
-	if (keyboard.KeyIsPressed(VK_SPACE))
-	{
-		move = DirectX::XMVectorAdd(move, up);
-	}
-	if (keyboard.KeyIsPressed(VK_CONTROL))
-	{
-		move = DirectX::XMVectorSubtract(move, up);
-	}
-
-	if (DirectX::XMVectorGetX(DirectX::XMVector3LengthSq(move)) < 1e-6f)
-	{
-		return;
-	}
-
-	// normalize
-	float speed = flySpeed;
-	if (keyboard.KeyIsPressed(VK_SHIFT))
-	{
-		speed *= 3.f;
-	}
-
-	move = DirectX::XMVectorScale(DirectX::XMVector3Normalize(move), speed * io.DeltaTime);
-	DirectX::XMStoreFloat3(&cam.pos, DirectX::XMVectorAdd(DirectX::XMLoadFloat3(&cam.pos), move));
 }
 
 void EditorUI::DrawHierarchy(Scene& scene)
@@ -650,13 +344,13 @@ void EditorUI::DrawInspector(Scene& scene)
 	// hit volumes
 	if (auto* volume = selectedObjRef.GetComponent<HitVolumeComponent>())
 	{
-		DrawHitVolumeInspector(selectedObjRef, *volume);
+		hitVolumeInspector.Draw(selectedObjRef, *volume);
 	}
 
 	// animation data (clips / fades / events)
 	if (auto* animSet = selectedObjRef.GetComponent<AnimSetComponent>())
 	{
-		DrawAnimSetInspector(selectedObjRef, *animSet);
+		animSetInspector.Draw(selectedObjRef, *animSet);
 	}
 
 	// Animator
@@ -680,575 +374,10 @@ void EditorUI::DrawInspector(Scene& scene)
 	{
 		scene.Destroy(selectedObject); // FlushPending で実際に削除される
 		selectedObject = nullptr;
-		isDragging = false;
+		viewport.CancelDrag();
 	}
 
 	ImGui::End();
-}
-
-void EditorUI::DrawHitVolumeInspector(GameObject& object, HitVolumeComponent& volume)
-{
-	if (hitVolumeObject != &object)
-	{
-		hitVolumeObject = &object;
-		selectedHitShape = -1;
-		boneFilter[0] = '\0';
-		hitVolumeMessage = volume.GetLoadMessage();
-		hitVolumeMessageOk = true;
-	}
-
-	if (!ImGui::CollapsingHeader("HitVolume", ImGuiTreeNodeFlags_DefaultOpen))
-	{
-		volume.highlightedShape = -1;
-		return;
-	}
-	// the inspector already has "名前" / "削除" widgets: separate ID scope so they do not collide
-	ImGui::PushID("HitVolume");
-
-	// Edit a copy of the data and rebuild the component when anything changed.
-	// Rebuilding everything is cheap (a few dozen shapes) and keeps one code path:
-	// the editor, file loading and the code fallback all go through Build().
-	HitVolumeDesc desc = volume.ExportDesc();
-	bool isChanged = false;
-
-	// file
-	const std::string& path = volume.GetDataPath();
-	ImGui::TextDisabled("%s", path.empty() ? "（ファイルなし：コードで定義）" : path.c_str());
-	ImGui::BeginDisabled(path.empty());
-	if (ImGui::Button("保存"))
-	{
-		hitVolumeMessageOk = volume.SaveFile(hitVolumeMessage);
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("元に戻す"))
-	{
-		hitVolumeMessageOk = volume.ReloadFile(hitVolumeMessage);
-		selectedHitShape = -1;
-		desc = volume.ExportDesc();
-	}
-	ImGui::EndDisabled();
-	if (!hitVolumeMessage.empty())
-	{
-		const ImVec4 color = hitVolumeMessageOk ? ImVec4(0.6f, 0.9f, 0.6f, 1.f) : ImVec4(1.f, 0.5f, 0.4f, 1.f);
-		ImGui::TextColored(color, "%s", hitVolumeMessage.c_str());
-	}
-	ImGui::TextDisabled("F2 でデバッグ表示（選択中 = 黄、ボーンなし = 紫）");
-
-	// add
-	const auto addShape = [&](HitShapeDesc shape)
-	{
-		desc.shapes.push_back(std::move(shape));
-		selectedHitShape = static_cast<int>(desc.shapes.size()) - 1;
-		isChanged = true;
-	};
-	if (ImGui::Button("+ Hurtbox"))
-	{
-		addShape({.role = HitVolumeRole::HURTBOX, .name = "hurtbox", .radius = 0.3f});
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("+ Hitbox"))
-	{
-		addShape({.role = HitVolumeRole::HITBOX, .name = "hitbox", .groupName = "new", .radius = 0.3f});
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("+ Body"))
-	{
-		addShape({.role = HitVolumeRole::BODY, .name = "body", .radius = 0.5f});
-	}
-
-	// groups (settings shared by every hitbox in the group)
-	if (!desc.groups.empty() && ImGui::TreeNode("グループ（再ヒット・ダメージ）"))
-	{
-		for (HitGroupDesc& group : desc.groups)
-		{
-			ImGui::PushID(group.name.c_str());
-			ImGui::SeparatorText(group.name.c_str());
-			isChanged |= ImGui::DragFloat("再ヒット間隔", &group.rehitIntervalSec, 0.01f, 0.f, 10.f, "%.2f s");
-			isChanged |= ImGui::DragFloat("ダメージ", &group.damageScale, 1.f, 0.f, 10000.f, "%.0f");
-			isChanged |= ImGui::DragFloat("スタッガー", &group.staggerScale, 1.f, 0.f, 10000.f, "%.0f");
-			ImGui::PopID();
-		}
-		ImGui::TextDisabled("0 = 1 回の発動で 1 回だけヒット");
-		ImGui::TreePop();
-	}
-
-	// shape list
-	const std::vector<HitShape>& runtimeShapes = volume.GetShapes(); // same order as desc.shapes
-	if (ImGui::BeginListBox("##shapes", {-FLT_MIN, 8.f * ImGui::GetTextLineHeightWithSpacing()}))
-	{
-		for (int i = 0; i < static_cast<int>(desc.shapes.size()); i++)
-		{
-			const HitShapeDesc& shape = desc.shapes[i];
-			const bool isBoneMissing = i < static_cast<int>(runtimeShapes.size()) && runtimeShapes[i].isBoneMissing;
-
-			char label[192];
-			sprintf_s(label, "%-7s %s  (%s)", hitRoleNames[static_cast<int>(shape.role)], shape.name.c_str(),
-			          shape.boneName.empty() ? "ルート" : shape.boneName.c_str());
-
-			ImGui::PushID(i);
-			if (isBoneMissing)
-			{
-				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.f, 0.4f, 1.f, 1.f));
-			}
-			if (ImGui::Selectable(label, i == selectedHitShape))
-			{
-				selectedHitShape = i == selectedHitShape ? -1 : i;
-			}
-			if (isBoneMissing)
-			{
-				ImGui::PopStyleColor();
-			}
-			ImGui::PopID();
-		}
-		ImGui::EndListBox();
-	}
-
-	// selected shape
-	if (selectedHitShape >= static_cast<int>(desc.shapes.size()))
-	{
-		selectedHitShape = -1;
-	}
-
-	int removeIndex = -1;
-	if (selectedHitShape >= 0)
-	{
-		HitShapeDesc& shape = desc.shapes[selectedHitShape];
-		ImGui::SeparatorText("選択中のシェイプ");
-
-		int role = static_cast<int>(shape.role);
-		if (ImGui::Combo("種類", &role, hitRoleNames, IM_ARRAYSIZE(hitRoleNames)))
-		{
-			shape.role = static_cast<HitVolumeRole>(role);
-			isChanged = true;
-		}
-
-		isChanged |= InputString("名前", shape.name);
-
-		// group: type a new name, or pick an existing one from the arrow
-		if (shape.role == HitVolumeRole::HITBOX)
-		{
-			isChanged |= InputString("グループ", shape.groupName);
-			ImGui::SameLine();
-			if (ImGui::BeginCombo("##groupPick", nullptr, ImGuiComboFlags_NoPreview))
-			{
-				for (const HitGroupDesc& group : desc.groups)
-				{
-					if (ImGui::Selectable(group.name.c_str(), group.name == shape.groupName))
-					{
-						shape.groupName = group.name;
-						isChanged = true;
-					}
-				}
-				ImGui::EndCombo();
-			}
-		}
-
-		// bone: filterable list of every skeleton node
-		const auto* animator = object.GetComponent<SkeletalAnimatorComponent>();
-		const char* bonePreview = shape.boneName.empty() ? "（ルート）" : shape.boneName.c_str();
-		if (ImGui::BeginCombo("ボーン", bonePreview, ImGuiComboFlags_HeightLarge))
-		{
-			if (ImGui::IsWindowAppearing())
-			{
-				ImGui::SetKeyboardFocusHere();
-			}
-			ImGui::InputTextWithHint("##boneFilter", "検索", boneFilter, sizeof(boneFilter));
-
-			if (ImGui::Selectable("（ルート）", shape.boneName.empty()))
-			{
-				shape.boneName.clear();
-				isChanged = true;
-			}
-			if (animator)
-			{
-				for (const SkeletonNode& node : animator->GetSkeleton().nodes)
-				{
-					if (!ContainsNoCase(node.name, boneFilter))
-					{
-						continue;
-					}
-					if (ImGui::Selectable(node.name.c_str(), node.name == shape.boneName))
-					{
-						shape.boneName = node.name;
-						isChanged = true;
-					}
-				}
-			}
-			ImGui::EndCombo();
-		}
-		if (selectedHitShape < static_cast<int>(runtimeShapes.size()) && runtimeShapes[selectedHitShape].isBoneMissing)
-		{
-			ImGui::TextColored({1.f, 0.4f, 1.f, 1.f}, "ボーン \"%s\" が見つかりません", shape.boneName.c_str());
-		}
-
-		// offsets are in the bone's local frame (meters), shown as the axes in the viewport
-		isChanged |= ImGui::DragFloat3("A", &shape.localCenterA.x, 0.01f, 0.f, 0.f, "%.3f");
-		isChanged |= ImGui::DragFloat3("B", &shape.localCenterB.x, 0.01f, 0.f, 0.f, "%.3f");
-		if (ImGui::SmallButton("B = A（球）"))
-		{
-			shape.localCenterB = shape.localCenterA;
-			isChanged = true;
-		}
-		isChanged |= ImGui::DragFloat("半径", &shape.radius, 0.005f, 0.01f, 20.f, "%.3f");
-		shape.radius = std::max(shape.radius, 0.01f);
-
-		if (shape.role == HitVolumeRole::HITBOX)
-		{
-			isChanged |= ImGui::Checkbox("スイープ（速い攻撃）", &shape.isSweeping);
-		}
-
-		if (ImGui::Button("複製"))
-		{
-			HitShapeDesc copy = shape; // copy before push_back: it may reallocate
-			addShape(std::move(copy));
-		}
-		ImGui::SameLine();
-		if (ImGui::Button("削除"))
-		{
-			removeIndex = selectedHitShape;
-		}
-	}
-
-	if (removeIndex >= 0)
-	{
-		desc.shapes.erase(desc.shapes.begin() + removeIndex);
-		selectedHitShape = -1;
-		isChanged = true;
-	}
-
-	if (isChanged)
-	{
-		volume.Build(desc);
-	}
-	volume.highlightedShape = selectedHitShape;
-
-	ImGui::PopID();
-}
-
-void EditorUI::DrawAnimSetInspector(GameObject& object, AnimSetComponent& animSet)
-{
-	auto* animator = object.GetComponent<SkeletalAnimatorComponent>();
-	if (!animator)
-	{
-		return;
-	}
-
-	if (animSetObject != &object)
-	{
-		animSetObject = &object;
-		selectedAnimFade = -1;
-		selectedAnimEvent = -1;
-		animEventClipFilter.clear();
-		animSetMessage = animSet.GetLoadMessage();
-		animSetMessageOk = true;
-	}
-
-	if (!ImGui::CollapsingHeader("Animation", ImGuiTreeNodeFlags_DefaultOpen))
-	{
-		return;
-	}
-	ImGui::PushID("AnimSet");
-
-	// Edited in place on the component's desc; Apply() pushes it to the animator once at the end.
-	// (Unlike the hit volume, the desc lives in the component: the animator cannot export it back.)
-	AnimSetDesc& desc = animSet.GetDesc();
-	bool isChanged = false;
-	const std::vector<std::string> clipNames = animator->GetClipNames(); // sorted
-
-	// clip picker; "*" (any) is allowed for fades only
-	const auto clipCombo = [&](const char* label, std::string& value, bool isAnyAllowed)
-	{
-		bool isPicked = false;
-		const char* preview = value == AnimationFadeTable::any ? "（全て）" : value.c_str();
-		if (ImGui::BeginCombo(label, preview, ImGuiComboFlags_HeightLarge))
-		{
-			if (isAnyAllowed && ImGui::Selectable("（全て）", value == AnimationFadeTable::any))
-			{
-				value = AnimationFadeTable::any;
-				isPicked = true;
-			}
-			for (const std::string& name : clipNames)
-			{
-				if (ImGui::Selectable(name.c_str(), name == value))
-				{
-					value = name;
-					isPicked = true;
-				}
-			}
-			ImGui::EndCombo();
-		}
-		return isPicked;
-	};
-
-	// file
-	const std::string& path = animSet.GetDataPath();
-	ImGui::TextDisabled("%s", path.empty() ? "（ファイルなし：コードで定義）" : path.c_str());
-	ImGui::BeginDisabled(path.empty());
-	if (ImGui::Button("保存"))
-	{
-		animSetMessageOk = animSet.SaveFile(animSetMessage);
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("元に戻す"))
-	{
-		animSetMessageOk = animSet.ReloadFile(animSetMessage);
-		selectedAnimFade = -1;
-		selectedAnimEvent = -1;
-	}
-	ImGui::EndDisabled();
-	if (!animSetMessage.empty())
-	{
-		const ImVec4 color = animSetMessageOk ? ImVec4(0.6f, 0.9f, 0.6f, 1.f) : ImVec4(1.f, 0.5f, 0.4f, 1.f);
-		ImGui::TextColored(color, "%s", animSetMessage.c_str());
-	}
-
-	// what is playing now: the reference point for placing events
-	const std::string& currClip = animator->GetCurrClipName();
-	const float currTime = animator->GetCurrClipTime();
-	ImGui::Text("再生中: %s  %.3f / %.3f s", currClip.c_str(), currTime, animator->GetCurrClipLength());
-
-	// ---- clips
-	if (ImGui::TreeNode("クリップ"))
-	{
-		if (ImGui::Button("フォルダから追加"))
-		{
-			const int added = animSet.AddClipsFromFolder();
-			animSetMessage = std::to_string(added) + " 個のクリップを追加（保存で反映）";
-			animSetMessageOk = true;
-		}
-		ImGui::SameLine();
-		ImGui::TextDisabled("%s", desc.animDir.c_str());
-
-		clipCombo("最初のクリップ", desc.initialClip, false);
-
-		ImGui::TextDisabled("ループ / 再生");
-		for (AnimClipDesc& clip : desc.clips)
-		{
-			ImGui::PushID(clip.name.c_str());
-			isChanged |= ImGui::Checkbox("##loop", &clip.isLoop);
-			ImGui::SameLine();
-			ImGui::BeginDisabled(!animator->HasClip(clip.name)); // in the file but FBX missing
-			if (ImGui::SmallButton("再生"))
-			{
-				animator->PlayClip(clip.name);
-			}
-			ImGui::EndDisabled();
-			ImGui::SameLine();
-			ImGui::Text("%s  (%.2f s)", clip.name.c_str(), animator->GetClipLength(clip.name));
-			ImGui::PopID();
-		}
-		ImGui::TreePop();
-	}
-
-	// ---- fades
-	if (ImGui::TreeNode("フェード"))
-	{
-		isChanged |= ImGui::DragFloat("既定", &desc.defaultFadeSec, 0.005f, 0.f, 2.f, "%.3f s");
-		ImGui::TextDisabled("検索順: from→to、全て→to、from→全て、既定");
-
-		if (ImGui::BeginListBox("##fades", {-FLT_MIN, 7.f * ImGui::GetTextLineHeightWithSpacing()}))
-		{
-			for (int i = 0; i < static_cast<int>(desc.fades.size()); i++)
-			{
-				const AnimFadeDesc& fade = desc.fades[i];
-				char label[160];
-				sprintf_s(label, "%s → %s   %.3f s", fade.from == AnimationFadeTable::any ? "（全て）" : fade.from.c_str(),
-				          fade.to == AnimationFadeTable::any ? "（全て）" : fade.to.c_str(), fade.sec);
-				ImGui::PushID(i);
-				if (ImGui::Selectable(label, i == selectedAnimFade))
-				{
-					selectedAnimFade = i == selectedAnimFade ? -1 : i;
-				}
-				ImGui::PopID();
-			}
-			ImGui::EndListBox();
-		}
-
-		if (ImGui::Button("+ フェード"))
-		{
-			desc.fades.push_back({AnimationFadeTable::any, currClip.empty() ? "*" : currClip, desc.defaultFadeSec});
-			selectedAnimFade = static_cast<int>(desc.fades.size()) - 1;
-			isChanged = true;
-		}
-
-		if (selectedAnimFade >= static_cast<int>(desc.fades.size()))
-		{
-			selectedAnimFade = -1;
-		}
-		if (selectedAnimFade >= 0)
-		{
-			AnimFadeDesc& fade = desc.fades[selectedAnimFade];
-			ImGui::SeparatorText("選択中のフェード");
-			isChanged |= clipCombo("from", fade.from, true);
-			isChanged |= clipCombo("to", fade.to, true);
-			isChanged |= ImGui::DragFloat("時間", &fade.sec, 0.005f, 0.f, 2.f, "%.3f s");
-			if (ImGui::Button("削除##fade"))
-			{
-				desc.fades.erase(desc.fades.begin() + selectedAnimFade);
-				selectedAnimFade = -1;
-				isChanged = true;
-			}
-		}
-		ImGui::TreePop();
-	}
-
-	// ---- events
-	if (ImGui::TreeNode("イベント"))
-	{
-		// filter by clip: with 40+ clips the full list is unreadable
-		const char* filterPreview = animEventClipFilter.empty() ? "（全て）" : animEventClipFilter.c_str();
-		if (ImGui::BeginCombo("表示", filterPreview, ImGuiComboFlags_HeightLarge))
-		{
-			if (ImGui::Selectable("（全て）", animEventClipFilter.empty()))
-			{
-				animEventClipFilter.clear();
-			}
-			if (!currClip.empty() && ImGui::Selectable("（再生中のクリップ）"))
-			{
-				animEventClipFilter = currClip;
-			}
-			for (const std::string& name : clipNames)
-			{
-				if (ImGui::Selectable(name.c_str(), name == animEventClipFilter))
-				{
-					animEventClipFilter = name;
-				}
-			}
-			ImGui::EndCombo();
-		}
-
-		if (ImGui::BeginListBox("##events", {-FLT_MIN, 8.f * ImGui::GetTextLineHeightWithSpacing()}))
-		{
-			for (int i = 0; i < static_cast<int>(desc.events.size()); i++)
-			{
-				const AnimEventDesc& event = desc.events[i];
-				if (!animEventClipFilter.empty() && event.clip != animEventClipFilter)
-				{
-					continue;
-				}
-
-				char label[192];
-				sprintf_s(label, "%-10s %6.3f  %s %s", event.clip.c_str(), event.timeSec, event.event.c_str(),
-				          event.param.c_str());
-				ImGui::PushID(i);
-				if (!animator->HasClip(event.clip))
-				{
-					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.f, 0.4f, 1.f, 1.f)); // clip not registered
-					ImGui::Selectable(label, i == selectedAnimEvent);
-					ImGui::PopStyleColor();
-					if (ImGui::IsItemClicked())
-					{
-						selectedAnimEvent = i;
-					}
-				}
-				else if (ImGui::Selectable(label, i == selectedAnimEvent))
-				{
-					selectedAnimEvent = i == selectedAnimEvent ? -1 : i;
-				}
-				ImGui::PopID();
-			}
-			ImGui::EndListBox();
-		}
-
-		// new events start at the playing clip's current time: pause the tester on the frame you want, then add
-		ImGui::BeginDisabled(currClip.empty());
-		if (ImGui::Button("+ 現在の時間に追加"))
-		{
-			desc.events.push_back({currClip, currTime, "HitboxOn", ""});
-			selectedAnimEvent = static_cast<int>(desc.events.size()) - 1;
-			isChanged = true;
-		}
-		ImGui::EndDisabled();
-
-		if (selectedAnimEvent >= static_cast<int>(desc.events.size()))
-		{
-			selectedAnimEvent = -1;
-		}
-		if (selectedAnimEvent >= 0)
-		{
-			AnimEventDesc& event = desc.events[selectedAnimEvent];
-			ImGui::SeparatorText("選択中のイベント");
-
-			isChanged |= clipCombo("クリップ", event.clip, false);
-
-			const float length = animator->GetClipLength(event.clip);
-			isChanged |= ImGui::DragFloat("時間", &event.timeSec, 0.001f, 0.f, length, "%.3f s");
-			event.timeSec = std::clamp(event.timeSec, 0.f, length);
-			ImGui::BeginDisabled(currClip != event.clip);
-			if (ImGui::SmallButton("= 再生中の時間"))
-			{
-				event.timeSec = currTime;
-				isChanged = true;
-			}
-			ImGui::EndDisabled();
-
-			// event name: type it, or pick one already in use (HitboxOn / HitboxOff are always offered)
-			isChanged |= InputString("イベント", event.event);
-			ImGui::SameLine();
-			if (ImGui::BeginCombo("##eventPick", nullptr, ImGuiComboFlags_NoPreview))
-			{
-				std::vector<std::string> names = {"HitboxOn", "HitboxOff"};
-				for (const AnimEventDesc& other : desc.events)
-				{
-					if (std::ranges::find(names, other.event) == names.end())
-					{
-						names.push_back(other.event);
-					}
-				}
-				for (const std::string& name : names)
-				{
-					if (ImGui::Selectable(name.c_str(), name == event.event))
-					{
-						event.event = name;
-						isChanged = true;
-					}
-				}
-				ImGui::EndCombo();
-			}
-
-			// param: for HitboxOn/Off this is a hitbox group, so offer this object's groups
-			isChanged |= InputString("パラメータ", event.param);
-			if (const auto* volume = object.GetComponent<HitVolumeComponent>())
-			{
-				ImGui::SameLine();
-				if (ImGui::BeginCombo("##paramPick", nullptr, ImGuiComboFlags_NoPreview))
-				{
-					for (const HitGroup& group : volume->GetGroups())
-					{
-						if (ImGui::Selectable(group.name.c_str(), group.name == event.param))
-						{
-							event.param = group.name;
-							isChanged = true;
-						}
-					}
-					ImGui::EndCombo();
-				}
-			}
-
-			if (ImGui::Button("複製##event"))
-			{
-				AnimEventDesc copy = event; // copy before push_back: it may reallocate
-				desc.events.push_back(std::move(copy));
-				selectedAnimEvent = static_cast<int>(desc.events.size()) - 1;
-				isChanged = true;
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("削除##event"))
-			{
-				desc.events.erase(desc.events.begin() + selectedAnimEvent);
-				selectedAnimEvent = -1;
-				isChanged = true;
-			}
-		}
-		ImGui::TreePop();
-	}
-
-	if (isChanged)
-	{
-		animSet.Apply();
-	}
-
-	ImGui::PopID();
 }
 
 void EditorUI::DrawToolbar(SceneManager& sceneManager)
@@ -1309,7 +438,7 @@ void EditorUI::DrawToolbar(SceneManager& sceneManager)
 		if (ImGui::Button(isPaused ? "再開" : "一時停止", {90.f, 0.f,}))
 		{
 			isPaused = !isPaused;
-			isDragging = false;
+			viewport.CancelDrag();
 		}
 
 		ImGui::SameLine();
@@ -1359,118 +488,6 @@ void EditorUI::DrawToolbar(SceneManager& sceneManager)
 	}
 
 	ImGui::End();
-}
-
-void EditorUI::HandleViewportMouse(Scene& scene, GameContext& context)
-{
-	// if is in selection / is dragging -> return
-	if (!CanEditViewport())
-	{
-		isDragging = false;
-		return;
-	}
-
-	const ImGuiIO& io = ImGui::GetIO();
-	const DirectX::XMFLOAT2 mouse = {io.MousePos.x, io.MousePos.y};
-	const DirectX::XMFLOAT2 cam = context.cam2D.GetPosition();
-
-	if (!io.WantCaptureMouse && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-	{
-		selectedObject = Pick(scene, context, mouse);
-		isDragging = false;
-		if (selectedObject)
-		{
-			if (Is2DObject(*selectedObject))
-			{
-				const DirectX::XMFLOAT3 pos = selectedObject->GetTransform()->GetPosition();
-				const DirectX::XMFLOAT2 cursorWorldPos = ScreenToWorld(mouse, cam, IsObjectScreenSpace(*selectedObject));
-				objDragOffset = {pos.x - cursorWorldPos.x, pos.y - cursorWorldPos.y};
-				isDragging = true;
-			}
-			else
-			{
-				isDragging = BeginDrag3D(context, mouse);
-			}
-		}
-	}
-
-	if (!isDragging)
-	{
-		return;
-	}
-
-	if (!selectedObject || !ImGui::IsMouseDown(ImGuiMouseButton_Left))
-	{
-		isDragging = false;
-		return;
-	}
-
-	if (!Is2DObject(*selectedObject))
-	{
-		UpdateDrag3D(context, mouse);
-		return;
-	}
-
-	TransformComponent* transform = selectedObject->GetTransform();
-	const DirectX::XMFLOAT3 pos = transform->GetPosition();
-	const DirectX::XMFLOAT2 worldPos = ScreenToWorld(mouse, cam, IsObjectScreenSpace(*selectedObject));
-	transform->SetPosition({worldPos.x + objDragOffset.x, worldPos.y + objDragOffset.y, pos.z});
-	WakeObjRb(*selectedObject, true);
-}
-
-void EditorUI::DrawSelectionOutline(GameContext& context)
-{
-	ImDrawList* drawList = ImGui::GetBackgroundDrawList();
-	const ImU32 color = IM_COL32(255, 200, 0, 255);
-
-	if (Is2DObject(*selectedObject))
-	{
-		DirectX::XMFLOAT2 corners[4];
-		GetObjCorners(*selectedObject, corners);
-
-		const DirectX::XMFLOAT2 cam = context.cam2D.GetPosition();
-		const bool isScreenSpace = IsObjectScreenSpace(*selectedObject);
-
-		drawList->AddQuad(WorldToScreen(corners[0], cam, isScreenSpace), WorldToScreen(corners[1], cam, isScreenSpace),
-		                  WorldToScreen(corners[2], cam, isScreenSpace), WorldToScreen(corners[3], cam, isScreenSpace),
-		                  IM_COL32(255, 200, 0, 255), 2.f);
-
-		return;
-	}
-
-	DirectX::BoundingOrientedBox obb;
-	if (selectedObject->GetWorldBounds(obb))
-	{
-		DirectX::XMFLOAT3 corners[DirectX::BoundingOrientedBox::CORNER_COUNT];
-		obb.GetCorners(corners);
-
-		static constexpr int edges[12][2] = {
-			{0, 1}, {1, 2}, {2, 3}, {3, 0},
-			{4, 5}, {5, 6}, {6, 7}, {7, 4},
-			{0, 4}, {1, 5}, {2, 6}, {3, 7}
-		};
-
-		for (const auto& edge : edges)
-		{
-			ImVec2 lineStartPos, lineFinishPos;
-
-			if (WorldToScreen3D(corners[edge[0]], context, lineStartPos) && WorldToScreen3D(
-				corners[edge[1]], context, lineFinishPos))
-			{
-				drawList->AddLine(lineStartPos, lineFinishPos, color, 2.f);
-			}
-		}
-
-		return;
-	}
-
-	// no mesh
-	ImVec2 screenPos;
-
-	if (WorldToScreen3D(selectedObject->GetTransform()->GetPosition(), context, screenPos))
-	{
-		drawList->AddCircle(screenPos, iconRadius + 4.f, color, 0, 2.f);
-	}
 }
 
 void EditorUI::DrawLayoutSave(SceneManager& sceneManager)
@@ -1577,7 +594,7 @@ void EditorUI::DrawPrefabPalette(Scene& scene, GameContext& context)
 				if (GameObject* obj = scene.InstantiateAsLayout(prefabName, spawnPos))
 				{
 					selectedObject = obj;
-					isDragging = false;
+					viewport.CancelDrag();
 				}
 			}
 		}
@@ -1604,157 +621,6 @@ void EditorUI::DrawDebug(Scene& scene)
 	}
 
 	ImGui::End();
-}
-
-void EditorUI::DrawObjectIcon(Scene& scene, GameContext& context)
-{
-	// switch drawing to background behind panels
-	ImDrawList* drawList = ImGui::GetBackgroundDrawList();
-
-	for (auto& objPtr : scene.GetObjects())
-	{
-		GameObject& obj = *objPtr;
-		if (Is2DObject(obj) || obj.HasLocalBounds())
-		{
-			continue;
-		}
-
-		ImVec2 screenPos;
-		if (!WorldToScreen3D(obj.GetTransform()->GetPosition(), context, screenPos))
-		{
-			continue;
-		}
-
-		constexpr ImU32 color = IM_COL32(200, 200, 200, 220);
-
-		drawList->AddCircleFilled(screenPos, iconRadius * 0.6f, color);
-		drawList->AddCircle(screenPos, iconRadius, color, 0, 1.5f);
-		drawList->AddText({screenPos.x + iconRadius + 3.f, screenPos.y - 8.f}, color, obj.GetName().c_str());
-	}
-}
-
-GameObject* EditorUI::Pick(Scene& scene, GameContext& context, DirectX::XMFLOAT2 mousePosScreen)
-{
-	if (GameObject* hit = Pick2D(scene, context.cam2D, mousePosScreen))
-	{
-		return hit;
-	}
-	else
-	{
-		return Pick3D(scene, context, mousePosScreen);
-	}
-}
-
-GameObject* EditorUI::Pick2D(Scene& scene, const Camera2D& camera, const DirectX::XMFLOAT2 mousePosScreen)
-{
-	const DirectX::XMFLOAT2 camPos = camera.GetPosition();
-	std::vector<GameObject*> candidates;
-	for (auto& obj : scene.GetObjects())
-	{
-		if (Is2DObject(*obj))
-		{
-			candidates.push_back(obj.get());
-		}
-	}
-
-	// topmost first: higher layer first, then higher sort order
-	std::ranges::stable_sort(candidates, [](GameObject* a, GameObject* b)
-	{
-		auto* animA = a->GetComponent<AnimatorComponent>();
-		auto* animB = b->GetComponent<AnimatorComponent>();
-
-		const int layerA = animA ? static_cast<int>(animA->GetRenderLayer()) : 0;
-		const int layerB = animB ? static_cast<int>(animB->GetRenderLayer()) : 0;
-
-		if (layerA != layerB)
-		{
-			return layerA > layerB;
-		}
-
-		const int orderA = animA ? animA->GetSortOrder() : 0;
-		const int orderB = animB ? animB->GetSortOrder() : 0;
-		return orderA > orderB;
-	});
-
-	for (int pass = 0; pass < 2; pass++)
-	{
-		const bool checkScreenSpace = pass == 0;
-
-		for (const auto obj : candidates)
-		{
-			const bool isScreenSpace = IsObjectScreenSpace(*obj);
-			if (isScreenSpace != checkScreenSpace)
-			{
-				continue;
-			}
-
-			if (ObjHitTest(*obj, ScreenToWorld(mousePosScreen, camPos, isScreenSpace)))
-			{
-				return obj;
-			}
-		}
-	}
-
-	return nullptr;
-}
-
-GameObject* EditorUI::Pick3D(Scene& scene, GameContext& context, DirectX::XMFLOAT2 mousePosScreen)
-{
-	const Ray ray = ScreenToRay(mousePosScreen, context);
-
-	GameObject* nearestObj = nullptr;
-	float nearestDist = FLT_MAX;
-
-	for (auto& objPtr : scene.GetObjects())
-	{
-		GameObject& obj = *objPtr;
-
-		if (Is2DObject(obj))
-		{
-			continue;
-		}
-
-		// for objects with mesh
-		DirectX::BoundingOrientedBox obb;
-		if (obj.GetWorldBounds(obb))
-		{
-			float dist = 0.f;
-			if (obb.Intersects(ray.origin, ray.dir, dist) && dist < nearestDist)
-			{
-				nearestObj = &obj;
-				nearestDist = dist;
-			}
-			continue;
-		}
-
-		// for empty objects
-		const DirectX::XMFLOAT3 pos = obj.GetTransform()->GetPosition();
-		ImVec2 iconPos;
-		if (!WorldToScreen3D(pos, context, iconPos))
-		{
-			continue;
-		}
-
-		const float dx = iconPos.x - mousePosScreen.x;
-		const float dy = iconPos.y - mousePosScreen.y;
-
-		if (dx * dx + dy * dy > iconRadius * iconRadius)
-		{
-			continue;
-		}
-
-		// check dist with mesh objects
-		const float dist = DirectX::XMVectorGetX(
-			DirectX::XMVector3Length(DirectX::XMVectorSubtract(DirectX::XMLoadFloat3(&pos), ray.origin)));
-
-		if (dist < nearestDist)
-		{
-			nearestObj = &obj;
-			nearestDist = dist;
-		}
-	}
-
-	return nearestObj;
 }
 
 void EditorUI::EnterPlayMode(SceneManager& sceneManager)
@@ -1794,11 +660,11 @@ void EditorUI::EnterPlayMode(SceneManager& sceneManager)
 	mode = Mode::PLAY;
 	isPaused = false;
 	stepRequested = false;
-	isDragging = false;
+	viewport.CancelDrag();
 	selectedObject = nullptr;
 
 	sceneManager.RequestChange(sceneName);
-	isFlying = false;
+	viewport.StopFlying();
 }
 
 void EditorUI::EnterEditMode(SceneManager& sceneManager)
@@ -1811,7 +677,7 @@ void EditorUI::EnterEditMode(SceneManager& sceneManager)
 	mode = Mode::EDIT;
 	isPaused = false;
 	stepRequested = false;
-	isDragging = false;
+	viewport.CancelDrag();
 	selectedObject = nullptr;
 
 	std::string tgtScene;
@@ -1826,5 +692,5 @@ void EditorUI::EnterEditMode(SceneManager& sceneManager)
 	}
 
 	sceneManager.RequestChange(tgtScene);
-	isFlying = false;
+	viewport.StopFlying();
 }

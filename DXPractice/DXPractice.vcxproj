@@ -171,6 +171,9 @@
     <ClCompile Include="DragonData.cpp" />
     <ClCompile Include="Drawable.cpp" />
     <ClCompile Include="EditorUI.cpp" />
+    <ClCompile Include="EditorViewport.cpp" />
+    <ClCompile Include="HitVolumeInspector.cpp" />
+    <ClCompile Include="AnimSetInspector.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GameScene.cpp" />
     <ClCompile Include="HealthComponent.cpp" />
@@ -238,6 +241,10 @@
     <ClInclude Include="CycleAnimationTester.h" />
     <ClInclude Include="DebugRenderer.h" />
     <ClInclude Include="EditorUI.h" />
+    <ClInclude Include="EditorUtils.h" />
+    <ClInclude Include="EditorViewport.h" />
+    <ClInclude Include="HitVolumeInspector.h" />
+    <ClInclude Include="AnimSetInspector.h" />
     <ClInclude Include="GameContext.h" />
     <ClInclude Include="GameScene.h" />
     <ClInclude Include="HealthComponent.h" />
