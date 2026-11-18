@@ -136,6 +136,18 @@
     <Filter Include="Source Files\Scripts\Entity">
       <UniqueIdentifier>{c8283f30-96fd-448e-8046-348f41147d1a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Scripts\Entity\Dragon">
+      <UniqueIdentifier>{e2ffabc5-9cd4-47c8-929a-194756a59746}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Scripts\Entity\Dragon">
+      <UniqueIdentifier>{3c099599-de1d-4a92-b27f-1a9c3b5b46ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Scripts\Entity\Dragon\States">
+      <UniqueIdentifier>{a4fa1def-8d86-40b3-9e5d-6b15f1c688c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Scripts\Entity\Dragon\States">
+      <UniqueIdentifier>{4b4ee34b-3a9e-463a-9819-660467c1096c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Image Include="small.ico">
@@ -338,17 +350,20 @@
     <ClCompile Include="HealthComponent.cpp">
       <Filter>Source Files\Scripts\Entity</Filter>
     </ClCompile>
-    <ClCompile Include="DragonAI.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DragonCalmState.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DragonPerception.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="LocomotionComponent.cpp">
       <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="DragonAI.cpp">
+      <Filter>Source Files\Scripts\Entity\Dragon</Filter>
+    </ClCompile>
+    <ClCompile Include="DragonPerception.cpp">
+      <Filter>Source Files\Scripts\Entity\Dragon</Filter>
+    </ClCompile>
+    <ClCompile Include="DragonCalmState.cpp">
+      <Filter>Source Files\Scripts\Entity\Dragon\States</Filter>
+    </ClCompile>
+    <ClCompile Include="DragonTurnState.cpp">
+      <Filter>Source Files\Scripts\Entity\Dragon\States</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -637,20 +652,20 @@
     <ClInclude Include="HealthComponent.h">
       <Filter>Header Files\Scripts\Entity</Filter>
     </ClInclude>
-    <ClInclude Include="DragonAI.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DragonPerception.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DragonStates.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DragonState.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="LocomotionComponent.h">
       <Filter>Header Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="DragonAI.h">
+      <Filter>Header Files\Scripts\Entity\Dragon</Filter>
+    </ClInclude>
+    <ClInclude Include="DragonPerception.h">
+      <Filter>Header Files\Scripts\Entity\Dragon</Filter>
+    </ClInclude>
+    <ClInclude Include="DragonState.h">
+      <Filter>Header Files\Scripts\Entity\Dragon\States</Filter>
+    </ClInclude>
+    <ClInclude Include="DragonStates.h">
+      <Filter>Header Files\Scripts\Entity\Dragon\States</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

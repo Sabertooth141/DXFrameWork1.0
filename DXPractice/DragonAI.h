@@ -6,6 +6,7 @@
 #include "DragonState.h"
 #include "MonoBehavior.h"
 
+class LocomotionComponent;
 class HealthComponent;
 class SkeletalAnimatorComponent;
 class TransformComponent;
@@ -44,14 +45,29 @@ public:
 		return *transform;
 	}
 
+	LocomotionComponent& GetLocomotion() const
+	{
+		return *locomotion;
+	}
+
 	const Perception& GetPerception() const
 	{
 		return perception;
 	}
-	
+
 	bool WasDamagedThisFrame() const
 	{
 		return wasDamaged;
+	}
+
+	bool IsInCombat() const
+	{
+		return isInCombat;
+	}
+
+	void SetInCombat(bool inCombat)
+	{
+		isInCombat = inCombat;
 	}
 
 private:
@@ -74,11 +90,14 @@ private:
 	StateID lastIgnoredStateID = noState; // missing state logged once until next transition
 
 	float timeInState = 0.f;
+	bool isInCombat = false;
+
 	Perception perception;
 
 	SkeletalAnimatorComponent* animator = nullptr;
 	TransformComponent* transform = nullptr;
 	HealthComponent* health = nullptr;
+	LocomotionComponent* locomotion = nullptr;
 
 	// flags by health callbacks
 	bool isDeathPending = false;

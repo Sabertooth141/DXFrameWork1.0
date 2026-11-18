@@ -5,6 +5,7 @@
 #include "DragonStates.h"
 #include "GameObject.h"
 #include "HealthComponent.h"
+#include "LocomotionComponent.h"
 #include "Scene.h"
 #include "TextRenderer.h"
 #include "SkeletalAnimatorComponent.h"
@@ -16,10 +17,11 @@ void DragonAI::Start()
 
 	animator = owner->GetComponent<SkeletalAnimatorComponent>();
 	transform = owner->GetTransform();
-	if (!animator || !transform)
+	locomotion = owner->GetComponent<LocomotionComponent>();
+	if (!animator || !transform || !locomotion)
 	{
 #ifndef NDEBUG
-		textRenderer->Log("[DragonAI] %s: no animator / transform, AI disabled", owner->GetName().c_str());
+		textRenderer->Log("[DragonAI] %s: no animator / transform / locomotion, AI disabled", owner->GetName().c_str());
 #endif
 		SetEnabled(false);
 		return;
@@ -57,6 +59,8 @@ void DragonAI::Update(float deltaTime)
 
 	ApplyPendingTransition();
 
+	locomotion->ApplyLocomotion(deltaTime);
+
 	wasDamaged = false;
 }
 
@@ -67,7 +71,6 @@ void DragonAI::RequestStateTransition(StateID nextStateID)
 #ifndef NDEBUG
 		textRenderer->Log("[DragonAI] %s ignored, %s already pending", ToString(nextStateID), ToString(pendingStateID));
 #endif
-		lastIgnoredStateID = nextStateID;
 		return;
 	}
 
@@ -95,6 +98,7 @@ void DragonAI::DrawDebugUI()
 	ImGui::SeparatorText("State");
 	ImGui::Text("state    %s", ToString(currStateID));
 	ImGui::Text("time     %.2f s", timeInState);
+	ImGui::Text("combat   %s", isInCombat ? "yes" : "no (intro pending)");
 
 	ImGui::SeparatorText("Health Flags");
 	if (health)
@@ -148,6 +152,7 @@ void DragonAI::DrawDebugGizmos(DebugRenderer& debugRenderer) const
 void DragonAI::RegisterStates()
 {
 	states[ToIndex(StateID::CALM)] = std::make_unique<DragonCalmState>();
+	states[ToIndex(StateID::TURN)] = std::make_unique<DragonTurnState>();
 }
 
 void DragonAI::BindHealthCallbacks()

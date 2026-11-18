@@ -64,6 +64,11 @@ void RegisterPrefabs()
 		object.GetComponent<MeshRendererComponent>()->doubleSided = true;
 		//object.AddComponent<CycleAnimationTester>();
 		object.AddComponent<DragonAI>();
+		
+		auto& locomotion = object.AddComponent<LocomotionComponent>();
+		locomotion.isPushedOut = false;
+		locomotion.bodyRadius = 3.f;
+
 		object.AddComponent<HealthComponent>(1000.f);
 	});
 

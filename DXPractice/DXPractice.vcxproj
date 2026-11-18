@@ -172,6 +172,7 @@
     <ClCompile Include="DragonCalmState.cpp" />
     <ClCompile Include="DragonData.cpp" />
     <ClCompile Include="DragonPerception.cpp" />
+    <ClCompile Include="DragonTurnState.cpp" />
     <ClCompile Include="Drawable.cpp" />
     <ClCompile Include="EditorUI.cpp" />
     <ClCompile Include="EditorViewport.cpp" />
