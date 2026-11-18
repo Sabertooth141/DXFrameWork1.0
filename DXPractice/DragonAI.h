@@ -48,6 +48,11 @@ public:
 	{
 		return perception;
 	}
+	
+	bool WasDamagedThisFrame() const
+	{
+		return wasDamaged;
+	}
 
 private:
 	void RegisterStates();
@@ -66,6 +71,8 @@ private:
 
 	StateID currStateID = noState;
 	StateID pendingStateID = noState;
+	StateID lastIgnoredStateID = noState; // missing state logged once until next transition
+
 	float timeInState = 0.f;
 	Perception perception;
 
@@ -77,4 +84,5 @@ private:
 	bool isDeathPending = false;
 	bool isPhaseChangePending = false;
 	float staggerMeter = 0.f;
+	bool wasDamaged = false;
 };

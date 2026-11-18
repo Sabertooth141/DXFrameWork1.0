@@ -45,6 +45,10 @@ namespace
 		data.hitVolumePath = "../../data/hitvolumes/dragon.json";
 		data.animSetPath = "../../data/animsets/dragon.json";
 
+		data.modelYawDeg = 180.f;
+		data.rootMotionNode = "root";
+		data.rootYawClips = { "Turn90L", "Turn90R", "Turn180" };
+
 		return data;
 	}
 }

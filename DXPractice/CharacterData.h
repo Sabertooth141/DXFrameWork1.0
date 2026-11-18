@@ -80,6 +80,10 @@ struct CharacterData
 	std::vector<ClipDef> clips;
 	std::vector<EventDef> events;
 	std::vector<FadeDef> fades;
+
+	// root yaw extraction
+	std::string rootMotionNode;
+	std::vector<std::string> rootYawClips;
 };
 
 // needs the SkeletalAnimatorComponent already on the object (RegisterModel with a skinned mesh)

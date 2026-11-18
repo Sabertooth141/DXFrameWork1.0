@@ -34,6 +34,7 @@ struct ClipEntry
 	std::shared_ptr<const AnimationClip> clip;
 	bool isLoop = true;
 	std::vector<AnimationEvent> events; // sorted by timeSec
+	bool isExtractingRootYaw = false;
 };
 
 struct ClipPlayback
@@ -45,6 +46,12 @@ struct ClipPlayback
 	bool isLoop = true;
 	bool isFinished = false;
 	bool isFreshStart = false;
+
+	// root motion
+	bool isExtractingRootYaw = false;
+	int rootChannel = -1;
+	float baseRootYaw = 0.f;
+	float lastRootYaw = 0.f;
 };
 
 enum class FiredEventType
@@ -103,6 +110,25 @@ public:
 	float GetClipLength(const std::string& name) const; // seconds, 0 if unknown
 	void SetClipLoop(const std::string& name, bool inLoop); // applies the next time the clip is played
 	void ClearEvents(); // every clip's markers, before re-adding them
+
+	// root motion
+	void SetRootMotionNode(const std::string& nodeName);
+	void SetClipRootYawExtraction(const std::string& name, bool isExtracting);
+
+	float GetRootYawDelta() const
+	{
+		return rootYawDelta;
+	}
+
+	bool IsExtractingRootYaw() const
+	{
+		return playback.isExtractingRootYaw;
+	}
+
+	float GetExtractedYawTotal() const
+	{
+		return extractedYawTotal;
+	}
 
 	const std::vector<FiredAnimationEvent>& GetFiredEvents() const
 	{
@@ -164,6 +190,8 @@ private:
 	void CollectEvents(float prevTimeSec, float deltaSec);
 	void ClampToRange(float startSec, float finishSec, bool isIncludingStartSec);
 
+	void ExtractRootYaw(ClipPlayback& clipPlayback, std::vector<LocalTRS>& outPose);
+
 private:
 	std::shared_ptr<const Skeleton> skeleton;
 
@@ -191,4 +219,9 @@ private:
 	// for event firing push into pending and fire at the end of frame
 	std::vector<FiredAnimationEvent> pendingEvents;
 	std::vector<FiredAnimationEvent> firedEvents;
+
+	// root motion
+	int rootMotionNodeIndex = -1;
+	float rootYawDelta = 0.f;
+	float extractedYawTotal = 0.f;
 };

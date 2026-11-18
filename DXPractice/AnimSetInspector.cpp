@@ -89,6 +89,10 @@ void AnimSetInspector::Draw(GameObject& object, AnimSetComponent& animSet)
 	const std::string& currClip = animator->GetCurrClipName();
 	const float currTime = animator->GetCurrClipTime();
 	ImGui::Text("再生中: %s  %.3f / %.3f s", currClip.c_str(), currTime, animator->GetCurrClipLength());
+	if (animator->IsExtractingRootYaw())
+	{
+		ImGui::Text("ルートのヨー（抽出）: %+.1f deg", DirectX::XMConvertToDegrees(animator->GetExtractedYawTotal()));
+	}
 
 	// ---- clips
 	if (ImGui::TreeNode("クリップ"))

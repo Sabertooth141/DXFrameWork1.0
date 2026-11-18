@@ -56,6 +56,8 @@ void DragonAI::Update(float deltaTime)
 	}
 
 	ApplyPendingTransition();
+
+	wasDamaged = false;
 }
 
 void DragonAI::RequestStateTransition(StateID nextStateID)
@@ -65,14 +67,19 @@ void DragonAI::RequestStateTransition(StateID nextStateID)
 #ifndef NDEBUG
 		textRenderer->Log("[DragonAI] %s ignored, %s already pending", ToString(nextStateID), ToString(pendingStateID));
 #endif
+		lastIgnoredStateID = nextStateID;
 		return;
 	}
 
 	if (!GetState(nextStateID))
 	{
 #ifndef NDEBUG
-		textRenderer->Log("[DragonAI] %s has no state object yet, ignored", ToString(nextStateID));
+		if (nextStateID != lastIgnoredStateID)
+		{
+			textRenderer->Log("[DragonAI] %s has no state object yet, ignored", ToString(nextStateID));
+		}
 #endif
+		lastIgnoredStateID = nextStateID;
 		return;
 	}
 
@@ -155,6 +162,7 @@ void DragonAI::BindHealthCallbacks()
 	health->onDamaged = [this](float damage, float stagger)
 	{
 		staggerMeter += stagger;
+		wasDamaged = true;
 	};
 
 	health->onThreasholdCrossed = [this]()
@@ -219,6 +227,7 @@ void DragonAI::ApplyPendingTransition()
 
 	const StateID nextStateID = pendingStateID;
 	pendingStateID = noState;
+	lastIgnoredStateID = noState;
 
 	if (DragonState* prevState = GetState(currStateID))
 	{

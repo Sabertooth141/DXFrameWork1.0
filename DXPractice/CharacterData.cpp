@@ -51,4 +51,13 @@ void ApplyCharacterData(GameObject& object, const CharacterData& data)
 	}
 
 	object.AddComponent<AnimSetComponent>().LoadFile(data.animSetPath, animFallback);
+
+	if (!data.rootMotionNode.empty())
+	{
+		animator->SetRootMotionNode(data.rootMotionNode);
+		for (const std::string& clipName : data.rootYawClips)
+		{
+			animator->SetClipRootYawExtraction(clipName, true);
+		}
+	}
 }
