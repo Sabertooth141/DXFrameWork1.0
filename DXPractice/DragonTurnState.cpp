@@ -103,3 +103,4 @@ StateID DragonTurnState::GetNextState(const DragonAI& ai) const
 {
 	return ai.IsInCombat() ? StateID::IDLE : StateID::ROAR;
 }
+

@@ -86,4 +86,4 @@ private:
 	EditorViewport viewport;
 	HitVolumeInspector hitVolumeInspector;
 	AnimSetInspector animSetInspector;
-};
+};
