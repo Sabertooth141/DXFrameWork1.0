@@ -5,6 +5,7 @@
 #include "DragonStates.h"
 #include "GameObject.h"
 #include "HealthComponent.h"
+#include "Keyboard.h"
 #include "LocomotionComponent.h"
 #include "Scene.h"
 #include "TextRenderer.h"
@@ -65,6 +66,11 @@ void DragonAI::Update(float deltaTime)
 	locomotion->ApplyLocomotion(deltaTime);
 
 	wasDamaged = false;
+
+	if (keyboard->KeyIsTriggered(VK_F5))
+	{
+		owner->GetComponent<HealthComponent>()->SetHpRatio(0.4);
+	}
 }
 
 bool DragonAI::RequestStateTransition(StateID nextStateID)
