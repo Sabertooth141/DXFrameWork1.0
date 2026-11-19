@@ -17,6 +17,12 @@ void DragonIdleState::Update(DragonAI& ai, float deltaTime)
 		return;
 	}
 
+	// if has best attk - goto attack
+	if (ai.RequestAttack(ai.GetAttackSelector().GetBestAttkIndex()))
+	{
+		return;
+	}
+
 	// too far on the side to track - go to turn
 	if (perception.sector != DirSector::FRONT)
 	{

@@ -4,8 +4,29 @@
 
 #include "DebugRenderer.h"
 
-void Perception::Update(const DirectX::XMFLOAT3& selfPos, float selfYaw, const DirectX::XMFLOAT3& targetPos)
+void Perception::Update(const DirectX::XMFLOAT3& selfPos, float selfYaw, const DirectX::XMFLOAT3& targetPos, float deltaTime)
 {
+	// calculate target pos based on last frame's data
+	bool isVelocityValid = hasTarget && deltaTime > 0.f;
+	if (isVelocityValid)
+	{
+		const float rawX = (targetPos.x - this->targetPos.x) / deltaTime;
+		const float rawZ = (targetPos.z - this->targetPos.z) / deltaTime;
+		isVelocityValid = rawX * rawX + rawZ * rawZ < teleportSpeed * teleportSpeed;
+
+		if (isVelocityValid)
+		{
+			const float t = 1.f - expf(-deltaTime / velSmoothSec);
+			targetVel.x += (rawX - targetVel.x) * t;
+			targetVel.z += (rawZ - targetVel.z) * t;
+		}
+	}
+
+	if (!isVelocityValid)
+	{
+		targetVel = {};
+	}
+
 	hasTarget = true;
 
 	const float dx = targetPos.x - selfPos.x;

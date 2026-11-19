@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "DebugRenderer.h"
 #include "DragonAI.h"
 #include "DragonPerception.h"
@@ -15,6 +17,31 @@ namespace
 	auto clipName90L = "Turn90L";
 	auto clipName90R = "Turn90R";
 	auto clipName180 = "Turn180";
+
+	float ToClipDirection(float predictedDeg, float currDeg, float clipDeg)
+	{
+		if (clipDeg == turn180Deg)
+		{
+			if (predictedDeg > 0.f)
+			{
+				clipDeg = predictedDeg;
+			}
+			else
+			{
+				clipDeg = predictedDeg + 360.f;
+			}
+		}
+
+		const bool isSameSide = (predictedDeg < 0.f) == (clipDeg < 0.f);
+		if (isSameSide)
+		{
+			return predictedDeg;
+		}
+		else
+		{
+			return currDeg;
+		}
+	}
 }
 
 void DragonTurnState::Enter(DragonAI& ai)
@@ -32,7 +59,6 @@ void DragonTurnState::Enter(DragonAI& ai)
 
 	const char* clipName;
 	float clipDeg;
-	float desiredDeg;
 	if (absAngleDeg <= turn180FromDeg)
 	{
 		const bool isLeft = angleDeg < 0.f;
@@ -46,24 +72,18 @@ void DragonTurnState::Enter(DragonAI& ai)
 			clipName = clipName90R;
 			clipDeg = turn90RDeg;
 		}
-		desiredDeg = angleDeg;
 	}
 	else
 	{
 		clipName = clipName180;
 		clipDeg = turn180Deg;
-		if (angleDeg > 0.f)
-		{
-			desiredDeg = angleDeg;
-		}
-		else
-		{
-			desiredDeg = angleDeg + 360.f;
-		}
 	}
 
-	warpScale = desiredDeg / clipDeg;
-	targetYaw = ai.GetTransform().GetRotation().y + DirectX::XMConvertToRadians(desiredDeg);
+	const float leadSec = ai.GetAnimator().GetClipLength(clipName) * leadScale;
+	const float desiredDeg = ToClipDirection(PredictAngleDeg(ai, leadSec), angleDeg, clipDeg);
+
+	finalWarpScale = std::clamp(desiredDeg / clipDeg, minWarpScale, maxWarpScale);
+	targetYaw = ai.GetTransform().GetRotation().y + DirectX::XMConvertToRadians(clipDeg * finalWarpScale);
 	isTurning = ai.GetAnimator().PlayClip(clipName);
 }
 
@@ -71,7 +91,7 @@ void DragonTurnState::Update(DragonAI& ai, float deltaTime)
 {
 	if (isTurning)
 	{
-		ai.GetLocomotion().AddYaw(ai.GetAnimator().GetRootYawDelta() * warpScale);
+		ai.GetLocomotion().AddYaw(ai.GetAnimator().GetRootYawDelta() * finalWarpScale);
 
 		if (!ai.GetAnimator().IsFinished())
 		{
@@ -102,5 +122,18 @@ void DragonTurnState::DrawDebug(const DragonAI& ai, DebugRenderer& debugRenderer
 StateID DragonTurnState::GetNextState(const DragonAI& ai) const
 {
 	return ai.IsInCombat() ? StateID::IDLE : StateID::ROAR;
+}
+
+float DragonTurnState::PredictAngleDeg(const DragonAI& ai, float leadSec) const
+{
+	const Perception& perception = ai.GetPerception();
+	const DirectX::XMFLOAT3 pos = ai.GetTransform().GetPosition();
+	const float yaw = ai.GetTransform().GetRotation().y;
+
+	const float predictedX = perception.targetPos.x + perception.targetVel.x * leadSec;
+	const float predictedZ = perception.targetPos.z + perception.targetVel.z * leadSec;
+	const float toPredictedYaw = atan2f(predictedX - pos.x, predictedZ - pos.z);
+
+	return DirectX::XMConvertToDegrees(remainderf(toPredictedYaw - yaw, DirectX::XM_2PI));
 }
 

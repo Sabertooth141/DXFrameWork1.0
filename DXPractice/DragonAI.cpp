@@ -40,7 +40,7 @@ void DragonAI::Update(float deltaTime)
 
 	if (const GameObject* player = FindPlayer())
 	{
-		perception.Update(transform->GetPosition(), transform->GetRotation().y, player->GetTransform()->GetPosition());
+		perception.Update(transform->GetPosition(), transform->GetRotation().y, player->GetTransform()->GetPosition(), deltaTime);
 	}
 	else
 	{
@@ -67,14 +67,14 @@ void DragonAI::Update(float deltaTime)
 	wasDamaged = false;
 }
 
-void DragonAI::RequestStateTransition(StateID nextStateID)
+bool DragonAI::RequestStateTransition(StateID nextStateID)
 {
 	if (pendingStateID != noState)
 	{
 #ifndef NDEBUG
 		textRenderer->Log("[DragonAI] %s ignored, %s already pending", ToString(nextStateID), ToString(pendingStateID));
 #endif
-		return;
+		return false;
 	}
 
 	if (!GetState(nextStateID))
@@ -86,10 +86,42 @@ void DragonAI::RequestStateTransition(StateID nextStateID)
 		}
 #endif
 		lastIgnoredStateID = nextStateID;
-		return;
+		return false;
 	}
 
 	pendingStateID = nextStateID;
+	return true;
+}
+
+bool DragonAI::RequestAttack(int attkIndex)
+{
+	if (attkIndex < 0 || attkIndex >= attackSelector.GetAttkCount())
+	{
+		return false;
+	}
+
+	if (!RequestStateTransition(StateID::ATTACK))
+	{
+		return false;
+	}
+
+	currAttkIndex = attkIndex;
+	return true;
+}
+
+void DragonAI::OnHitDealt(const HitEvent& event)
+{
+	if (currStateID != StateID::ATTACK)
+	{
+		return;
+	}
+
+	hasAttackHit = true;
+
+#ifndef NDEBUG
+	textRenderer->Log("[DragonAI] %s hit %s (%s)", event.hitboxGroup.c_str(),
+	                  event.victim->GetName().c_str(), event.hurtboxName.c_str());
+#endif
 }
 
 #ifndef NDEBUG
@@ -102,6 +134,10 @@ void DragonAI::DrawDebugUI()
 	ImGui::Text("state    %s", ToString(currStateID));
 	ImGui::Text("time     %.2f s", timeInState);
 	ImGui::Text("combat   %s", isInCombat ? "yes" : "no (intro pending)");
+	if (currAttkIndex >= 0)
+	{
+		ImGui::Text("attack   %s (%s)", attackSelector.GetOption(currAttkIndex).name.c_str(), hasAttackHit ? "hit" : "-");
+	}
 
 	ImGui::SeparatorText("Health Flags");
 	if (health)
@@ -121,6 +157,8 @@ void DragonAI::DrawDebugUI()
 	{
 		ImGui::Text("distance %.2f m   (%s)", perception.distance, ToString(perception.band));
 		ImGui::Text("angle    %+.1f deg (%s)", perception.angleDeg, ToString(perception.sector));
+		ImGui::Text("velocity %.1f m/s", sqrtf(perception.targetVel.x * perception.targetVel.x +
+			            perception.targetVel.z * perception.targetVel.z));
 	}
 	else
 	{
@@ -130,9 +168,9 @@ void DragonAI::DrawDebugUI()
 	ImGui::SeparatorText("Attacks");
 	if (ImGui::BeginTable("attacks", 3, ImGuiTableFlags_SizingFixedFit))
 	{
-		const ImVec4 pickColor{ 0.3f, 1.f, 0.4f, 1.f };
-		const ImVec4 validColor{ 1.f, 1.f, 1.f, 1.f };
-		const ImVec4 rejectColor{ 0.55f, 0.55f, 0.55f, 1.f };
+		const ImVec4 pickColor{0.3f, 1.f, 0.4f, 1.f};
+		const ImVec4 validColor{1.f, 1.f, 1.f, 1.f};
+		const ImVec4 rejectColor{0.55f, 0.55f, 0.55f, 1.f};
 
 		for (int i = 0; i < attackSelector.GetAttkCount(); i++)
 		{
@@ -205,6 +243,8 @@ void DragonAI::RegisterStates()
 	states[ToIndex(StateID::ROAR)] = std::make_unique<DragonRoarState>();
 	states[ToIndex(StateID::APPROACH)] = std::make_unique<DragonApproachState>();
 	states[ToIndex(StateID::IDLE)] = std::make_unique<DragonIdleState>();
+	states[ToIndex(StateID::ATTACK)] = std::make_unique<DragonAttackState>();
+	states[ToIndex(StateID::RECOVER)] = std::make_unique<DragonRecoverState>();
 }
 
 void DragonAI::BindHealthCallbacks()

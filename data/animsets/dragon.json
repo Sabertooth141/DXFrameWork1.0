@@ -68,14 +68,18 @@
   {"from":"WalkF","to":"Idle1","sec":0.3}
  ],
  "events": [
+  {"clip":"Attk1","time":1.05,"event":"TrackEnd"},
   {"clip":"Attk1","time":1.17,"event":"HitboxOn","param":"breath"},
   {"clip":"Attk1","time":1.8,"event":"HitboxOff","param":"breath"},
   {"clip":"Attk2","time":1.13,"event":"HitboxOn","param":"tail"},
   {"clip":"Attk2","time":1.53,"event":"HitboxOff","param":"tail"},
+  {"clip":"Attk3","time":1.0,"event":"TrackEnd"},
   {"clip":"Attk3","time":1.13,"event":"HitboxOn","param":"headBlade"},
   {"clip":"Attk3","time":2.0,"event":"HitboxOff","param":"headBlade"},
+  {"clip":"Attk4","time":1.55,"event":"TrackEnd"},
   {"clip":"Attk4","time":1.67,"event":"HitboxOn","param":"breath"},
   {"clip":"Attk4","time":2.27,"event":"HitboxOff","param":"breath"},
+  {"clip":"Attk5","time":0.7,"event":"TrackEnd"},
   {"clip":"Attk5","time":0.83,"event":"HitboxOn","param":"wingL"},
   {"clip":"Attk5","time":1.13,"event":"HitboxOff","param":"wingL"},
   {"clip":"FlyAttk1","time":0.8,"event":"HitboxOn","param":"breath"},

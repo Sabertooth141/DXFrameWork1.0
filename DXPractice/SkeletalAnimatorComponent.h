@@ -107,6 +107,8 @@ public:
 		return clipEntries.contains(name);
 	}
 
+	bool HasEvent(const std::string& clipName, const std::string& eventName) const;
+
 	float GetClipLength(const std::string& name) const; // seconds, 0 if unknown
 	void SetClipLoop(const std::string& name, bool inLoop); // applies the next time the clip is played
 	void ClearEvents(); // every clip's markers, before re-adding them

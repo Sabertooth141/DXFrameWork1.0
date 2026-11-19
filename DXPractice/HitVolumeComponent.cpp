@@ -199,7 +199,7 @@ void HitVolumeComponent::ApplyAnimationEvents()
 	{
 		if (event.type == FiredEventType::INTERRUPTED)
 		{
-			for (size_t i = 0; i < hitGroups.size(); i++)
+			for (int i = 0; i < static_cast<int>(hitGroups.size()); i++)
 			{
 				if (hitGroups[i].isActive && hitGroups[i].activatedByClip == event.clipName)
 				{
@@ -337,7 +337,7 @@ void HitVolumeComponent::DrawDebug(DebugRenderer& debugRenderer) const
 
 int HitVolumeComponent::FindGroup(const std::string& inGroupName) const
 {
-	for (size_t i = 0; i < hitGroups.size(); i++)
+	for (int i = 0; i < static_cast<int>(hitGroups.size()); i++)
 	{
 		if (hitGroups[i].name == inGroupName)
 		{

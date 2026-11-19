@@ -19,7 +19,10 @@ public:
 	void Start() override;
 	void Update(float deltaTime) override;
 
-	void RequestStateTransition(StateID nextStateID);
+	bool RequestStateTransition(StateID nextStateID);
+	bool RequestAttack(int attkIndex);
+
+	void OnHitDealt(const HitEvent& event) override;
 
 #ifndef NDEBUG
 	void DrawDebugUI() override;
@@ -77,6 +80,21 @@ public:
 		return attackSelector;
 	}
 
+	int GetCurrAttkIndex() const
+	{
+		return currAttkIndex;
+	}
+
+	bool HasAttackHit() const
+	{
+		return hasAttackHit;
+	}
+
+	void ClearAttackHit()
+	{
+		hasAttackHit = false;
+	}
+
 private:
 	void RegisterStates();
 	void BindHealthCallbacks();
@@ -102,6 +120,10 @@ private:
 	Perception perception;
 	DragonAttackSelector attackSelector{ DragonAttackData() };
 	int currPhase = 1;
+
+	// attack
+	int currAttkIndex = -1;
+	bool hasAttackHit = false;
 
 	SkeletalAnimatorComponent* animator = nullptr;
 	TransformComponent* transform = nullptr;

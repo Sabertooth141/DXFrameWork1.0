@@ -22,6 +22,12 @@ void DragonApproachState::Update(DragonAI& ai, float deltaTime)
 		return;
 	}
 
+	// if has best attk - goto attack
+	if (ai.RequestAttack(ai.GetAttackSelector().GetBestAttkIndex()))
+	{
+		return;
+	}
+
 	// if to0 far to the side; goto turn
 	if (perception.sector != DirSector::FRONT)
 	{
@@ -61,3 +67,4 @@ float DragonApproachState::GetWalkSpeed(const DragonAI& ai) const
 	// so that the monster doesnt slide on ground
 	return walkStrideSpeed * ai.GetTransform().GetScale().x;
 }
+

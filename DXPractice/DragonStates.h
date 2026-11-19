@@ -1,6 +1,8 @@
 #pragma once
 #include "DragonState.h"
 
+struct AttackOption;
+
 class DragonCalmState : public DragonState
 {
 public:
@@ -29,14 +31,18 @@ public:
 
 private:
 	StateID GetNextState(const DragonAI& ai) const;
+	float PredictAngleDeg(const DragonAI& ai, float leadSec) const;
 
 public:
 	float minTurnDeg = 45.f;
 	float turn180FromDeg = 135.f;
+	float leadScale = 0.75f; // leads to player future pos when turning
+	float minWarpScale = 0.5f;
+	float maxWarpScale = 1.5f;
 
 private:
 	bool isTurning = false;
-	float warpScale = 1.f;
+	float finalWarpScale = 1.f;
 	float targetYaw = 0.f;
 };
 
@@ -91,4 +97,46 @@ public:
 
 private:
 	float GetWalkSpeed(const DragonAI& ai) const;
+};
+
+class DragonAttackState : public DragonState
+{
+public:
+	void Enter(DragonAI& ai) override;
+	void Update(DragonAI& ai, float deltaTime) override;
+	
+	bool CanBeInterrupted(InterruptStateKind kind) const override
+	{
+		return kind != InterruptStateKind::PHASE_CHANGE;
+	}
+
+#ifndef NDEBUG
+	void DrawDebug(const DragonAI& ai, DebugRenderer& debugRenderer) const override;
+#endif
+
+private:
+	bool HasTrackEndFired(const DragonAI& ai) const;
+
+private:
+	const AttackOption* option = nullptr;
+	bool isPlaying = false;
+	bool isTracking = false;
+};
+
+class DragonRecoverState : public DragonState
+{
+public:
+	void Enter(DragonAI& ai) override;
+	void Update(DragonAI& ai, float deltaTime) override;
+
+	bool CanBeInterrupted(InterruptStateKind kind) const override
+	{
+		return kind != InterruptStateKind::PHASE_CHANGE;
+	}
+
+public:
+	const char* clipName = "Idle1";
+
+private:
+	float waitSec = 0.f;
 };

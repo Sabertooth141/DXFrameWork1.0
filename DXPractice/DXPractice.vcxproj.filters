@@ -386,6 +386,12 @@
     <ClCompile Include="DragonAttackSelector.cpp">
       <Filter>Source Files\Scripts\Entity\Dragon\AttackData</Filter>
     </ClCompile>
+    <ClCompile Include="DragonAttackState.cpp">
+      <Filter>Source Files\Scripts\Entity\Dragon\States</Filter>
+    </ClCompile>
+    <ClCompile Include="DragonRecoverState.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Win.h">

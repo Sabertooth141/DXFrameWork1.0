@@ -171,10 +171,12 @@
     <ClCompile Include="DragonAI.cpp" />
     <ClCompile Include="DragonApproachState.cpp" />
     <ClCompile Include="DragonAttackSelector.cpp" />
+    <ClCompile Include="DragonAttackState.cpp" />
     <ClCompile Include="DragonCalmState.cpp" />
     <ClCompile Include="DragonData.cpp" />
     <ClCompile Include="DragonIdleState.cpp" />
     <ClCompile Include="DragonPerception.cpp" />
+    <ClCompile Include="DragonRecoverState.cpp" />
     <ClCompile Include="DragonRoarState.cpp" />
     <ClCompile Include="DragonTurnState.cpp" />
     <ClCompile Include="Drawable.cpp" />

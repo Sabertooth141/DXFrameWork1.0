@@ -256,6 +256,20 @@ void SkeletalAnimatorComponent::AddEvent(const std::string& clipName, float time
 	entry.events.insert(pointer, AnimationEvent{timeSec, eventName, param});
 }
 
+bool SkeletalAnimatorComponent::HasEvent(const std::string& clipName, const std::string& eventName) const
+{
+	const auto it = clipEntries.find(clipName);
+	if (it == clipEntries.end())
+	{
+		return false;
+	}
+
+	return std::ranges::any_of(it->second.events, [&eventName](const AnimationEvent& event)
+		{
+			return eventName == event.eventName;
+		});
+}
+
 float SkeletalAnimatorComponent::GetClipLength(const std::string& name) const
 {
 	const auto it = clipEntries.find(name);
