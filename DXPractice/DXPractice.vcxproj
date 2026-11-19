@@ -169,8 +169,10 @@
     <ClCompile Include="CycleAnimationTester.cpp" />
     <ClCompile Include="DebugRenderer.cpp" />
     <ClCompile Include="DragonAI.cpp" />
+    <ClCompile Include="DragonApproachState.cpp" />
     <ClCompile Include="DragonCalmState.cpp" />
     <ClCompile Include="DragonData.cpp" />
+    <ClCompile Include="DragonIdleState.cpp" />
     <ClCompile Include="DragonPerception.cpp" />
     <ClCompile Include="DragonRoarState.cpp" />
     <ClCompile Include="DragonTurnState.cpp" />

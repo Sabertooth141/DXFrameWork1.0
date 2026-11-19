@@ -60,3 +60,35 @@ public:
 public:
 	const char* clipName = "Roar";
 };
+
+
+class DragonIdleState : public DragonState
+{
+public:
+	void Enter(DragonAI& ai) override;
+	void Update(DragonAI& ai, float deltaTime) override;
+
+public:
+	const char* clipName = "Idle1";
+	float trackTurnRate = 40.f; // in deg, small tracks to player dir
+};
+
+class DragonApproachState : public DragonState
+{
+public:
+	void Enter(DragonAI& ai) override;
+	void Update(DragonAI& ai, float deltaTime) override;
+
+#ifndef NDEBUG
+	void DrawDebug(const DragonAI& ai, DebugRenderer& debugRenderer) const override;
+#endif
+
+public:
+	const char* clipName = "WalkF";
+	float trackTurnRate = 40.f; // in deg, small tracks to player dir
+
+	float walkStrideSpeed = 147.7f; // measured in fbx; model units/s
+
+private:
+	float GetWalkSpeed(const DragonAI& ai) const;
+};

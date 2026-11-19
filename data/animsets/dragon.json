@@ -70,6 +70,8 @@
  "events": [
   {"clip":"Attk1","time":1.17,"event":"HitboxOn","param":"breath"},
   {"clip":"Attk1","time":1.8,"event":"HitboxOff","param":"breath"},
+  {"clip":"Attk2","time":1.13,"event":"HitboxOn","param":"tail"},
+  {"clip":"Attk2","time":1.53,"event":"HitboxOff","param":"tail"},
   {"clip":"Attk3","time":1.13,"event":"HitboxOn","param":"headBlade"},
   {"clip":"Attk3","time":2.0,"event":"HitboxOff","param":"headBlade"},
   {"clip":"Attk4","time":1.67,"event":"HitboxOn","param":"breath"},

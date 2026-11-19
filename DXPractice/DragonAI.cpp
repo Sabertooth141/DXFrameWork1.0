@@ -154,6 +154,8 @@ void DragonAI::RegisterStates()
 	states[ToIndex(StateID::CALM)] = std::make_unique<DragonCalmState>();
 	states[ToIndex(StateID::TURN)] = std::make_unique<DragonTurnState>();
 	states[ToIndex(StateID::ROAR)] = std::make_unique<DragonRoarState>();
+	states[ToIndex(StateID::APPROACH)] = std::make_unique<DragonApproachState>();
+	states[ToIndex(StateID::IDLE)] = std::make_unique<DragonIdleState>();
 }
 
 void DragonAI::BindHealthCallbacks()
