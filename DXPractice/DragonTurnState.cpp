@@ -24,12 +24,9 @@ namespace
 		{
 			if (predictedDeg > 0.f)
 			{
-				clipDeg = predictedDeg;
+				return predictedDeg;
 			}
-			else
-			{
-				clipDeg = predictedDeg + 360.f;
-			}
+			return predictedDeg + 360.f;
 		}
 
 		const bool isSameSide = (predictedDeg < 0.f) == (clipDeg < 0.f);

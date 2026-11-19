@@ -26,7 +26,7 @@ const std::vector<AttackOption>& DragonAttackData()
 		// front && left whole sector
 		attkList.push_back({
 			.name = "headBlade", .clip = "Attk3", .priority = 3, .cooldownSec = 6.f,
-			.minRange = 0.f, .maxRange = 7.f, .sectors = sectorFront | sectorLeft,
+			.minRange = 2.f, .maxRange = 7.f, .sectors = sectorFront | sectorLeft,
 			.trackSpeedDeg = 90.f, .recoverSec = 0.6f, .whiffRecoverSec = 1.f, .hitboxGroup = "headBlade"
 			});
 
@@ -42,7 +42,7 @@ const std::vector<AttackOption>& DragonAttackData()
 		// dead ahead
 		attkList.push_back({
 			.name = "breathLine", .clip = "Attk1", .priority = 2, .cooldownSec = 12.f,
-			.minRange = 6.f, .maxRange = 15.f, .sectors = sectorFront,
+			.minRange = 5.5f, .maxRange = 15.f, .sectors = sectorFront,
 			.trackSpeedDeg = 60.f, .recoverSec = 0.2f, .whiffRecoverSec = 0.6f, .hitboxGroup = "breath"
 			});
 
