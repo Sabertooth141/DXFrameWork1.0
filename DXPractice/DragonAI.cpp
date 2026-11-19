@@ -47,6 +47,9 @@ void DragonAI::Update(float deltaTime)
 		perception.ClearTarget();
 	}
 
+	attackSelector.TickCooldowns(deltaTime);
+	attackSelector.Evaluate(perception, currPhase);
+
 	CheckAnyStateTransition();
 
 	if (pendingStateID == noState)
@@ -122,6 +125,52 @@ void DragonAI::DrawDebugUI()
 	else
 	{
 		ImGui::TextDisabled("no target");
+	}
+
+	ImGui::SeparatorText("Attacks");
+	if (ImGui::BeginTable("attacks", 3, ImGuiTableFlags_SizingFixedFit))
+	{
+		const ImVec4 pickColor{ 0.3f, 1.f, 0.4f, 1.f };
+		const ImVec4 validColor{ 1.f, 1.f, 1.f, 1.f };
+		const ImVec4 rejectColor{ 0.55f, 0.55f, 0.55f, 1.f };
+
+		for (int i = 0; i < attackSelector.GetAttkCount(); i++)
+		{
+			const AttackOption& option = attackSelector.GetOption(i);
+			const AttackReject reject = attackSelector.GetReject(i);
+			const bool isBest = i == attackSelector.GetBestAttkIndex();
+			const ImVec4 color = isBest ? pickColor : reject == AttackReject::NONE ? validColor : rejectColor;
+
+			ImGui::TableNextRow();
+			ImGui::TableNextColumn();
+			ImGui::TextColored(color, "%s", option.name.c_str());
+			ImGui::TableNextColumn();
+			ImGui::TextColored(color, "p%d", option.priority);
+			ImGui::TableNextColumn();
+
+			switch (reject)
+			{
+			case AttackReject::NONE:
+				ImGui::TextColored(color, isBest ? "<- pick" : "valid (lower priority)");
+				break;
+			case AttackReject::TARGET:
+				ImGui::TextColored(color, "no target");
+				break;
+			case AttackReject::PHASE:
+				ImGui::TextColored(color, "phase %d", currPhase);
+				break;
+			case AttackReject::COOLDOWN:
+				ImGui::TextColored(color, "cooldown %.1f s", attackSelector.GetCooldownLeft(i));
+				break;
+			case AttackReject::RANGE:
+				ImGui::TextColored(color, "range %.1f (%.0f-%.0f)", perception.distance, option.minRange, option.maxRange);
+				break;
+			case AttackReject::SECTOR:
+				ImGui::TextColored(color, "sector %s", ToString(perception.sector));
+				break;
+			}
+		}
+		ImGui::EndTable();
 	}
 
 	// live tuning: copy values that feel right back into DragonPerception.h

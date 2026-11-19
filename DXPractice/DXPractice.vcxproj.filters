@@ -148,6 +148,12 @@
     <Filter Include="Source Files\Scripts\Entity\Dragon\States">
       <UniqueIdentifier>{4b4ee34b-3a9e-463a-9819-660467c1096c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Scripts\Entity\Dragon\AttackData">
+      <UniqueIdentifier>{ad0edc26-78fb-4a4f-a1c8-8e3ba2e72b99}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Scripts\Entity\Dragon\AttackData">
+      <UniqueIdentifier>{14acc9b4-b39c-4d48-87e8-ab309e9318c6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Image Include="small.ico">
@@ -373,6 +379,12 @@
     </ClCompile>
     <ClCompile Include="DragonApproachState.cpp">
       <Filter>Source Files\Scripts\Entity\Dragon\States</Filter>
+    </ClCompile>
+    <ClCompile Include="DragonAttackData.cpp">
+      <Filter>Source Files\Scripts\Entity\Dragon\AttackData</Filter>
+    </ClCompile>
+    <ClCompile Include="DragonAttackSelector.cpp">
+      <Filter>Source Files\Scripts\Entity\Dragon\AttackData</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -675,6 +687,12 @@
     </ClInclude>
     <ClInclude Include="DragonStates.h">
       <Filter>Header Files\Scripts\Entity\Dragon\States</Filter>
+    </ClInclude>
+    <ClInclude Include="DragonAttackData.h">
+      <Filter>Header Files\Scripts\Entity\Dragon\AttackData</Filter>
+    </ClInclude>
+    <ClInclude Include="DragonAttackSelector.h">
+      <Filter>Header Files\Scripts\Entity\Dragon\AttackData</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

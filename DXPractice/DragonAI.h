@@ -2,6 +2,8 @@
 #include <array>
 #include <memory>
 
+#include "DragonAttackData.h"
+#include "DragonAttackSelector.h"
 #include "DragonPerception.h"
 #include "DragonState.h"
 #include "MonoBehavior.h"
@@ -70,6 +72,11 @@ public:
 		isInCombat = inCombat;
 	}
 
+	DragonAttackSelector& GetAttackSelector()
+	{
+		return attackSelector;
+	}
+
 private:
 	void RegisterStates();
 	void BindHealthCallbacks();
@@ -93,6 +100,8 @@ private:
 	bool isInCombat = false;
 
 	Perception perception;
+	DragonAttackSelector attackSelector{ DragonAttackData() };
+	int currPhase = 1;
 
 	SkeletalAnimatorComponent* animator = nullptr;
 	TransformComponent* transform = nullptr;
