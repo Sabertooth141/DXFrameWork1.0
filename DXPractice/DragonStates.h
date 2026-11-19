@@ -3,6 +3,8 @@
 
 struct AttackOption;
 
+inline constexpr const char* trackEndEvent = "TrackEnd";
+
 class DragonCalmState : public DragonState
 {
 public:
@@ -115,9 +117,6 @@ public:
 #endif
 
 private:
-	bool HasTrackEndFired(const DragonAI& ai) const;
-
-private:
 	const AttackOption* option = nullptr;
 	bool isPlaying = false;
 	bool isTracking = false;
@@ -139,4 +138,94 @@ public:
 
 private:
 	float waitSec = 0.f;
+};
+
+class DragonAirRecoverState : public DragonState
+{
+public:
+	void Enter(DragonAI& ai) override;
+	void Update(DragonAI& ai, float deltaTime) override;
+
+	bool CanBeInterrupted(InterruptStateKind kind) const override
+	{
+		return kind != InterruptStateKind::PHASE_CHANGE;
+	}
+
+public:
+	const char* clipName = "Idle3";
+
+private:
+	float waitSec = 0.f;
+};
+
+class DragonSequenceClipState : public DragonState
+{
+public:
+	DragonSequenceClipState(const char* inClipName, StateID inNextState);
+
+	void Enter(DragonAI& ai) override;
+	void Update(DragonAI& ai, float deltaTime) override;
+
+	bool CanBeInterrupted(InterruptStateKind kind) const override
+	{
+		return false;
+	}
+
+private:
+	const char* clipName;
+	StateID nextState;
+	bool isPlaying = false;
+};
+
+class DragonAirAimState : public DragonState
+{
+public:
+	void Enter(DragonAI& ai) override;
+	void Update(DragonAI& ai, float deltaTime) override;
+
+	bool CanBeInterrupted(InterruptStateKind kind) const override
+	{
+		return false;
+	}
+
+#ifndef NDEBUG
+	void DrawDebug(const DragonAI& ai, DebugRenderer& debugRenderer) const override;
+#endif
+
+public:
+	const char* clipName = "FlyB";
+	float retreatSpeed = 4.f;
+	float retreatDistance = 10.f;
+	float turnRate = 90.f;
+	float aimToleranceDeg = 10.f;
+	float minAimSec = 0.8f;
+	float maxAimSec = 3.f;
+};
+
+class DragonAirAttackState : public DragonState
+{
+public:
+	void Enter(DragonAI& ai) override;
+	void Update(DragonAI& ai, float deltaTime) override;
+
+	bool CanBeInterrupted(InterruptStateKind kind) const override
+	{
+		return false;
+	}
+
+#ifndef NDEBUG
+	void DrawDebug(const DragonAI& ai, DebugRenderer& debugRenderer) const override;
+#endif
+
+public:
+	const char* clipName = "FlyAttk1";
+	float trackSpeedDeg = 60.f;
+	float strafeSpeed = 60.f;
+	float strafeBlendSec = 1.5f;
+
+private:
+	bool isPlaying = false;
+	bool isTracking = false;
+	bool isStrafing = false;
+	float currStrafeSpeed = 0.f;
 };

@@ -95,6 +95,11 @@ public:
 		hasAttackHit = false;
 	}
 
+	bool IsEnraging() const
+	{
+		return isEnraging;
+	}
+
 private:
 	void RegisterStates();
 	void BindHealthCallbacks();
@@ -102,6 +107,7 @@ private:
 	bool ForceStateTransition(StateID nextStateID);
 	bool CanCurrentBeInterrupted(InterruptStateKind kind) const;
 	void ApplyPendingTransition();
+	void BeginPhaseChange();
 	DragonState* GetState(StateID id) const;
 	const GameObject* FindPlayer() const;
 
@@ -133,6 +139,8 @@ private:
 	// flags by health callbacks
 	bool isDeathPending = false;
 	bool isPhaseChangePending = false;
+	bool isEnraging = false;
 	float staggerMeter = 0.f;
 	bool wasDamaged = false;
+
 };

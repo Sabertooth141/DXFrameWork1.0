@@ -169,6 +169,9 @@
     <ClCompile Include="CycleAnimationTester.cpp" />
     <ClCompile Include="DebugRenderer.cpp" />
     <ClCompile Include="DragonAI.cpp" />
+    <ClCompile Include="DragonAirAimState.cpp" />
+    <ClCompile Include="DragonAirAttackState.cpp" />
+    <ClCompile Include="DragonAirRecoverState.cpp" />
     <ClCompile Include="DragonApproachState.cpp" />
     <ClCompile Include="DragonAttackSelector.cpp" />
     <ClCompile Include="DragonAttackState.cpp" />
@@ -178,6 +181,7 @@
     <ClCompile Include="DragonPerception.cpp" />
     <ClCompile Include="DragonRecoverState.cpp" />
     <ClCompile Include="DragonRoarState.cpp" />
+    <ClCompile Include="DragonSequenceClipState.cpp" />
     <ClCompile Include="DragonTurnState.cpp" />
     <ClCompile Include="Drawable.cpp" />
     <ClCompile Include="EditorUI.cpp" />

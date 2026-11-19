@@ -65,7 +65,9 @@
   {"from":"*","to":"Turn90R","sec":0.15},
   {"from":"*","to":"Turn180","sec":0.15},
   {"from":"Idle1","to":"WalkF","sec":0.3},
-  {"from":"WalkF","to":"Idle1","sec":0.3}
+  {"from":"WalkF","to":"Idle1","sec":0.3},
+  {"from":"TakeOff","to":"FlyB","sec":0.3},
+  {"from":"FlyB","to":"FlyAttk1","sec":0.3}
  ],
  "events": [
   {"clip":"Attk1","time":1.05,"event":"TrackEnd"},
@@ -82,8 +84,12 @@
   {"clip":"Attk5","time":0.7,"event":"TrackEnd"},
   {"clip":"Attk5","time":0.83,"event":"HitboxOn","param":"wingL"},
   {"clip":"Attk5","time":1.13,"event":"HitboxOff","param":"wingL"},
+  {"clip":"FlyAttk1","time":0.68,"event":"TrackEnd"},
+  {"clip":"FlyAttk1","time":0.75,"event":"StrafeStart"},
+  {"clip":"FlyAttk1","time":0.8,"event":"HitboxOn","param":"breath"},
   {"clip":"FlyAttk1","time":0.8,"event":"HitboxOn","param":"breath"},
   {"clip":"FlyAttk1","time":2.0,"event":"HitboxOff","param":"breath"},
+  {"clip":"FlyAttk1","time":2.2,"event":"StrafeEnd"},
   {"clip":"FlyAttk2","time":0.7,"event":"HitboxOn","param":"breath"},
   {"clip":"FlyAttk2","time":2.8,"event":"HitboxOff","param":"breath"}
  ]

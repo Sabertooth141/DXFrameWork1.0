@@ -34,6 +34,7 @@ public:
 public:
 	// for monster rage / special attk: when lower than this go to phase 2 / rage
 	float thresholdRatio = 0.5f;
+	float minHp = 0.f;
 
 	// listerners 
 	std::function<void(float damage, float stagger)> onDamaged;

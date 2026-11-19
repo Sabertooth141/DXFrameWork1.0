@@ -392,6 +392,18 @@
     <ClCompile Include="DragonRecoverState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DragonSequenceClipState.cpp">
+      <Filter>Source Files\Scripts\Entity\Dragon\States</Filter>
+    </ClCompile>
+    <ClCompile Include="DragonAirAimState.cpp">
+      <Filter>Source Files\Scripts\Entity\Dragon\States</Filter>
+    </ClCompile>
+    <ClCompile Include="DragonAirAttackState.cpp">
+      <Filter>Source Files\Scripts\Entity\Dragon\States</Filter>
+    </ClCompile>
+    <ClCompile Include="DragonAirRecoverState.cpp">
+      <Filter>Source Files\Scripts\Entity\Dragon\States</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Win.h">

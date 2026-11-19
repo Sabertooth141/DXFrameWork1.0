@@ -107,31 +107,6 @@ void App::HandleInput(float deltaTime)
 	{
 		isShowingColliders = !isShowingColliders;
 	}
-
-	// health: F4 = everyone back to full, F5 = enemies to 51% (one hit away from the phase change)
-	const bool isResettingHealth = wnd.keyboard.KeyIsTriggered(VK_F4);
-	const bool isSettingEnemyHalf = wnd.keyboard.KeyIsTriggered(VK_F5);
-	Scene* scene = sceneManager.GetCurrScene();
-	if (scene && (isResettingHealth || isSettingEnemyHalf))
-	{
-		for (const auto& object : scene->GetObjects())
-		{
-			HealthComponent* health = object->GetComponent<HealthComponent>();
-			if (!health)
-			{
-				continue;
-			}
-
-			if (isResettingHealth)
-			{
-				health->Reset();
-			}
-			if (isSettingEnemyHalf && object->GetTag() == ObjectTag::ENEMY)
-			{
-				health->SetHpRatio(0.51f);
-			}
-		}
-	}
 #endif
 }
 

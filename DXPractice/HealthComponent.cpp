@@ -39,7 +39,8 @@ void HealthComponent::ApplyDamage(float damage, float stagger)
 		return;
 	}
 
-	currHp = std::max(currHp - damage, 0.f);
+	const float floorHp = std::min(minHp, currHp);
+	currHp = std::max(currHp - damage, floorHp);
 
 	if (onDamaged)
 	{

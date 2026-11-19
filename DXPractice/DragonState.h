@@ -13,6 +13,7 @@
 	X(TAKE_OFF)					\
 	X(AIR_AIM)					\
 	X(AIR_ATTACK)				\
+	X(AIR_RECOVER)				\
 	X(LAND)						\
 	X(DEAD)
 #include <cstdint>

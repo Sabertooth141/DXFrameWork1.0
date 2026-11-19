@@ -7,11 +7,6 @@
 #include "SkeletalAnimatorComponent.h"
 #include "TransformComponent.h"
 
-namespace 
-{
-	const std::string trackEndEvent = "TrackEnd";
-}
-
 void DragonAttackState::Enter(DragonAI& ai)
 {
 	isPlaying = false;
@@ -37,7 +32,7 @@ void DragonAttackState::Update(DragonAI& ai, float deltaTime)
 		return;;
 	}
 
-	if (isTracking && HasTrackEndFired(ai))
+	if (isTracking && ai.GetAnimator().WasMarkerFired(trackEndEvent))
 	{
 		isTracking = false; // lock attk dir
 	}
@@ -69,17 +64,3 @@ void DragonAttackState::DrawDebug(const DragonAI& ai, DebugRenderer& debugRender
 	debugRenderer.DrawLine3D(from, to, color);
 }
 #endif	
-
-bool DragonAttackState::HasTrackEndFired(const DragonAI& ai) const
-{
-	// events get fired at the end of frame - make sure this frame gets the correct event
-	for (const FiredAnimationEvent& event : ai.GetAnimator().GetFiredEvents())
-	{
-		if (event.type == FiredEventType::MARKER && event.eventName == trackEndEvent && event.clipName == option->clip)
-		{
-			return true;
-		}
-	}
-
-	return false;
-}

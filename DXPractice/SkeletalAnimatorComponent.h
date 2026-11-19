@@ -108,6 +108,7 @@ public:
 	}
 
 	bool HasEvent(const std::string& clipName, const std::string& eventName) const;
+	bool WasMarkerFired(const std::string& eventName) const;
 
 	float GetClipLength(const std::string& name) const; // seconds, 0 if unknown
 	void SetClipLoop(const std::string& name, bool inLoop); // applies the next time the clip is played

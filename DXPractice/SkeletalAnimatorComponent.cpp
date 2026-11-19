@@ -265,9 +265,18 @@ bool SkeletalAnimatorComponent::HasEvent(const std::string& clipName, const std:
 	}
 
 	return std::ranges::any_of(it->second.events, [&eventName](const AnimationEvent& event)
-		{
-			return eventName == event.eventName;
-		});
+	{
+		return eventName == event.eventName;
+	});
+}
+
+bool SkeletalAnimatorComponent::WasMarkerFired(const std::string& eventName) const
+{
+	const std::string& currClipName = GetCurrClipName();
+	return std::ranges::any_of(firedEvents, [&](const FiredAnimationEvent& event)
+	{
+		return event.type == FiredEventType::MARKER && event.eventName == eventName && event.clipName == currClipName;
+	});
 }
 
 float SkeletalAnimatorComponent::GetClipLength(const std::string& name) const

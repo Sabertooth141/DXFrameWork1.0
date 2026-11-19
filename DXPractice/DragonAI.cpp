@@ -69,7 +69,7 @@ void DragonAI::Update(float deltaTime)
 
 	if (keyboard->KeyIsTriggered(VK_F5))
 	{
-		owner->GetComponent<HealthComponent>()->SetHpRatio(0.4);
+		owner->GetComponent<HealthComponent>()->ApplyDamage(100, 0);
 	}
 }
 
@@ -139,7 +139,10 @@ void DragonAI::DrawDebugUI()
 	ImGui::SeparatorText("State");
 	ImGui::Text("state    %s", ToString(currStateID));
 	ImGui::Text("time     %.2f s", timeInState);
+	ImGui::Text("phase    %d %s", currPhase, isPhaseChangePending ? "(change PENDING)" : "");
+	ImGui::Text("hp floor %.0f", health->minHp);
 	ImGui::Text("combat   %s", isInCombat ? "yes" : "no (intro pending)");
+	ImGui::Text("enraging %s", isEnraging ? "yes" : "-");
 	if (currAttkIndex >= 0)
 	{
 		ImGui::Text("attack   %s (%s)", attackSelector.GetOption(currAttkIndex).name.c_str(), hasAttackHit ? "hit" : "-");
@@ -251,6 +254,11 @@ void DragonAI::RegisterStates()
 	states[ToIndex(StateID::IDLE)] = std::make_unique<DragonIdleState>();
 	states[ToIndex(StateID::ATTACK)] = std::make_unique<DragonAttackState>();
 	states[ToIndex(StateID::RECOVER)] = std::make_unique<DragonRecoverState>();
+	states[ToIndex(StateID::TAKE_OFF)] = std::make_unique<DragonSequenceClipState>("TakeOff", StateID::AIR_AIM);
+	states[ToIndex(StateID::AIR_AIM)] = std::make_unique<DragonAirAimState>();
+	states[ToIndex(StateID::LAND)] = std::make_unique<DragonSequenceClipState>("Land", StateID::ROAR);
+	states[ToIndex(StateID::AIR_ATTACK)] = std::make_unique<DragonAirAttackState>();
+	states[ToIndex(StateID::AIR_RECOVER)] = std::make_unique<DragonAirRecoverState>();
 }
 
 void DragonAI::BindHealthCallbacks()
@@ -261,6 +269,8 @@ void DragonAI::BindHealthCallbacks()
 	{
 		return;
 	}
+
+	health->minHp = health->GetMaxHp() * health->thresholdRatio;
 
 	health->onDamaged = [this](float damage, float stagger)
 	{
@@ -292,11 +302,12 @@ void DragonAI::CheckAnyStateTransition()
 	}
 
 	// phase change check
-	if (isPhaseChangePending && CanCurrentBeInterrupted(InterruptStateKind::PHASE_CHANGE))
+	if (isPhaseChangePending && isInCombat && CanCurrentBeInterrupted(InterruptStateKind::PHASE_CHANGE))
 	{
 		if (ForceStateTransition(StateID::TAKE_OFF))
 		{
 			isPhaseChangePending = false;
+			BeginPhaseChange();
 		}
 		return;
 	}
@@ -340,6 +351,16 @@ void DragonAI::ApplyPendingTransition()
 	currStateID = nextStateID;
 	timeInState = 0.f;
 	GetState(currStateID)->Enter(*this);
+}
+
+void DragonAI::BeginPhaseChange()
+{
+	isEnraging = true;
+
+	if (health)
+	{
+		health->minHp = 0.f;
+	}
 }
 
 DragonState* DragonAI::GetState(StateID id) const
