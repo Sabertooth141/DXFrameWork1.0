@@ -6,6 +6,7 @@
 #include "DragonAttackSelector.h"
 #include "DragonPerception.h"
 #include "DragonState.h"
+#include "DragonStrafeMotion.h"
 #include "MonoBehavior.h"
 
 class LocomotionComponent;
@@ -100,6 +101,11 @@ public:
 		return isEnraging;
 	}
 
+	StrafeMotion& GetStrafeMotion()
+	{
+		return strafeMotion;
+	}
+
 private:
 	void RegisterStates();
 	void BindHealthCallbacks();
@@ -124,6 +130,7 @@ private:
 	bool isInCombat = false;
 
 	Perception perception;
+	StrafeMotion strafeMotion;
 	DragonAttackSelector attackSelector{ DragonAttackData() };
 	int currPhase = 1;
 

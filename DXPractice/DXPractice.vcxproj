@@ -182,6 +182,7 @@
     <ClCompile Include="DragonRecoverState.cpp" />
     <ClCompile Include="DragonRoarState.cpp" />
     <ClCompile Include="DragonSequenceClipState.cpp" />
+    <ClCompile Include="DragonStrafeMotion.cpp" />
     <ClCompile Include="DragonTurnState.cpp" />
     <ClCompile Include="Drawable.cpp" />
     <ClCompile Include="EditorUI.cpp" />
@@ -262,6 +263,7 @@
     <ClInclude Include="DragonPerception.h" />
     <ClInclude Include="DragonStates.h" />
     <ClInclude Include="DragonState.h" />
+    <ClInclude Include="DragonStrafeMotion.h" />
     <ClInclude Include="EditorUI.h" />
     <ClInclude Include="EditorUtils.h" />
     <ClInclude Include="EditorViewport.h" />

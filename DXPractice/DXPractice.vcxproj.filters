@@ -404,6 +404,9 @@
     <ClCompile Include="DragonAirRecoverState.cpp">
       <Filter>Source Files\Scripts\Entity\Dragon\States</Filter>
     </ClCompile>
+    <ClCompile Include="DragonStrafeMotion.cpp">
+      <Filter>Source Files\Scripts\Entity\Dragon</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Win.h">
@@ -711,6 +714,9 @@
     </ClInclude>
     <ClInclude Include="DragonAttackSelector.h">
       <Filter>Header Files\Scripts\Entity\Dragon\AttackData</Filter>
+    </ClInclude>
+    <ClInclude Include="DragonStrafeMotion.h">
+      <Filter>Header Files\Scripts\Entity\Dragon</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

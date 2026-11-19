@@ -153,6 +153,7 @@ public:
 
 public:
 	const char* clipName = "Idle3";
+	float recoverSec = 1.f;
 
 private:
 	float waitSec = 0.f;
@@ -194,7 +195,7 @@ public:
 
 public:
 	const char* clipName = "FlyB";
-	float retreatSpeed = 4.f;
+	float retreatSpeed = 20.f;
 	float retreatDistance = 10.f;
 	float turnRate = 90.f;
 	float aimToleranceDeg = 10.f;
@@ -220,12 +221,9 @@ public:
 public:
 	const char* clipName = "FlyAttk1";
 	float trackSpeedDeg = 60.f;
-	float strafeSpeed = 60.f;
-	float strafeBlendSec = 1.5f;
+	float strafeSpeed = 20.f;
 
 private:
 	bool isPlaying = false;
 	bool isTracking = false;
-	bool isStrafing = false;
-	float currStrafeSpeed = 0.f;
 };

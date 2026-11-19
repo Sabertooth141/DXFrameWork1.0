@@ -118,7 +118,17 @@ void DragonTurnState::DrawDebug(const DragonAI& ai, DebugRenderer& debugRenderer
 
 StateID DragonTurnState::GetNextState(const DragonAI& ai) const
 {
-	return ai.IsInCombat() ? StateID::IDLE : StateID::ROAR;
+	if (ai.IsInCombat())
+	{
+		if (ai.IsEnraging())
+		{
+			return StateID::ROAR;
+		}
+
+		return StateID::IDLE;
+	}
+
+	return StateID::ROAR;
 }
 
 float DragonTurnState::PredictAngleDeg(const DragonAI& ai, float leadSec) const
@@ -133,4 +143,3 @@ float DragonTurnState::PredictAngleDeg(const DragonAI& ai, float leadSec) const
 
 	return DirectX::XMConvertToDegrees(remainderf(toPredictedYaw - yaw, DirectX::XM_2PI));
 }
-

@@ -87,7 +87,6 @@
   {"clip":"FlyAttk1","time":0.68,"event":"TrackEnd"},
   {"clip":"FlyAttk1","time":0.75,"event":"StrafeStart"},
   {"clip":"FlyAttk1","time":0.8,"event":"HitboxOn","param":"breath"},
-  {"clip":"FlyAttk1","time":0.8,"event":"HitboxOn","param":"breath"},
   {"clip":"FlyAttk1","time":2.0,"event":"HitboxOff","param":"breath"},
   {"clip":"FlyAttk1","time":2.2,"event":"StrafeEnd"},
   {"clip":"FlyAttk2","time":0.7,"event":"HitboxOn","param":"breath"},

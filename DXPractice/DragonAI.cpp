@@ -117,7 +117,7 @@ bool DragonAI::RequestAttack(int attkIndex)
 
 void DragonAI::OnHitDealt(const HitEvent& event)
 {
-	if (currStateID != StateID::ATTACK)
+	if (currStateID != StateID::ATTACK && currStateID != StateID::AIR_ATTACK)
 	{
 		return;
 	}
@@ -140,7 +140,13 @@ void DragonAI::DrawDebugUI()
 	ImGui::Text("state    %s", ToString(currStateID));
 	ImGui::Text("time     %.2f s", timeInState);
 	ImGui::Text("phase    %d %s", currPhase, isPhaseChangePending ? "(change PENDING)" : "");
-	ImGui::Text("hp floor %.0f", health->minHp);
+	if (health)
+	{
+		ImGui::Text("hp floor %.0f", health->minHp);
+	}
+	ImGui::Text("strafe   %s %.1f m/s",
+	            strafeMotion.GetPhase() == StrafeMotion::Phase::ACCEL ? "accel" : strafeMotion.GetPhase() == StrafeMotion::Phase::CRUISE ? "cruise" : strafeMotion.GetPhase() == StrafeMotion::Phase::SLOWDOWN ? "slowdown" : "-",
+	            strafeMotion.GetSpeed());
 	ImGui::Text("combat   %s", isInCombat ? "yes" : "no (intro pending)");
 	ImGui::Text("enraging %s", isEnraging ? "yes" : "-");
 	if (currAttkIndex >= 0)
@@ -256,7 +262,7 @@ void DragonAI::RegisterStates()
 	states[ToIndex(StateID::RECOVER)] = std::make_unique<DragonRecoverState>();
 	states[ToIndex(StateID::TAKE_OFF)] = std::make_unique<DragonSequenceClipState>("TakeOff", StateID::AIR_AIM);
 	states[ToIndex(StateID::AIR_AIM)] = std::make_unique<DragonAirAimState>();
-	states[ToIndex(StateID::LAND)] = std::make_unique<DragonSequenceClipState>("Land", StateID::ROAR);
+	states[ToIndex(StateID::LAND)] = std::make_unique<DragonSequenceClipState>("Land", StateID::TURN);
 	states[ToIndex(StateID::AIR_ATTACK)] = std::make_unique<DragonAirAttackState>();
 	states[ToIndex(StateID::AIR_RECOVER)] = std::make_unique<DragonAirRecoverState>();
 }

@@ -16,8 +16,7 @@ void DragonAirAttackState::Enter(DragonAI& ai)
 	SkeletalAnimatorComponent& animator = ai.GetAnimator();
 	isPlaying = animator.PlayClip(clipName);
 	isTracking = isPlaying && trackSpeedDeg > 0.f && animator.HasEvent(clipName, trackEndEvent);
-	isStrafing = false;
-	currStrafeSpeed = 0.f;
+	ai.GetStrafeMotion().Reset();
 }
 
 void DragonAirAttackState::Update(DragonAI& ai, float deltaTime)
@@ -29,34 +28,21 @@ void DragonAirAttackState::Update(DragonAI& ai, float deltaTime)
 		isTracking = false;
 	}
 
+	StrafeMotion& strafe = ai.GetStrafeMotion();
 	if (animator.WasMarkerFired(strafeStartEvent))
 	{
-		isStrafing = strafeSpeed > 0.f;
+		strafe.Begin(strafeSpeed);
 	}
 	if (animator.WasMarkerFired(strafeEndEvent))
 	{
-		isStrafing = false;
+		strafe.BeginSlowdown();
 	}
 
-	if (isStrafing)
+	const float currStrafeSpeed = strafe.Update(deltaTime);
+	if (currStrafeSpeed > 0.f)
 	{
-		const float targetSpeed = isStrafing ? strafeSpeed : 0.f;
-		float t;
-		if (strafeBlendSec > 0.f)
-		{
-			t = 1.f - expf(-deltaTime / strafeBlendSec);
-		}
-		else
-		{
-			t = 1.f;
-		}
-		currStrafeSpeed += (targetSpeed - currStrafeSpeed) * t;
-
-		if (currStrafeSpeed > 0.01f)
-		{
-			const float yaw = ai.GetTransform().GetRotation().y;
-			ai.GetLocomotion().SetMove({ sinf(yaw), 0.f, cosf(yaw) }, currStrafeSpeed);
-		}
+		const float yaw = ai.GetTransform().GetRotation().y;
+		ai.GetLocomotion().SetMove({sinf(yaw), 0.f, cosf(yaw)}, currStrafeSpeed);
 	}
 
 	const Perception& perception = ai.GetPerception();
