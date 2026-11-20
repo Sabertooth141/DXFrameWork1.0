@@ -1,6 +1,7 @@
 #pragma once
 #include "MonoBehavior.h"
 
+class SkeletalAnimatorComponent;
 class HealthComponent;
 class LocomotionComponent;
 class Camera3D;
@@ -24,4 +25,5 @@ private:
 	const Camera3D* cam = nullptr;
 	HealthComponent* health = nullptr;
 	LocomotionComponent* locomotion = nullptr;
+	SkeletalAnimatorComponent* animator = nullptr;
 };

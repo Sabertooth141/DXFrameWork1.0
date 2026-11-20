@@ -93,6 +93,10 @@ void AnimSetInspector::Draw(GameObject& object, AnimSetComponent& animSet)
 	{
 		ImGui::Text("ルートのヨー（抽出）: %+.1f deg", DirectX::XMConvertToDegrees(animator->GetExtractedYawTotal()));
 	}
+	if (animator->IsExtractingRootMove())
+	{
+		ImGui::Text("ルートの移動（抽出）: %.2f m", animator->GetExtractedMoveTotal());
+	}
 
 	// ---- clips
 	if (ImGui::TreeNode("クリップ"))

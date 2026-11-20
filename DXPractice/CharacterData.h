@@ -6,6 +6,8 @@
 #include "AnimationFadeTable.h" // AnimationFadeTable::any for FadeDef
 #include "HitVolumeComponent.h"
 
+enum class RootMotionMode;
+
 namespace CharacterHelpers
 {
 	inline HitShapeDesc Hurtbox(const char* name, const char* bone, DirectX::XMFLOAT3 localCenterB, float radius)
@@ -30,6 +32,12 @@ namespace CharacterHelpers
 }
 
 class GameObject;
+
+struct RootMotionDef
+{
+	const char* clip;
+	RootMotionMode mode;
+};
 
 struct ClipDef
 {
@@ -81,9 +89,10 @@ struct CharacterData
 	std::vector<EventDef> events;
 	std::vector<FadeDef> fades;
 
-	// root yaw extraction
+	// root motion
 	std::string rootMotionNode;
-	std::vector<std::string> rootYawClips;
+	std::string rootMotionAnchorClip; // anchor translation xz to clips first frame
+	std::vector<RootMotionDef> rootMotionClips;
 };
 
 // needs the SkeletalAnimatorComponent already on the object (RegisterModel with a skinned mesh)

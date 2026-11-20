@@ -116,6 +116,19 @@ namespace
 	{
 		return 2.f * atan2(DirectX::XMVectorGetY(rotation), DirectX::XMVectorGetW(rotation));
 	}
+
+	int FindNodeChannel(const AnimationClip& clip, int nodeIndex)
+	{
+		for (size_t i = 0; i < clip.channels.size(); i++)
+		{
+			if (clip.channelToNode[i] == nodeIndex)
+			{
+				return static_cast<int>(i);
+			}
+		}
+
+		return -1;
+	}
 }
 
 SkeletalAnimatorComponent::SkeletalAnimatorComponent(Renderer& renderer, std::shared_ptr<const Skeleton> inSkeleton) :
@@ -308,16 +321,87 @@ void SkeletalAnimatorComponent::SetRootMotionNode(const std::string& nodeName)
 	rootMotionNodeIndex = FindNodeIndex(nodeName);
 }
 
-void SkeletalAnimatorComponent::SetClipRootYawExtraction(const std::string& name, bool isExtracting)
+void SkeletalAnimatorComponent::SetClipRootMotion(const std::string& name, RootMotionMode mode)
 {
 	const auto it = clipEntries.find(name);
 	if (it == clipEntries.end())
 	{
-		OutputDebugStringA(("[SkeletalAnimator] SetClipRootYawExtraction: no clip named '" + name + "'\n").c_str());
+		OutputDebugStringA(("[SkeletalAnimator] SetClipRootMotion: no clip named '" + name + "'\n").c_str());
 		return;
 	}
 
-	it->second.isExtractingRootYaw = isExtracting;
+	it->second.rootMotion = mode;
+}
+
+void SkeletalAnimatorComponent::SetRootMotionAnchor(const std::string& clipName)
+{
+	hasRootAnchor = false;
+
+	const auto it = clipEntries.find(clipName);
+	if (it == clipEntries.end() || rootMotionNodeIndex < 0)
+	{
+		OutputDebugStringA(("[SkeletalAnimator] SetRootMotionAnchor: no clip '" + clipName + "' or no root node\n").c_str());
+		return;
+	}
+
+	const AnimationClip& clip = *it->second.clip;
+	const int channel = FindNodeChannel(clip, rootMotionNodeIndex);
+	if (channel < 0 || clip.channels[channel].positions.empty())
+	{
+		OutputDebugStringA(("[SkeletalAnimator] SetRootMotionAnchor: '" + clipName + "' has no root position keys\n").c_str());
+		return;
+	}
+
+	const DirectX::XMFLOAT3& restRootPos = clip.channels[channel].positions.front().value;
+	rootAnchorXZ = {restRootPos.x, restRootPos.z};
+	hasRootAnchor = true;
+}
+
+void SkeletalAnimatorComponent::ExtractRootMove(ClipPlayback& clipPlayback, std::vector<LocalTRS>& outPose)
+{
+	LocalTRS& rootTRS = outPose[rootMotionNodeIndex];
+	const DirectX::XMFLOAT3 pos = rootTRS.translation;
+
+	float deltaX = pos.x - clipPlayback.lastRootPos.x;
+	float deltaZ = pos.z - clipPlayback.lastRootPos.z;
+	if (clipPlayback.didWrap)
+	{
+		// if looping = start -> now
+		deltaX = (clipPlayback.endRootPos.x - clipPlayback.lastRootPos.x) + (pos.x - clipPlayback.firstRootPos.x);
+		deltaZ = (clipPlayback.endRootPos.z - clipPlayback.lastRootPos.z) + (pos.x - clipPlayback.firstRootPos.z);
+	}
+	clipPlayback.lastRootPos = pos;
+
+	rootMoveLocal.x += deltaX;
+	rootMoveLocal.z += deltaZ;
+
+	rootTRS.translation.x = clipPlayback.pinXZ.x;
+	rootTRS.translation.z = clipPlayback.pinXZ.y;
+}
+
+DirectX::XMFLOAT3 SkeletalAnimatorComponent::RootMoveToWorld(const DirectX::XMFLOAT3& parentSpaceDelta) const
+{
+	const int parentIndex = skeleton->nodes[rootMotionNodeIndex].parent;
+	DirectX::XMMATRIX parentGlobal;
+	if (parentIndex >= 0)
+	{
+		parentGlobal = DirectX::XMLoadFloat4x4(&globalPose[parentIndex]);
+	}
+	else
+	{
+		parentGlobal = DirectX::XMMatrixIdentity();
+	}
+
+	const DirectX::XMMATRIX toWorld =
+		parentGlobal *
+		DirectX::XMLoadFloat4x4(&skeleton->meshSpaceInverse) *
+		DirectX::XMLoadFloat4x4(&modelCorrection) *
+		owner->GetTransform()->GetMatrix();
+
+	DirectX::XMFLOAT3 out;
+	DirectX::XMStoreFloat3(&out, DirectX::XMVector3TransformNormal(DirectX::XMLoadFloat3(&parentSpaceDelta), toWorld));
+	out.y = 0.f;
+	return out;
 }
 
 void SkeletalAnimatorComponent::ExtractRootYaw(ClipPlayback& clipPlayback, std::vector<LocalTRS>& outPose)
@@ -360,6 +444,8 @@ void SkeletalAnimatorComponent::Scrub(float deltaSec)
 void SkeletalAnimatorComponent::Tick(float clipDeltaSec)
 {
 	rootYawDelta = 0.f;
+	rootMoveLocal = {};
+	rootMoveDelta = {};
 
 	const float prevTimeSec = playback.timeInSec;
 	AdvanceTime(playback, clipDeltaSec);
@@ -378,6 +464,13 @@ void SkeletalAnimatorComponent::Tick(float clipDeltaSec)
 	BuildLocalMatrices();
 	ComputeGlobals();
 	ComputePalette();
+
+	if (playback.rootMotion == RootMotionMode::TRANSLATION_XZ)
+	{
+		rootMoveDelta = RootMoveToWorld(rootMoveLocal);
+		extractedMoveTotal.x += rootMoveDelta.x;
+		extractedMoveTotal.z += rootMoveDelta.z;
+	}
 }
 
 void SkeletalAnimatorComponent::CollectEvents(float prevTimeSec, float deltaSec)
@@ -523,29 +616,43 @@ void SkeletalAnimatorComponent::StartPlayback(const ClipEntry& entry)
 	playback.cursors.assign(playback.clip->channels.size(), KeyCursor{});
 
 	// root motion
-	playback.isExtractingRootYaw = false;
+	playback.rootMotion = RootMotionMode::NONE;
 	playback.rootChannel = -1;
+	playback.didWrap = false;
 	extractedYawTotal = 0.f;
+	extractedMoveTotal = {};
 
-	if (entry.isExtractingRootYaw && rootMotionNodeIndex >= 0)
+	if (entry.rootMotion == RootMotionMode::NONE || rootMotionNodeIndex < 0)
 	{
-		const AnimationClip& clip = *entry.clip;
-		for (size_t i = 0; i < clip.channels.size(); i++)
-		{
-			if (clip.channelToNode[i] == rootMotionNodeIndex && !clip.channels[i].rotations.empty())
-			{
-				playback.rootChannel = static_cast<int>(i);
-				break;
-			}
-		}
+		return;
+	}
 
-		if (playback.rootChannel >= 0)
-		{
-			const DirectX::XMFLOAT4& firstKey = clip.channels[playback.rootChannel].rotations.front().value;
-			playback.baseRootYaw = YawOf(DirectX::XMLoadFloat4(&firstKey));
-			playback.lastRootYaw = playback.baseRootYaw;
-			playback.isExtractingRootYaw = true;
-		}
+	const AnimationClip& clip = *entry.clip;
+	const int channel = FindNodeChannel(clip, rootMotionNodeIndex);
+	if (channel < 0)
+	{
+		return;
+	}
+
+	const AnimationChannel& rootChannel = clip.channels[channel];
+	if (entry.rootMotion == RootMotionMode::YAW && !rootChannel.rotations.empty())
+	{
+		const DirectX::XMFLOAT4& firstKey = rootChannel.rotations.front().value;
+		playback.baseRootYaw = YawOf(DirectX::XMLoadFloat4(&firstKey));
+		playback.lastRootYaw = playback.baseRootYaw;
+		playback.rootChannel = channel;
+		playback.rootMotion = RootMotionMode::YAW;
+	}
+	else if (entry.rootMotion == RootMotionMode::TRANSLATION_XZ && !rootChannel.positions.empty())
+	{
+		playback.firstRootPos = rootChannel.positions.front().value;
+		playback.endRootPos = rootChannel.positions.back().value;
+		playback.lastRootPos = playback.firstRootPos;
+		playback.pinXZ = hasRootAnchor
+			                 ? rootAnchorXZ
+			                 : DirectX::XMFLOAT2{playback.firstRootPos.x, playback.firstRootPos.z};
+		playback.rootChannel = channel;
+		playback.rootMotion = RootMotionMode::TRANSLATION_XZ;
 	}
 }
 
@@ -567,6 +674,8 @@ void SkeletalAnimatorComponent::StartFade(float fadeSec)
 
 void SkeletalAnimatorComponent::AdvanceTime(ClipPlayback& clipPlayback, float deltaTime)
 {
+	clipPlayback.didWrap = false;
+
 	const float length = clipPlayback.clip->DurationInSeconds();
 	if (length <= 0.f)
 	{
@@ -578,6 +687,7 @@ void SkeletalAnimatorComponent::AdvanceTime(ClipPlayback& clipPlayback, float de
 	clipPlayback.timeInSec += deltaTime;
 	if (clipPlayback.isLoop)
 	{
+		clipPlayback.didWrap = deltaTime > 0.f && clipPlayback.timeInSec >= length;
 		clipPlayback.timeInSec = std::fmod(clipPlayback.timeInSec, length);
 		if (clipPlayback.timeInSec < 0.f) // for negative deltas
 		{
@@ -627,9 +737,16 @@ void SkeletalAnimatorComponent::SampleClip(ClipPlayback& clipPlayback, std::vect
 		                                           DirectX::XMLoadFloat3(&trs.scale)));
 	}
 
-	if (clipPlayback.isExtractingRootYaw)
+	switch (clipPlayback.rootMotion)
 	{
+	case RootMotionMode::YAW:
 		ExtractRootYaw(clipPlayback, outPose);
+		break;
+	case RootMotionMode::TRANSLATION_XZ:
+		ExtractRootMove(clipPlayback, outPose);
+		break;
+	case RootMotionMode::NONE:
+		break;
 	}
 }
 

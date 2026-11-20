@@ -5,6 +5,7 @@
 #include "HealthComponent.h"
 #include "Keyboard.h"
 #include "LocomotionComponent.h"
+#include "SkeletalAnimatorComponent.h"
 #include "TextRenderer.h"
 
 void PlayerController::Awake()
@@ -19,6 +20,7 @@ void PlayerController::Start()
 	MonoBehavior::Start();
 
 	locomotion = owner->GetComponent<LocomotionComponent>();
+	animator = owner->GetComponent<SkeletalAnimatorComponent>();
 	if (!locomotion)
 	{
 #ifndef NDEBUG
@@ -46,6 +48,11 @@ void PlayerController::Update(float deltaTime)
 	{
 		locomotion->SetMove(dir, moveSpeed);
 		locomotion->SetFacing(atan2f(dir.x, dir.z), turnSpeed);
+	}
+
+	if (animator)
+	{
+		locomotion->AddMove(animator->GetRootMoveDelta());
 	}
 
 	locomotion->ApplyLocomotion(deltaTime);

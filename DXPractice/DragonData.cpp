@@ -1,4 +1,5 @@
 #include "CharacterData.h"
+#include "SkeletalAnimatorComponent.h"
 
 // Sci-Fi Dragon 4Wings 
 namespace
@@ -46,7 +47,11 @@ namespace
 		data.animSetPath = "../../data/animsets/dragon.json";
 
 		data.rootMotionNode = "root";
-		data.rootYawClips = {"Turn90L", "Turn90R", "Turn180"};
+		data.rootMotionClips = {
+			{"Turn90L", RootMotionMode::YAW},
+			{"Turn90R", RootMotionMode::YAW},
+			{"Turn180", RootMotionMode::YAW}
+		};
 
 		return data;
 	}

@@ -8,6 +8,7 @@ class LocomotionComponent : public IComponent
 public:
 	// xz for dir, m/s for speed
 	void SetMove(const DirectX::XMFLOAT3& dir, float speed);
+	void AddMove(const DirectX::XMFLOAT3& worldDelta);
 
 	void SetFacing(float targetYaw, float maxTurnRate);
 
@@ -35,6 +36,7 @@ private:
 
 private:
 	DirectX::XMFLOAT3 moveDir{};
+	DirectX::XMFLOAT3 moveDelta{};
 	float moveSpeed = 0.f;
 
 	bool hasFacing = false;

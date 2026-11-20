@@ -1,4 +1,5 @@
 #include "CharacterData.h"
+#include "SkeletalAnimatorComponent.h"
 
 // 10E, The Violinist: UE nodachi clips retargeted with Maya HumanIK
 namespace
@@ -33,6 +34,16 @@ namespace
 			{ "HitLargeF_RM", false },
 			{ "Death_RM", false },{ "GetUpB", false },
 		};
+
+		data.rootMotionNode = "spine";
+		data.rootMotionAnchorClip = "IdleCombat";
+		for (const ClipDef& clip : data.clips)
+		{
+			if (std::string_view(clip.name).ends_with("_RM"))
+			{
+				data.rootMotionClips.push_back({ clip.name, RootMotionMode::TRANSLATION_XZ });
+			}
+		}
 
 		return data;
 	}

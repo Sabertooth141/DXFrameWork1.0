@@ -9,6 +9,13 @@
 
 struct AnimationClip;
 
+enum class RootMotionMode
+{
+	NONE,
+	YAW,
+	TRANSLATION_XZ
+};
+
 struct BonePalette
 {
 	DirectX::XMFLOAT4X4 bones[maxBones];
@@ -35,6 +42,7 @@ struct ClipEntry
 	bool isLoop = true;
 	std::vector<AnimationEvent> events; // sorted by timeSec
 	bool isExtractingRootYaw = false;
+	RootMotionMode rootMotion = RootMotionMode::NONE;
 };
 
 struct ClipPlayback
@@ -46,12 +54,17 @@ struct ClipPlayback
 	bool isLoop = true;
 	bool isFinished = false;
 	bool isFreshStart = false;
+	bool didWrap = false;
 
 	// root motion
-	bool isExtractingRootYaw = false;
+	RootMotionMode rootMotion = RootMotionMode::NONE;
 	int rootChannel = -1;
 	float baseRootYaw = 0.f;
 	float lastRootYaw = 0.f;
+	DirectX::XMFLOAT3 firstRootPos{};
+	DirectX::XMFLOAT3 endRootPos{};
+	DirectX::XMFLOAT3 lastRootPos{};
+	DirectX::XMFLOAT2 pinXZ{};
 };
 
 enum class FiredEventType
@@ -117,21 +130,37 @@ public:
 
 	// root motion
 	void SetRootMotionNode(const std::string& nodeName);
-	void SetClipRootYawExtraction(const std::string& name, bool isExtracting);
+	void SetClipRootMotion(const std::string& name, RootMotionMode mode);
+	void SetRootMotionAnchor(const std::string& clipName);
 
 	float GetRootYawDelta() const
 	{
 		return rootYawDelta;
 	}
 
+	const DirectX::XMFLOAT3& GetRootMoveDelta() const
+	{
+		return rootMoveDelta;
+	}
+
 	bool IsExtractingRootYaw() const
 	{
-		return playback.isExtractingRootYaw;
+		return playback.rootMotion == RootMotionMode::YAW;
+	}
+
+	bool IsExtractingRootMove() const
+	{
+		return playback.rootMotion == RootMotionMode::TRANSLATION_XZ;
 	}
 
 	float GetExtractedYawTotal() const
 	{
 		return extractedYawTotal;
+	}
+
+	float GetExtractedMoveTotal() const
+	{
+		return sqrtf(extractedMoveTotal.x * extractedMoveTotal.x + extractedMoveTotal.z * extractedMoveTotal.z);
 	}
 
 	const std::vector<FiredAnimationEvent>& GetFiredEvents() const
@@ -200,6 +229,8 @@ private:
 	void ClampToRange(float startSec, float finishSec, bool isIncludingStartSec);
 
 	void ExtractRootYaw(ClipPlayback& clipPlayback, std::vector<LocalTRS>& outPose);
+	void ExtractRootMove(ClipPlayback& clipPlayback, std::vector<LocalTRS>& outPose);
+	DirectX::XMFLOAT3 RootMoveToWorld(const DirectX::XMFLOAT3& parentSpaceDelta) const;
 
 private:
 	std::shared_ptr<const Skeleton> skeleton;
@@ -233,4 +264,10 @@ private:
 	int rootMotionNodeIndex = -1;
 	float rootYawDelta = 0.f;
 	float extractedYawTotal = 0.f;
+
+	bool hasRootAnchor = false;
+	DirectX::XMFLOAT2 rootAnchorXZ{};
+	DirectX::XMFLOAT3 rootMoveLocal{};
+	DirectX::XMFLOAT3 rootMoveDelta{};
+	DirectX::XMFLOAT3 extractedMoveTotal{};
 };

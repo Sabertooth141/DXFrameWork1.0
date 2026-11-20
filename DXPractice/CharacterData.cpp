@@ -60,9 +60,14 @@ void ApplyCharacterData(GameObject& object, const CharacterData& data)
 	if (!data.rootMotionNode.empty())
 	{
 		animator->SetRootMotionNode(data.rootMotionNode);
-		for (const std::string& clipName : data.rootYawClips)
+		for (const RootMotionDef& def : data.rootMotionClips)
 		{
-			animator->SetClipRootYawExtraction(clipName, true);
+			animator->SetClipRootMotion(def.clip, def.mode);
+		}
+
+		if (!data.rootMotionAnchorClip.empty())
+		{
+			animator->SetRootMotionAnchor(data.rootMotionAnchorClip);
 		}
 	}
 }

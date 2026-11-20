@@ -15,6 +15,12 @@ void LocomotionComponent::SetMove(const DirectX::XMFLOAT3& dir, float speed)
 	moveSpeed = speed;
 }
 
+void LocomotionComponent::AddMove(const DirectX::XMFLOAT3& worldDelta)
+{
+	moveDelta.x += worldDelta.x;
+	moveDelta.z += worldDelta.z;
+}
+
 void LocomotionComponent::SetFacing(float targetYaw, float maxTurnRate)
 {
 	hasFacing = true;
@@ -43,15 +49,19 @@ void LocomotionComponent::ApplyLocomotion(float deltaTime)
 
 void LocomotionComponent::ApplyMove(float deltaTime)
 {
-	if (moveSpeed <= 0.f || (moveDir.x == 0.f && moveDir.z == 0.f))
+	DirectX::XMFLOAT3 step{moveDelta.x, 0.f, moveDelta.z};
+	if (moveSpeed > 0.f)
+	{
+		step.x += moveDir.x * moveSpeed * deltaTime;
+		step.z += moveDir.z * moveSpeed * deltaTime;
+	}
+
+	if (step.x == 0.f && step.z == 0.f)
 	{
 		return;
 	}
 
-	owner->GetTransform()->Translate(
-		{
-			moveDir.x * moveSpeed * deltaTime, 0.f, moveDir.z * moveSpeed * deltaTime
-		});
+	owner->GetTransform()->Translate(step);
 }
 
 void LocomotionComponent::ApplyTurn(float deltaTime)
@@ -150,4 +160,5 @@ void LocomotionComponent::ClearIntent()
 	moveSpeed = 0.f;
 	hasFacing = false;
 	yawDelta = 0.f;
+	moveDelta = {};
 }
