@@ -28,6 +28,8 @@ void DragonAI::Start()
 		return;
 	}
 
+	hitVolume = owner->GetComponent<HitVolumeComponent>();
+
 	RegisterStates();
 	BindHealthCallbacks();
 
@@ -273,6 +275,7 @@ void DragonAI::RegisterStates()
 	states[ToIndex(StateID::LAND)] = std::make_unique<DragonSequenceClipState>("Land", StateID::TURN);
 	states[ToIndex(StateID::AIR_ATTACK)] = std::make_unique<DragonAirAttackState>();
 	states[ToIndex(StateID::AIR_RECOVER)] = std::make_unique<DragonAirRecoverState>();
+	states[ToIndex(StateID::DEAD)] = std::make_unique<DragonDeadState>();
 }
 
 void DragonAI::BindHealthCallbacks()

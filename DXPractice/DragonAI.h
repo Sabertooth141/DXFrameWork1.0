@@ -7,6 +7,7 @@
 #include "DragonPerception.h"
 #include "DragonState.h"
 #include "DragonStrafeMotion.h"
+#include "HitVolumeComponent.h"
 #include "MonoBehavior.h"
 
 class LocomotionComponent;
@@ -56,6 +57,11 @@ public:
 	LocomotionComponent& GetLocomotion() const
 	{
 		return *locomotion;
+	}
+
+	HitVolumeComponent* GetHitVolume() const
+	{
+		return hitVolume;
 	}
 
 	const Perception& GetPerception() const
@@ -153,6 +159,7 @@ private:
 	TransformComponent* transform = nullptr;
 	HealthComponent* health = nullptr;
 	LocomotionComponent* locomotion = nullptr;
+	HitVolumeComponent* hitVolume = nullptr;
 
 	// flags by health callbacks
 	bool isDeathPending = false;

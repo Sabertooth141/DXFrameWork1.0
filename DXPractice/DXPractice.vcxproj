@@ -177,6 +177,7 @@
     <ClCompile Include="DragonAttackState.cpp" />
     <ClCompile Include="DragonCalmState.cpp" />
     <ClCompile Include="DragonData.cpp" />
+    <ClCompile Include="DragonDeadState.cpp" />
     <ClCompile Include="DragonIdleState.cpp" />
     <ClCompile Include="DragonPerception.cpp" />
     <ClCompile Include="DragonRecoverState.cpp" />

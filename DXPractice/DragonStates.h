@@ -230,3 +230,18 @@ private:
 	bool isPlaying = false;
 	bool isTracking = false;
 };
+
+class DragonDeadState : public DragonState
+{
+public:
+	void Enter(DragonAI& ai) override;
+	void Update(DragonAI& ai, float deltaTime) override;
+
+	bool CanBeInterrupted(InterruptStateKind kind) const override
+	{
+		return false;
+	}
+
+public:
+	const char* clipName = "Death1";
+};

@@ -407,6 +407,9 @@
     <ClCompile Include="DragonStrafeMotion.cpp">
       <Filter>Source Files\Scripts\Entity\Dragon</Filter>
     </ClCompile>
+    <ClCompile Include="DragonDeadState.cpp">
+      <Filter>Source Files\Scripts\Entity\Dragon\States</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Win.h">
