@@ -94,9 +94,17 @@ void HitVolumeInspector::Draw(GameObject& object, HitVolumeComponent& volume)
 			isChanged |= ImGui::DragFloat("再ヒット間隔", &group.rehitIntervalSec, 0.01f, 0.f, 10.f, "%.2f s");
 			isChanged |= ImGui::DragFloat("ダメージ", &group.damageScale, 1.f, 0.f, 10000.f, "%.0f");
 			isChanged |= ImGui::DragFloat("スタッガー", &group.staggerScale, 1.f, 0.f, 10000.f, "%.0f");
+
+			DirectX::XMFLOAT4 vfxColor = group.vfxColor;
+			if (ImGui::ColorEdit4("VFX 色", &vfxColor.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_Float))
+			{
+				volume.SetGroupVFXColor(group.name, vfxColor); // in place: no rebuild, an active glow stays visible
+				group.vfxColor = vfxColor; // keep this frame's desc in step in case a later widget rebuilds
+			}
 			ImGui::PopID();
 		}
 		ImGui::TextDisabled("0 = 1 回の発動で 1 回だけヒット");
+		ImGui::TextDisabled("VFX 色の α = 0 で発光なし");
 		ImGui::TreePop();
 	}
 

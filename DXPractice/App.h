@@ -36,6 +36,7 @@ private:
 	void HandleInput(float deltaTime);
 	void Draw(float deltaTime);
 	void DebugRender(Scene& scene);
+	void VFXRender(Scene& scene);
 	void DebugTextRender(Scene& scene, float deltaTime);
 	void DrawTextLabels(Scene& scene);
 

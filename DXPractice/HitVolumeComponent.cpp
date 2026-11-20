@@ -8,6 +8,7 @@
 #include "HitDetectionSystem.h"
 #include "HitVolumeFile.h"
 #include "SkeletalAnimatorComponent.h"
+#include "VfxRenderer.h"
 
 namespace
 {
@@ -77,6 +78,7 @@ void HitVolumeComponent::Build(const HitVolumeDesc& desc)
 		hitGroup.rehitIntervalSec = groupDesc.rehitIntervalSec;
 		hitGroup.damageScale = groupDesc.damageScale;
 		hitGroup.staggerScale = groupDesc.staggerScale;
+		hitGroup.vfxColor = groupDesc.vfxColor;
 	}
 	for (const HitShapeDesc& shape : desc.shapes)
 	{
@@ -102,7 +104,13 @@ HitVolumeDesc HitVolumeComponent::ExportDesc() const
 		});
 		if (isUsed)
 		{
-			desc.groups.push_back({hitGroups[i].name, hitGroups[i].rehitIntervalSec, hitGroups[i].damageScale, hitGroups[i].staggerScale});
+			desc.groups.push_back({
+				hitGroups[i].name,
+				hitGroups[i].rehitIntervalSec,
+				hitGroups[i].damageScale,
+				hitGroups[i].staggerScale,
+				hitGroups[i].vfxColor
+			});
 		}
 	}
 	return desc;
@@ -160,6 +168,16 @@ void HitVolumeComponent::SetGroupRehitInterval(const std::string& groupName, flo
 	if (index >= 0)
 	{
 		hitGroups[index].rehitIntervalSec = intervalSec;
+	}
+}
+
+void HitVolumeComponent::SetGroupVFXColor(const std::string& groupName, const DirectX::XMFLOAT4& inColor)
+{
+	const int index = FindGroup(groupName);
+	assert(index >= 0 && "unknown hitbox group");
+	if (index >= 0)
+	{
+		hitGroups[index].vfxColor = inColor;
 	}
 }
 
@@ -332,6 +350,25 @@ void HitVolumeComponent::DrawDebug(DebugRenderer& debugRenderer) const
 		}
 
 		debugRenderer.DrawCapsule3D(shape.world.centerA, shape.world.centerB, shape.world.radius, color);
+	}
+}
+
+void HitVolumeComponent::DrawVFX(VfxRenderer& vfxRenderer) const
+{
+	for (const HitShape& shape : hitShapes)
+	{
+		if (shape.desc.role != HitVolumeRole::HITBOX || !shape.hasWorld)
+		{
+			continue;
+		}
+
+		const HitGroup& group = hitGroups[shape.groupIndex];
+		if (!group.isActive || group.vfxColor.w <= 0.f)
+		{
+			continue;
+		}
+
+		vfxRenderer.DrawCapsule(shape.world.centerA, shape.world.centerB, shape.world.radius, group.vfxColor);
 	}
 }
 

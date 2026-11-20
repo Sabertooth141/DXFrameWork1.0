@@ -6,6 +6,7 @@
 #include "Collision3D.h"
 #include "IComponent.h"
 
+class VfxRenderer;
 class SkeletalAnimatorComponent;
 class DebugRenderer;
 
@@ -34,6 +35,9 @@ struct HitGroup
 	// for damage / stagger meter
 	float damageScale = 1.f;
 	float staggerScale = 1.f;
+	
+	// TODO: temp vfx
+	DirectX::XMFLOAT4 vfxColor = {0.f, 0.f, 0.f, 0.f};
 };
 
 struct HitShapeDesc
@@ -57,6 +61,9 @@ struct HitGroupDesc
 	// for damage / stagger meter
 	float damageScale = 1.f;
 	float staggerScale = 1.f;
+
+	// TODO: temp vfx
+	DirectX::XMFLOAT4 vfxColor = { 0.f, 0.f, 0.f, 0.f };
 };
 
 // everything a HitVolumeComponent is built from (what the JSON file holds)
@@ -118,6 +125,9 @@ public:
 	bool IsGroupActive(const std::string& groupName);
 	void SetGroupRehitInterval(const std::string& groupName, float intervalSec);
 
+	// TODO: temp vfx color
+	void SetGroupVFXColor(const std::string& groupName, const DirectX::XMFLOAT4& inColor);
+
 	// hurtboxes
 	void SetHurtboxEnabled(const std::string& name, bool inIsEnabled);
 	void SetAllHurtboxEnabled(bool inIsEnabled);
@@ -141,6 +151,7 @@ public:
 	}
 
 	void DrawDebug(DebugRenderer& debugRenderer) const;
+	void DrawVFX(VfxRenderer& vfxRenderer) const;
 
 public:
 	int highlightedShape = -1; // editor selection, drawn in yellow

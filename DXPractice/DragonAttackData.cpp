@@ -10,7 +10,7 @@ const std::vector<AttackOption>& DragonAttackData()
 		// back whole sector
 		attkList.push_back({
 			.name = "tailSwipe", .clip = "Attk2", .priority = 5, .cooldownSec = 8.f,
-			.minRange = 1.f, .maxRange = 8.f, .sectors = sectorBack,
+			.minRange = 0.f, .maxRange = 8.f, .sectors = sectorBack,
 			.trackSpeedDeg = 0.f, .recoverSec = 0.8f, .whiffRecoverSec = 1.6f, .hitboxGroup = "tail"
 			});
 

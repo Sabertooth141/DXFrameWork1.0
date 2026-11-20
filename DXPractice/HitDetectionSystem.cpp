@@ -85,7 +85,7 @@ void HitDetectionSystem::DetectPair(HitVolumeComponent& attacker, HitVolumeCompo
 	const std::vector<HitShape>& attackerShapes = attacker.GetShapes();
 	const std::vector<HitShape>& victimShapes = victim.GetShapes();
 
-	for (size_t groupIndex = 0; groupIndex < groups.size(); groupIndex++)
+	for (int groupIndex = 0; groupIndex < static_cast<int>(groups.size()); groupIndex++)
 	{
 		if (!groups[groupIndex].isActive || !attacker.CanHit(groupIndex, victim.owner, timeSec))
 		{

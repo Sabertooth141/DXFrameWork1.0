@@ -10,7 +10,7 @@ namespace
 	constexpr int fileVersion = 1;
 
 	// role <-> string (array order = HitVolumeRole order)
-	constexpr const char* roleNames[] = { "hurtbox", "hitbox", "body" };
+	constexpr const char* roleNames[] = {"hurtbox", "hitbox", "body"};
 
 	const char* RoleToString(HitVolumeRole role)
 	{
@@ -38,7 +38,7 @@ namespace
 
 	nlohmann::ordered_json Float3ToJson(const DirectX::XMFLOAT3& v)
 	{
-		return nlohmann::ordered_json::array({ Round3(v.x), Round3(v.y), Round3(v.z) });
+		return nlohmann::ordered_json::array({Round3(v.x), Round3(v.y), Round3(v.z)});
 	}
 
 	bool JsonToFloat3(const nlohmann::ordered_json& json, DirectX::XMFLOAT3& out)
@@ -54,7 +54,29 @@ namespace
 				return false;
 			}
 		}
-		out = { json[0].get<float>(), json[1].get<float>(), json[2].get<float>() };
+		out = {json[0].get<float>(), json[1].get<float>(), json[2].get<float>()};
+		return true;
+	}
+
+	nlohmann::ordered_json Float4ToJson(const DirectX::XMFLOAT4& v)
+	{
+		return nlohmann::ordered_json::array({Round3(v.x), Round3(v.y), Round3(v.z), Round3(v.w)});
+	}
+
+	bool JsonToFloat4(const nlohmann::ordered_json& json, DirectX::XMFLOAT4& out)
+	{
+		if (!json.is_array() || json.size() != 4)
+		{
+			return false;
+		}
+		for (const auto& element : json)
+		{
+			if (!element.is_number())
+			{
+				return false;
+			}
+		}
+		out = {json[0].get<float>(), json[1].get<float>(), json[2].get<float>(), json[3].get<float>()};
 		return true;
 	}
 
@@ -113,6 +135,10 @@ HitVolumeFile::Result HitVolumeFile::Load(const std::string& path, HitVolumeDesc
 			group.rehitIntervalSec = GetFloat(entry, "rehitIntervalSec", 0.f);
 			group.damageScale = GetFloat(entry, "damageScale", group.damageScale);
 			group.staggerScale = GetFloat(entry, "staggerScale", group.staggerScale);
+			if (const auto color = entry.find("vfxColor"); color != entry.end())
+			{
+				JsonToFloat4(*color, group.vfxColor); // missing / malformed = no glow
+			}
 			if (!group.name.empty())
 			{
 				desc.groups.push_back(std::move(group));
@@ -174,6 +200,10 @@ HitVolumeFile::Result HitVolumeFile::Save(const std::string& path, const HitVolu
 		entry["rehitIntervalSec"] = Round3(group.rehitIntervalSec);
 		entry["damageScale"] = Round3(group.damageScale);
 		entry["staggerScale"] = Round3(group.staggerScale);
+		if (group.vfxColor.w > 0.f)
+		{
+			entry["vfxColor"] = Float4ToJson(group.vfxColor);
+		}
 		groups.push_back(std::move(entry));
 	}
 
@@ -200,15 +230,15 @@ HitVolumeFile::Result HitVolumeFile::Save(const std::string& path, const HitVolu
 
 	// one entry per line: readable, and a changed shape is a one-line git diff
 	const auto writeArray = [](std::string& text, const nlohmann::ordered_json& array)
+	{
+		text += "[\n";
+		for (size_t i = 0; i < array.size(); i++)
 		{
-			text += "[\n";
-			for (size_t i = 0; i < array.size(); i++)
-			{
-				text += "  " + array[i].dump();
-				text += i + 1 < array.size() ? ",\n" : "\n";
-			}
-			text += " ]";
-		};
+			text += "  " + array[i].dump();
+			text += i + 1 < array.size() ? ",\n" : "\n";
+		}
+		text += " ]";
+	};
 
 	std::string text = "{\n";
 	text += " \"version\": " + std::to_string(fileVersion) + ",\n";

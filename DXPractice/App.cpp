@@ -120,13 +120,11 @@ void App::Draw(float deltaTime)
 	vfxRenderer.Begin();
 	renderSystem.Render();
 
-	// TODO: test
-	vfxRenderer.DrawGroundDisc({ 0.f, 0.02f, 0.f }, 3.f, { 1.f, 0.3f, 0.1f, 1.f });
-	vfxRenderer.DrawGroundFan({ 6.f, 0.02f, 0.f }, 0.f, 5.f, DirectX::XMConvertToRadians(35.f), { 1.f, 0.6f, 0.1f, 0.35f });
-	vfxRenderer.DrawGroundLine({ -6.f, 0.02f, 0.f }, DirectX::XMConvertToRadians(30.f), 8.f, 2.f, { 1.f, 0.2f, 0.2f, 0.35f });
-	vfxRenderer.DrawCapsule({ -2.f, 1.5f, 3.f }, { 2.f, 2.5f, 3.f }, 0.6f, { 0.2f, 0.6f, 1.f, 0.4f });
+	if (Scene* scene = sceneManager.GetCurrScene())
+	{
+		VFXRender(*scene);
+	}
 
-	// translucent additive glow over the opaque scene, before debug lines / text / UI
 	vfxRenderer.Flush(renderer, cam3D.GetView());
 
 	if (Scene* scene = sceneManager.GetCurrScene())
@@ -222,6 +220,17 @@ void App::DebugRender(Scene& scene)
 			DirectX::XMStoreFloat3(&from, animator->GetNodeWorldMatrix(parent).r[3]);
 			DirectX::XMStoreFloat3(&to, animator->GetNodeWorldMatrix(i).r[3]);
 			debugRenderer.DrawLine3D(from, to, {1.f, 0.f, 1.f, 1.f});
+		}
+	}
+}
+
+void App::VFXRender(Scene& scene)
+{
+	for (auto& object : scene.GetObjects())
+	{
+		if (const auto* volume = object->GetComponent<HitVolumeComponent>())
+		{
+			volume->DrawVFX(vfxRenderer);
 		}
 	}
 }

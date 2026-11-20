@@ -1,10 +1,10 @@
 {
  "version": 1,
  "groups": [
-  {"name":"breath","rehitIntervalSec":0.4},
-  {"name":"wingL","rehitIntervalSec":0.0},
-  {"name":"headBlade","rehitIntervalSec":0.0},
-  {"name": "tail","rehitIntervalSec": 0.0}
+  {"name":"breath","rehitIntervalSec":0.4,"vfxColor":[1.0,0.45,0.1,0.18]},
+  {"name":"wingL","rehitIntervalSec":0.0,"vfxColor":[0.8,0.3,1.0,0.12]},
+  {"name":"headBlade","rehitIntervalSec":0.0,"vfxColor":[0.4,0.9,1.0,0.4]},
+  {"name":"tail","rehitIntervalSec":0.0,"vfxColor":[1.0,0.25,0.2,0.12]}
  ],
  "shapes": [
   {"role":"hurtbox","name":"body","bone":"pelvis","a":[0.0,0.0,0.0],"b":[-1.05,0.0,0.42],"radius":0.75},
