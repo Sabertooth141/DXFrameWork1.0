@@ -93,6 +93,7 @@ public:
 	void BindPalette(Renderer& renderer);
 
 	void AddClip(std::shared_ptr<const AnimationClip> inClip, bool inLoop);
+
 	void SetFadeTable(std::shared_ptr<const AnimationFadeTable> inTable)
 	{
 		fadeTable = inTable;
@@ -163,6 +164,11 @@ public:
 		timeScale = inScale;
 	}
 
+	float GetTimeScale() const
+	{
+		return timeScale;
+	}
+
 	const std::string& GetCurrClipName() const;
 
 	// sorted
@@ -213,10 +219,10 @@ private:
 	PoseFade fade;
 	float timeScale = 1.f; // for slow mo
 	DirectX::XMFLOAT4X4 modelCorrection{
-	1.f, 0.f, 0.f, 0.f,
-	0.f, 1.f, 0.f, 0.f,
-	0.f, 0.f, 1.f, 0.f,
-	0.f, 0.f, 0.f, 1.f
+		1.f, 0.f, 0.f, 0.f,
+		0.f, 1.f, 0.f, 0.f,
+		0.f, 0.f, 1.f, 0.f,
+		0.f, 0.f, 0.f, 1.f
 	};
 
 	// for event firing push into pending and fire at the end of frame

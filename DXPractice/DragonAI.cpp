@@ -130,6 +130,14 @@ void DragonAI::OnHitDealt(const HitEvent& event)
 #endif
 }
 
+void DragonAI::EnterPhase2()
+{
+	currPhase = 2;
+	isEnraging = false;
+	currRecoverScale = phase2RecoverScale;
+	animator->SetTimeScale(phase2TimeScale);
+}
+
 #ifndef NDEBUG
 void DragonAI::DrawDebugUI()
 {

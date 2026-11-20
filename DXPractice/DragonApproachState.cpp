@@ -65,6 +65,6 @@ void DragonApproachState::DrawDebug(const DragonAI& ai, DebugRenderer& debugRend
 float DragonApproachState::GetWalkSpeed(const DragonAI& ai) const
 {
 	// so that the monster doesnt slide on ground
-	return walkStrideSpeed * ai.GetTransform().GetScale().x;
+	return walkStrideSpeed * ai.GetTransform().GetScale().x * ai.GetAnimator().GetTimeScale();
 }
 

@@ -19,6 +19,8 @@ void DragonRecoverState::Enter(DragonAI& ai)
 		{
 			waitSec = option.whiffRecoverSec;
 		}
+
+		waitSec *= ai.GetActionRecoverScale();
 	}
 }
 

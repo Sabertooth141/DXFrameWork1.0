@@ -3,7 +3,7 @@
 
 struct AttackOption;
 
-inline constexpr const char* trackEndEvent = "TrackEnd";
+inline constexpr auto trackEndEvent = "TrackEnd";
 
 class DragonCalmState : public DragonState
 {
@@ -59,7 +59,7 @@ public:
 	{
 		if (kind == InterruptStateKind::STAGGER)
 		{
-			return true;
+			return !isEnrage;
 		}
 
 		return false;
@@ -67,6 +67,9 @@ public:
 
 public:
 	const char* clipName = "Roar";
+
+private:
+	bool isEnrage = false;
 };
 
 
@@ -106,7 +109,7 @@ class DragonAttackState : public DragonState
 public:
 	void Enter(DragonAI& ai) override;
 	void Update(DragonAI& ai, float deltaTime) override;
-	
+
 	bool CanBeInterrupted(InterruptStateKind kind) const override
 	{
 		return kind != InterruptStateKind::PHASE_CHANGE;

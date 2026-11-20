@@ -25,6 +25,8 @@ public:
 
 	void OnHitDealt(const HitEvent& event) override;
 
+	void EnterPhase2();
+
 #ifndef NDEBUG
 	void DrawDebugUI() override;
 	void DrawDebugGizmos(DebugRenderer& debugRenderer) const override;
@@ -106,6 +108,11 @@ public:
 		return strafeMotion;
 	}
 
+	float GetActionRecoverScale() const
+	{
+		return currRecoverScale;
+	}
+
 private:
 	void RegisterStates();
 	void BindHealthCallbacks();
@@ -133,6 +140,10 @@ private:
 	StrafeMotion strafeMotion;
 	DragonAttackSelector attackSelector{ DragonAttackData() };
 	int currPhase = 1;
+	float phase2TimeScale = 1.1f;
+	float phase2RecoverScale = 0.75f;
+	float normalRecoverScale = 1.f;
+	float currRecoverScale = 1.f;
 
 	// attack
 	int currAttkIndex = -1;
