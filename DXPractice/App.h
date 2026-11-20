@@ -16,7 +16,9 @@
 #include "ImGuiLayer.h"
 #include "SceneManager.h"
 #include "SkeletalAnimationSystem.h"
+#include "VfxRenderer.h"
 
+class VfxRenderer;
 class GameObject;
 class ModelReader;
 
@@ -45,6 +47,7 @@ private:
 	Window wnd;
 	Renderer renderer;
 	DebugRenderer debugRenderer;
+	VfxRenderer vfxRenderer;
 	TextRenderer textRenderer;
 
 	Timer timer;

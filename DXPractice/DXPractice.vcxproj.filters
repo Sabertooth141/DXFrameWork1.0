@@ -410,6 +410,9 @@
     <ClCompile Include="DragonDeadState.cpp">
       <Filter>Source Files\Scripts\Entity\Dragon\States</Filter>
     </ClCompile>
+    <ClCompile Include="VfxRenderer.cpp">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Win.h">
@@ -720,6 +723,9 @@
     </ClInclude>
     <ClInclude Include="DragonStrafeMotion.h">
       <Filter>Header Files\Scripts\Entity\Dragon</Filter>
+    </ClInclude>
+    <ClInclude Include="VfxRenderer.h">
+      <Filter>Header Files\Graphics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

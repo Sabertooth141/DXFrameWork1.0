@@ -233,6 +233,7 @@
     <ClCompile Include="TransformCBuffer.cpp" />
     <ClCompile Include="TransformComponent.cpp" />
     <ClCompile Include="VertexShader.cpp" />
+    <ClCompile Include="VfxRenderer.cpp" />
     <ClCompile Include="Window.cpp" />
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
@@ -337,6 +338,7 @@
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="VertexBuffer.h" />
     <ClInclude Include="VertexShader.h" />
+    <ClInclude Include="VfxRenderer.h" />
     <ClInclude Include="Win.h" />
     <ClInclude Include="Window.h" />
     <ClInclude Include="WindowSettings.h" />
