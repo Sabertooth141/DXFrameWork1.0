@@ -62,7 +62,7 @@ struct GroupRehitDef
 struct CharacterData
 {
 	float scale = 1.f;
-	float modelYawDeg = 0.f;
+	DirectX::XMFLOAT3 modelRotationDeg{};
 
 	// hit volumes come from this JSON file (edited in the inspector).
 	// shapes / rehits below are only the fallback while the file does not exist yet:
@@ -91,3 +91,4 @@ void ApplyCharacterData(GameObject& object, const CharacterData& data);
 
 // character tables, each built once on first call
 const CharacterData& DragonData(); // DragonData.cpp
+const CharacterData& PlayerData(); // PlayerData.cpp

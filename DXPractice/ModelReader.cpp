@@ -204,6 +204,23 @@ int ModelReader::FindOrAddBone(const aiBone* bone)
 	auto boneIndex = boneIndexByName.find(name);
 	if (boneIndex != boneIndexByName.end())
 	{
+#ifndef NDEBUG
+		// same name, different bind in another mesh -> this mesh would be skinned with the wrong offset
+		const DirectX::XMFLOAT4X4 incoming = ToRowMajor(bone->mOffsetMatrix);
+		const DirectX::XMFLOAT4X4& stored = skeleton->bones[boneIndex->second].offset;
+		for (int row = 0; row < 4; row++)
+		{
+			for (int col = 0; col < 4; col++)
+			{
+				if (fabsf(incoming.m[row][col] - stored.m[row][col]) > 1e-3f)
+				{
+					OutputDebugStringA(("[ModelReader] bone '" + name + "' has a different bind in another mesh\n").c_str());
+					row = 4; // report once per bone
+					break;
+				}
+			}
+		}
+#endif
 		return boneIndex->second;
 	}
 
@@ -243,6 +260,12 @@ SkinnedMeshData ModelReader::ProcessSkinnedMesh(const aiMesh* mesh, const aiNode
 	for (unsigned bone = 0; bone < mesh->mNumBones; bone++)
 	{
 		const aiBone* currBone = mesh->mBones[bone];
+
+		// skip bones with 0 weights
+		if (currBone->mNumWeights == 0)
+		{
+			continue;
+		}
 		const int boneIndex = FindOrAddBone(currBone);
 
 		for (unsigned weight = 0; weight < currBone->mNumWeights; weight++)

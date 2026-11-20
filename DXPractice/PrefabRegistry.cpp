@@ -64,7 +64,7 @@ void RegisterPrefabs()
 		object.GetComponent<MeshRendererComponent>()->doubleSided = true;
 		//object.AddComponent<CycleAnimationTester>();
 		object.AddComponent<DragonAI>();
-		
+
 		auto& locomotion = object.AddComponent<LocomotionComponent>();
 		locomotion.isPushedOut = false;
 		locomotion.bodyRadius = 3.f;
@@ -73,23 +73,20 @@ void RegisterPrefabs()
 	});
 
 	// player
-	PrefabRegistry::Instance().RegisterModel("player", "../../assets/models/testCube.fbx", mat, [](GameObject& object)
+	PrefabRegistry::Instance().RegisterModel("player", "../../assets/models/10e/mesh/violinistBaseMesh.fbx", mat, [](GameObject& object)
 	{
-		object.GetTransform()->SetScale({0.6f, 1.8f, 0.35f});
+		ApplyCharacterData(object, PlayerData());
 		object.SetTag(ObjectTag::PLAYER);
+		object.GetComponent<MeshRendererComponent>()->doubleSided = true;
+
 		object.AddComponent<PlayerController>();
-		object.AddComponent<LocomotionComponent>();
+		auto& locomotion = object.AddComponent<LocomotionComponent>();
+		locomotion.bodyCenterHeight = 0.9f; // origin is at her feet
+
 		object.AddComponent<CameraController>();
 		object.AddComponent<HealthComponent>(100.f);
 
-		// fallback until data/hitvolumes/player.json is saved from the inspector
-		HitVolumeDesc fallback;
-		fallback.shapes = {
-			{
-				.role = HitVolumeRole::HURTBOX, .name = "body",
-				.localCenterA = {0.f, -0.55f, 0.f}, .localCenterB = {0.f, 0.55f, 0.f}, .radius = 0.35f
-			}
-		};
-		object.AddComponent<HitVolumeComponent>().LoadFile("../../data/hitvolumes/player.json", fallback);
+		// temporary: N/B/R to look through the clips
+		object.AddComponent<CycleAnimationTester>();
 	});
 }

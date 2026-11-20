@@ -184,7 +184,7 @@ public:
 
 	DirectX::XMMATRIX GetNodeWorldMatrix(int nodeIndex) const;
 	DirectX::XMMATRIX GetBoneWorldMatrix(const std::string& name) const;
-	void SetModelYaw(float yawRad);
+	void SetModelRotation(const DirectX::XMFLOAT3& inRotation);
 
 private:
 	void StartPlayback(const ClipEntry& entry);

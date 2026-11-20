@@ -136,9 +136,10 @@ void LocomotionComponent::ClampToArena()
 
 Capsule3D LocomotionComponent::BuildBodyCapsule(const DirectX::XMFLOAT3& position) const
 {
+	const float centerY = position.y + bodyCenterHeight;
 	return {
-		{position.x, position.y - bodyHalfSegment, position.z},
-		{position.x, position.y + bodyHalfSegment, position.z},
+		{position.x, centerY - bodyHalfSegment, position.z},
+		{position.x, centerY + bodyHalfSegment, position.z},
 		bodyRadius
 	};
 }

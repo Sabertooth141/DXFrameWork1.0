@@ -496,16 +496,17 @@ DirectX::XMMATRIX SkeletalAnimatorComponent::GetBoneWorldMatrix(const std::strin
 	}
 }
 
-void SkeletalAnimatorComponent::SetModelYaw(float yawRad)
+void SkeletalAnimatorComponent::SetModelRotation(const DirectX::XMFLOAT3& inRotation)
 {
-	const DirectX::XMMATRIX rotation = DirectX::XMMatrixRotationY(yawRad);
+	const DirectX::XMMATRIX rotation =
+		DirectX::XMMatrixRotationRollPitchYaw(inRotation.x, inRotation.y, inRotation.z);
 	DirectX::XMStoreFloat4x4(&modelCorrection, rotation);
 
-	// the palette may not be rebuilt by Tick (edit mode doesn't tick animators),
+	// the palette may not be rebuilt by tick,
 	// so rebuild it now from the current globals
 	ComputePalette();
 
-	// keep the editor's pick box facing the same way as the mesh
+	// keep the editors pick box facing the same way as the mesh
 	owner->SetBoundsCorrection(rotation);
 }
 

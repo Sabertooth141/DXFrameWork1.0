@@ -12,7 +12,12 @@ void ApplyCharacterData(GameObject& object, const CharacterData& data)
 
 	auto* animator = object.GetComponent<SkeletalAnimatorComponent>();
 	assert(animator && "character data needs a SkeletalAnimatorComponent");
-	animator->SetModelYaw(DirectX::XMConvertToRadians(data.modelYawDeg));
+	const DirectX::XMFLOAT3& rotationDeg = data.modelRotationDeg;
+	animator->SetModelRotation({
+		DirectX::XMConvertToRadians(rotationDeg.x),
+		DirectX::XMConvertToRadians(rotationDeg.y),
+		DirectX::XMConvertToRadians(rotationDeg.z)
+	});
 
 	// hit volumes: the JSON file wins; the code tables are the fallback until it exists
 	HitVolumeDesc fallback;

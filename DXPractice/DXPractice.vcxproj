@@ -216,6 +216,7 @@
     <ClCompile Include="PhysicsTest.cpp" />
     <ClCompile Include="PixelShader.cpp" />
     <ClCompile Include="PlayerController.cpp" />
+    <ClCompile Include="PlayerData.cpp" />
     <ClCompile Include="PrefabRegistry.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Rigidbody2DComponent.cpp" />

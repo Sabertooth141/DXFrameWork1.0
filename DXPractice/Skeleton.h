@@ -5,7 +5,7 @@
 #include <vector>
 
 // max number of bones allowed - MUST MATCH SHADER
-constexpr unsigned maxBones = 128;
+constexpr unsigned maxBones = 256;
 
 struct LocalTRS
 {

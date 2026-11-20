@@ -1,4 +1,4 @@
-#define MAX_BONES 128 // must match maxBones in Skeleton.h
+#define MAX_BONES 256 // must match maxBones in Skeleton.h
 
 cbuffer Transform : register(b0)
 {

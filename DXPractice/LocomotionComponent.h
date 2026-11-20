@@ -16,6 +16,7 @@ public:
 	void ApplyLocomotion(float deltaTime);
 
 public:
+	float bodyCenterHeight = 0.f;
 	float bodyRadius = 0.35f;
 	float bodyHalfSegment = 0.55f;
 	bool isPushedOut = true;
