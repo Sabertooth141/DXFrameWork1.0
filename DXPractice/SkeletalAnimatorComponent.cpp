@@ -368,7 +368,7 @@ void SkeletalAnimatorComponent::ExtractRootMove(ClipPlayback& clipPlayback, std:
 	{
 		// if looping = start -> now
 		deltaX = (clipPlayback.endRootPos.x - clipPlayback.lastRootPos.x) + (pos.x - clipPlayback.firstRootPos.x);
-		deltaZ = (clipPlayback.endRootPos.z - clipPlayback.lastRootPos.z) + (pos.x - clipPlayback.firstRootPos.z);
+		deltaZ = (clipPlayback.endRootPos.z - clipPlayback.lastRootPos.z) + (pos.z - clipPlayback.firstRootPos.z);
 	}
 	clipPlayback.lastRootPos = pos;
 

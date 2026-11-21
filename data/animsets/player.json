@@ -1,0 +1,45 @@
+{
+ "version": 1,
+ "animDir": "../../assets/models/10e/animations/",
+ "initialClip": "IdleCombat",
+ "defaultFadeSec": 0.2,
+ "clips": [
+  {"name":"IdleCombat","loop":true},
+  {"name":"RunStart","loop":false},
+  {"name":"RunLoop","loop":true},
+  {"name":"RunStop","loop":false},
+  {"name":"RunFastStart","loop":false},
+  {"name":"RunFastLoop","loop":true},
+  {"name":"RunFastStop","loop":false},
+  {"name":"RollF_RM","loop":false},
+  {"name":"RunAttk1_RM","loop":false},
+  {"name":"Combo1Attk1_RM","loop":false},
+  {"name":"Combo1Attk2_RM","loop":false},
+  {"name":"Combo1Attk3_RM","loop":false},
+  {"name":"Combo1Attk4_RM","loop":false},
+  {"name":"Combo2Attk1_RM","loop":false},
+  {"name":"Combo2Attk2_RM","loop":false},
+  {"name":"Combo2Attk3_RM","loop":false},
+  {"name":"Combo2Attk4_RM","loop":false},
+  {"name":"Combo3Attk1","loop":false},
+  {"name":"Combo3Attk2","loop":false},
+  {"name":"Combo3Attk3","loop":false},
+  {"name":"Combo3Attk4","loop":false},
+  {"name":"HitLargeF_RM","loop":false},
+  {"name":"Death_RM","loop":false},
+  {"name":"GetUpB","loop":false}
+ ],
+ "fades": [
+ ],
+ "events": [
+  {"clip":"Combo1Attk1_RM","time":0.5,"event":"ComboWindow"},
+  {"clip":"Combo1Attk2_RM","time":0.83,"event":"ComboWindow"},
+  {"clip":"Combo1Attk3_RM","time":1.0,"event":"ComboWindow"},
+  {"clip":"Combo1Attk4_RM","time":2.0,"event":"ComboWindow"},
+  {"clip":"Combo3Attk1","time":0.33,"event":"ComboWindow"},
+  {"clip":"Combo3Attk2","time":0.33,"event":"ComboWindow"},
+  {"clip":"Combo3Attk3","time":0.33,"event":"ComboWindow"},
+  {"clip":"Combo3Attk4","time":0.8,"event":"ComboWindow"},
+  {"clip":"RollF_RM","time":1.0,"event":"ComboWindow"}
+ ]
+}

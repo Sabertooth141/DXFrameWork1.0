@@ -1,0 +1,10 @@
+{
+ "version": 1,
+ "groups": [
+  {"name":"sword","rehitIntervalSec":0.0,"damageScale":1.0,"staggerScale":1.0}
+ ],
+ "shapes": [
+  {"role":"hurtbox","name":"body","bone":"","a":[0.0,0.35,0.0],"b":[0.0,1.4,0.0],"radius":0.3},
+  {"role":"hitbox","name":"sword","group":"sword","bone":"Sword1","a":[0.0,0.0,0.0],"b":[-0.14,0.87,0.72],"radius":0.075,"sweeping":true}
+ ]
+}
