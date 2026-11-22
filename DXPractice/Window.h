@@ -39,6 +39,7 @@ public:
 	void EnableCursor();
 	void DisableCursor();
 	bool CursorEnabled() const;
+	void UpdateCursorLock();
 
 	Renderer& GetRenderer();
 

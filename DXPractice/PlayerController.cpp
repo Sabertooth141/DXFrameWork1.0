@@ -13,7 +13,7 @@
 
 namespace
 {
-	constexpr float instantTurnRate = 1000.f;
+	constexpr float instantTurnRate = 45.f;
 	constexpr auto invulnOnEvent = "InvulnOn";
 	constexpr auto invulnOffEvent = "InvulnOff";
 	constexpr auto comboWindowEvent = "ComboWindow";

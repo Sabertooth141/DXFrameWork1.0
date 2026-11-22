@@ -383,6 +383,22 @@ bool Window::CursorEnabled() const
 	return cursorEnabled;
 }
 
+void Window::UpdateCursorLock()
+{
+	if (cursorEnabled || GetForegroundWindow() != hWnd)
+	{
+		return;
+	}
+
+	ConfineCursor();
+
+	RECT rect;
+	GetClientRect(hWnd, &rect);
+	POINT center = {.x = (rect.left + rect.right) / 2, .y = (rect.top + rect.bottom) / 2};
+	ClientToScreen(hWnd, &center);
+	SetCursorPos(center.x, center.y);
+}
+
 void Window::ConfineCursor()
 {
 	RECT rect;

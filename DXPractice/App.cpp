@@ -159,6 +159,7 @@ void App::Draw(float deltaTime)
 		}
 	}
 
+	wnd.UpdateCursorLock();
 	imGui.SetCursorEnabled(!gameContext.wantsCursorlock);
 
 	debugRenderer.Flush3D(renderer, cam3D.GetView());
