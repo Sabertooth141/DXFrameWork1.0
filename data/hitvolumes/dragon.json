@@ -128,6 +128,7 @@
   {"role":"body","name":"legL","bone":"foot_l","a":[0.0,0.0,0.0],"b":[0.6,0.0,0.0],"radius":0.2},
   {"role":"body","name":"legR","bone":"foot_r","a":[0.0,0.0,0.0],"b":[-0.6,0.0,0.0],"radius":0.2},
   {"role":"hitbox","name":"headBlade-Head","group":"headBlade","bone":"head","a":[0.0,0.0,0.0],"b":[0.35,0.0,-1.0],"radius":0.89,"sweeping":false},
-  {"role":"hitbox","name":"headBlade-Neck","group":"headBlade","bone":"neck_01","a":[0.0,0.0,0.0],"b":[0.79,0.0,0.0],"radius":0.745,"sweeping":false}
+  {"role":"hitbox","name":"headBlade-Neck","group":"headBlade","bone":"neck_01","a":[-0.72,0.0,0.0],"b":[1.04,0.0,0.0],"radius":1.17,"sweeping":false},
+  {"role":"hitbox","name":"headBlade-Torso","group":"headBlade","bone":"spine_01","a":[-0.7,0.0,0.0],"b":[2.0,0.0,0.0],"radius":1.095,"sweeping":false}
  ]
 }

@@ -65,3 +65,16 @@ void ImGuiLayer::EndFrame()
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }
+
+void ImGuiLayer::SetCursorEnabled(bool inEnabled)
+{
+	ImGuiIO& io = ImGui::GetIO();
+	if (inEnabled)
+	{
+		io.ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
+	}
+	else
+	{
+		io.ConfigFlags |= ImGuiConfigFlags_NoMouse;
+	}
+}

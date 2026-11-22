@@ -94,7 +94,9 @@ void CameraController::ApplyToCamera() const
 	cam->yaw = yaw;
 	cam->pitch = -orbitPitch;
 
-	const DirectX::XMVECTOR lookTarget = DirectX::XMVectorAdd(DirectX::XMLoadFloat3(&smoothedTarget), DirectX::XMVectorScale(cam->GetCamForward(), shoulderOffset));
+	// slides camera right for offset
+	const DirectX::XMVECTOR lookTarget = DirectX::XMVectorAdd(DirectX::XMLoadFloat3(&smoothedTarget),
+	                                                          DirectX::XMVectorScale(cam->GetCamRight(), shoulderOffset));
 
 
 	const DirectX::XMVECTOR forward = cam->GetCamForward();

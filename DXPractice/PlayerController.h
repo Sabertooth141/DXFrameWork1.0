@@ -21,7 +21,7 @@ enum class PlayerState
 enum class BufferedInput
 {
 	NONE,
-	ATTACK,
+	ATTACK1,
 	ATTACK2,
 	ROLL,
 };
@@ -36,7 +36,8 @@ public:
 
 private:
 	DirectX::XMFLOAT3 ReadMoveInput() const;
-	bool ReadAttackTriggered();
+	bool ReadAttack1Triggered();
+	bool ReadAttack2Triggered();
 
 	void UpdateLocomotion(const DirectX::XMFLOAT3& dir);
 
@@ -90,7 +91,8 @@ private:
 
 	PlayerState state = PlayerState::LOCOMOTION;
 	const ActionDef* currAction = nullptr; // null while in locomotion
-	bool wasLeftDown = false;
+	bool wasAttk1Down = false;
+	bool wasAttk2Down = false;
 
 	bool isKnockdownPending = false;
 	DirectX::XMFLOAT3 hitDir{};

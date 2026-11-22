@@ -14,6 +14,9 @@ public:
 	void Shutdown();
 	void BeginFrame();
 	void EndFrame();
+
+	void SetCursorEnabled(bool inEnabled);
+
 	bool IsInitialized() const
 	{
 		return isInitialized;

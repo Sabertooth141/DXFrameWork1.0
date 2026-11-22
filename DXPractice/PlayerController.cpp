@@ -90,11 +90,11 @@ void PlayerController::Update(float deltaTime)
 	const DirectX::XMFLOAT3 dir = ReadMoveInput();
 
 	auto pressed = BufferedInput::NONE;
-	if (ReadAttackTriggered())
+	if (ReadAttack1Triggered())
 	{
-		pressed = BufferedInput::ATTACK;
+		pressed = BufferedInput::ATTACK1;
 	}
-	if (keyboard->KeyIsTriggered('F'))
+	if (ReadAttack2Triggered())
 	{
 		pressed = BufferedInput::ATTACK2;
 	}
@@ -171,11 +171,19 @@ DirectX::XMFLOAT3 PlayerController::ReadMoveInput() const
 	return {dirX * invLen, 0.f, dirZ * invLen};
 }
 
-bool PlayerController::ReadAttackTriggered()
+bool PlayerController::ReadAttack1Triggered()
 {
-	const bool isLeftDown = mouse->LeftPressed();
-	const bool istriggered = isLeftDown && !wasLeftDown;
-	wasLeftDown = isLeftDown;
+	const bool isAttkDown = mouse->LeftPressed();
+	const bool istriggered = isAttkDown && !wasAttk1Down;
+	wasAttk1Down = isAttkDown;
+	return istriggered;
+}
+
+bool PlayerController::ReadAttack2Triggered()
+{
+	const bool isAttkDown = mouse->RightPressed();
+	const bool istriggered = isAttkDown && !wasAttk2Down;
+	wasAttk2Down = isAttkDown;
 	return istriggered;
 }
 
@@ -224,7 +232,7 @@ void PlayerController::UpdateAction(const DirectX::XMFLOAT3& dir, BufferedInput 
 
 	const bool isComboClosing = animator->WasMarkerFired(comboWindowEndEvent);
 
-	const bool isAttackBuffered = bufferedInput == BufferedInput::ATTACK || bufferedInput == BufferedInput::ATTACK2;
+	const bool isAttackBuffered = bufferedInput == BufferedInput::ATTACK1 || bufferedInput == BufferedInput::ATTACK2;
 	if (isCancelOpen)
 	{
 		if (bufferedInput == BufferedInput::ROLL)
@@ -288,7 +296,7 @@ void PlayerController::StartFromInput(BufferedInput input, const DirectX::XMFLOA
 	case BufferedInput::ROLL:
 		StartAction(rollAction, dir, PlayerState::ROLL, minFade);
 		break;
-	case BufferedInput::ATTACK:
+	case BufferedInput::ATTACK1:
 		StartAction(currAction && *currAction->nextOnAttack ? currAction->nextOnAttack : attackAction,
 		            dir, PlayerState::ATTACK, minFade);
 		break;

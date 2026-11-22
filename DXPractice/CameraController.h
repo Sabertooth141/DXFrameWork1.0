@@ -31,14 +31,14 @@ public:
 	float shoulderOffset = 0.5f;
 
 	// orbit
-	float lookSens = 0.004f;
+	float lookSens = 0.002f;
 	float minPitchDeg = -10.f;
 	float maxPitchDeg = 60.f;
 
 	// zoom
-	float distance = 6.f;
+	float distance = 4.5f;
 	float minDistance = 3.f;
-	float maxDistance = 12.f;
+	float maxDistance = 7.f;
 	float zoomStep = 1.f;
 
 	// snap to target
