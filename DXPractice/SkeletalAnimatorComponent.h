@@ -112,7 +112,7 @@ public:
 		fadeTable = inTable;
 	}
 
-	bool PlayClip(const std::string& name, float fadeSec = -1.f);
+	bool PlayClip(const std::string& name, float fadeSec = -1.f, float startTimeSec = 0.f);
 	void AddEvent(const std::string& clipName, float timeSec, const std::string& eventName, const std::string& param = {});
 
 	// for data-driven setup / the editor (AnimSetComponent)
@@ -216,7 +216,7 @@ public:
 	void SetModelRotation(const DirectX::XMFLOAT3& inRotation);
 
 private:
-	void StartPlayback(const ClipEntry& entry);
+	void StartPlayback(const ClipEntry& entry, float startTimeSec = 0.f);
 	void StartFade(float fadeSec);
 	static void AdvanceTime(ClipPlayback& clipPlayback, float deltaTime);
 	void SampleClip(ClipPlayback& clipPlayback, std::vector<LocalTRS>& outPose);

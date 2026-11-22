@@ -15,8 +15,9 @@ namespace
 {
 	constexpr float instantTurnRate = 1000.f;
 	constexpr auto invulnOnEvent = "InvulnOn";
-	constexpr auto invulnOffEvent = "InVulnOff";
+	constexpr auto invulnOffEvent = "InvulnOff";
 	constexpr auto comboWindowEvent = "ComboWindow";
+	constexpr auto comboWindowEndEvent = "ComboWindowEnd";
 }
 
 void PlayerController::Awake()
@@ -47,6 +48,35 @@ void PlayerController::Start()
 	health = owner->GetComponent<HealthComponent>();
 	if (health)
 	{
+		health->onDamaged = [this](float, float, const HitEvent* event)
+		{
+			isKnockdownPending = true;
+			hitDir = {};
+			if (!event)
+			{
+				return;
+			}
+
+			const DirectX::XMFLOAT3 pos = owner->GetTransform()->GetPosition();
+			DirectX::XMFLOAT3 source = event->contactPoint;
+			float dx = source.x - pos.x;
+			float dz = source.z - pos.z;
+
+			if (dx * dx + dz * dz < 0.01f && event->attacker)
+			{
+				source = event->attacker->GetTransform()->GetPosition();
+				dx = source.x - pos.x;
+				dz = source.z - pos.z;
+			}
+
+			const float lengthSq = dx * dx + dz * dz;
+			if (lengthSq > 1e-6f)
+			{
+				const float invLength = 1.f / sqrtf(lengthSq);
+				hitDir = {dx * invLength, 0.f, dz * invLength};
+			}
+		};
+
 		health->onDeath = [this]()
 		{
 			health->Reset();
@@ -59,7 +89,7 @@ void PlayerController::Update(float deltaTime)
 	// TODO: temp
 	const DirectX::XMFLOAT3 dir = ReadMoveInput();
 
-	BufferedInput pressed = BufferedInput::NONE;
+	auto pressed = BufferedInput::NONE;
 	if (ReadAttackTriggered())
 	{
 		pressed = BufferedInput::ATTACK;
@@ -71,6 +101,12 @@ void PlayerController::Update(float deltaTime)
 	if (keyboard->KeyIsTriggered(VK_SPACE))
 	{
 		pressed = BufferedInput::ROLL; // wins a same-frame tie
+	}
+
+	if (isKnockdownPending)
+	{
+		isKnockdownPending = false;
+		StartKnockdown();
 	}
 
 	switch (state)
@@ -89,7 +125,8 @@ void PlayerController::Update(float deltaTime)
 	case PlayerState::ROLL:
 		UpdateAction(dir, pressed, deltaTime);
 		break;
-	case PlayerState::HIT:
+	case PlayerState::KNOCKDOWN:
+		UpdateKnockdown(dir, pressed, deltaTime);
 		break;
 	}
 
@@ -131,7 +168,7 @@ DirectX::XMFLOAT3 PlayerController::ReadMoveInput() const
 
 	// normalize so diagonals aren't faster
 	const float invLen = 1.f / sqrtf(dirX * dirX + dirZ * dirZ);
-	return { dirX * invLen, 0.f, dirZ * invLen };
+	return {dirX * invLen, 0.f, dirZ * invLen};
 }
 
 bool PlayerController::ReadAttackTriggered()
@@ -178,22 +215,30 @@ void PlayerController::UpdateAction(const DirectX::XMFLOAT3& dir, BufferedInput 
 	}
 
 	bool isOnChainFrame = false;
-	if (!isWindowOpen && animator->WasMarkerFired(comboWindowEvent))
+	if (!isCancelOpen && animator->WasMarkerFired(comboWindowEvent))
 	{
-		isWindowOpen = true;
+		isCancelOpen = true;
+		isComboOpen = true;
 		isOnChainFrame = true;
 	}
 
-	if (isWindowOpen)
+	const bool isComboClosing = animator->WasMarkerFired(comboWindowEndEvent);
+
+	const bool isAttackBuffered = bufferedInput == BufferedInput::ATTACK || bufferedInput == BufferedInput::ATTACK2;
+	if (isCancelOpen)
 	{
-		if (bufferedInput != BufferedInput::NONE)
+		if (bufferedInput == BufferedInput::ROLL)
+		{
+			StartFromInput(bufferedInput, dir, !isOnChainFrame);
+			return;
+		}
+		if (isAttackBuffered && isComboOpen)
 		{
 			StartFromInput(bufferedInput, dir, !isOnChainFrame);
 			return;
 		}
 
-		// nothing queued: moving cuts the recovery
-		if (dir.x != 0.f || dir.z != 0.f)
+		if (bufferedInput == BufferedInput::NONE && (dir.x != 0.f || dir.z != 0.f))
 		{
 			ChangeState(PlayerState::LOCOMOTION);
 			UpdateLocomotion(dir);
@@ -201,9 +246,19 @@ void PlayerController::UpdateAction(const DirectX::XMFLOAT3& dir, BufferedInput 
 		}
 	}
 
+	if (isComboClosing)
+	{
+		isComboOpen = false;
+	}
+
 	if (animator->IsFinished())
 	{
+		const BufferedInput pendingInput = isAttackBuffered ? bufferedInput : BufferedInput::NONE;
 		ChangeState(PlayerState::LOCOMOTION);
+		if (pendingInput != BufferedInput::NONE)
+		{
+			StartFromInput(pendingInput, dir, false);
+		}
 	}
 }
 
@@ -235,11 +290,11 @@ void PlayerController::StartFromInput(BufferedInput input, const DirectX::XMFLOA
 		break;
 	case BufferedInput::ATTACK:
 		StartAction(currAction && *currAction->nextOnAttack ? currAction->nextOnAttack : attackAction,
-			dir, PlayerState::ATTACK, minFade);
+		            dir, PlayerState::ATTACK, minFade);
 		break;
 	case BufferedInput::ATTACK2:
 		StartAction(currAction && *currAction->nextOnAttack2 ? currAction->nextOnAttack2 : attack2Action,
-			dir, PlayerState::ATTACK, minFade);
+		            dir, PlayerState::ATTACK, minFade);
 		break;
 	case BufferedInput::NONE:
 		break;
@@ -267,12 +322,111 @@ void PlayerController::StartAction(const char* actionName, const DirectX::XMFLOA
 	currAction = action;
 }
 
+void PlayerController::StartKnockdown()
+{
+	TransformComponent* transform = owner->GetTransform();
+
+	// face the hit
+	if (hitDir.x != 0.f || hitDir.z != 0.f)
+	{
+		locomotion->SetFacing(atan2f(hitDir.x, hitDir.z), instantTurnRate);
+		knockdownBackDir = {-hitDir.x, 0.f, -hitDir.z};
+	}
+	else
+	{
+		const float yaw = transform->GetRotation().y;
+		knockdownBackDir = {-sinf(yaw), 0.f, -cosf(yaw)};
+	}
+
+	animator->PlayClip(knockdownClip, knockdownFadeSec, knockdownStartSec);
+	ChangeState(PlayerState::KNOCKDOWN);
+	currAction = nullptr;
+
+	if (hitVolume)
+	{
+		hitVolume->SetAllHurtboxEnabled(false);
+	}
+
+	knockdownTimer = 0.f;
+	knockdownGroundY = transform->GetPosition().y;
+	isGettingUp = false;
+}
+
+void PlayerController::UpdateKnockdown(const DirectX::XMFLOAT3& dir, BufferedInput pressedInput, float deltaTime)
+{
+	TransformComponent* transform = owner->GetTransform();
+
+	// procedural launch
+	const float prevT = std::min(knockdownTimer / knockdownAirSec, 1.f);
+	knockdownTimer += deltaTime;
+	const float t = std::min(knockdownTimer / knockdownAirSec, 1.f);
+	if (prevT < 1.f)
+	{
+		DirectX::XMFLOAT3 pos = transform->GetPosition();
+		pos.y = knockdownGroundY + 4.f * knockdownAirHeight * t * (1.f - t);
+		transform->SetPosition(pos);
+
+		const auto pushAt = [this](float x)
+			{
+				return knockdownPushDistance * (1.f - (1.f - x) * (1.f - x));
+			};
+		const float step = pushAt(t) - pushAt(prevT);
+		locomotion->AddMove({knockdownBackDir.x * step, 0.f, knockdownBackDir.z * step});
+	}
+
+	if (!isGettingUp)
+	{
+		if (animator->IsFinished())
+		{
+			animator->PlayClip(getUpClip, 0.f);
+			isGettingUp = true;
+		}
+		return;
+	}
+
+	if (!isCancelOpen && animator->WasMarkerFired(comboWindowEvent))
+	{
+		isCancelOpen = true;
+		if (hitVolume)
+		{
+			hitVolume->SetAllHurtboxEnabled(true);
+		}
+	}
+
+	if (isCancelOpen)
+	{
+		if (pressedInput != BufferedInput::NONE)
+		{
+			StartFromInput(pressedInput, dir, true);
+			return;
+		}
+		if (dir.x != 0.f || dir.z != 0.f)
+		{
+			ChangeState(PlayerState::LOCOMOTION);
+			UpdateLocomotion(dir);
+			return;
+		}
+	}
+
+	if (animator->IsFinished())
+	{
+		ChangeState(PlayerState::LOCOMOTION);
+	}
+}
+
 void PlayerController::ChangeState(PlayerState nextState)
 {
 	// leaving a roll always ends its i-frames, whatever cut it short
-	if (state == PlayerState::ROLL && hitVolume)
+	if ((state == PlayerState::ROLL || state == PlayerState::KNOCKDOWN) && hitVolume)
 	{
 		hitVolume->SetAllHurtboxEnabled(true);
+	}
+
+	if (state == PlayerState::KNOCKDOWN && nextState != PlayerState::KNOCKDOWN)
+	{
+		DirectX::XMFLOAT3 pos = owner->GetTransform()->GetPosition();
+		pos.y = knockdownGroundY;
+		owner->GetTransform()->SetPosition(pos);
 	}
 
 	if (nextState == PlayerState::LOCOMOTION)
@@ -281,7 +435,8 @@ void PlayerController::ChangeState(PlayerState nextState)
 	}
 
 	bufferedInput = BufferedInput::NONE;
-	isWindowOpen = false;
+	isComboOpen = false;
+	isCancelOpen = false;
 	state = nextState;
 }
 
@@ -297,6 +452,5 @@ void PlayerController::ApplyRootMotion()
 {
 	const DirectX::XMFLOAT3& delta = animator->GetRootMoveDelta();
 	const float scale = currAction ? currAction->rootMotionScale : 1.f;
-	locomotion->AddMove({ delta.x * scale, 0.f, delta.z * scale });
+	locomotion->AddMove({delta.x * scale, 0.f, delta.z * scale});
 }
-

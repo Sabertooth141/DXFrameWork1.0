@@ -33,7 +33,6 @@ namespace
 			{"Combo1Attk1_RM", false}, {"Combo1Attk2_RM", false}, {"Combo1Attk3_RM", false}, {"Combo1Attk4_RM", false},
 			{"Combo2Attk1_RM", false}, {"Combo2Attk2_RM", false}, {"Combo2Attk3_RM", false}, {"Combo2Attk4_RM", false},
 			{"Combo3Attk1", false}, {"Combo3Attk2", false}, {"Combo3Attk3", false}, {"Combo3Attk4", false},
-			{"HitLargeF_RM", false},
 			{"Death_RM", false}, {"GetUpB", false},
 		};
 
@@ -46,6 +45,8 @@ namespace
 				data.rootMotionClips.push_back({clip.name, RootMotionMode::TRANSLATION_XZ});
 			}
 		}
+
+		data.rootMotionClips.push_back({ "GetUpB", RootMotionMode::TRANSLATION_XZ });
 
 		return data;
 	}

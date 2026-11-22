@@ -209,7 +209,7 @@ void SkeletalAnimatorComponent::AddClip(std::shared_ptr<const AnimationClip> inC
 	clipEntries[name] = {std::move(inClip), inLoop};
 }
 
-bool SkeletalAnimatorComponent::PlayClip(const std::string& name, float fadeSec)
+bool SkeletalAnimatorComponent::PlayClip(const std::string& name, float fadeSec, float startTimeSec)
 {
 	auto it = clipEntries.find(name);
 	if (it == clipEntries.end())
@@ -245,7 +245,7 @@ bool SkeletalAnimatorComponent::PlayClip(const std::string& name, float fadeSec)
 	}
 
 	StartFade(fadeSec);
-	StartPlayback(it->second);
+	StartPlayback(it->second, startTimeSec);
 	return true;
 }
 
@@ -603,14 +603,14 @@ void SkeletalAnimatorComponent::SetModelRotation(const DirectX::XMFLOAT3& inRota
 	owner->SetBoundsCorrection(rotation);
 }
 
-void SkeletalAnimatorComponent::StartPlayback(const ClipEntry& entry)
+void SkeletalAnimatorComponent::StartPlayback(const ClipEntry& entry, float startTimeSec)
 {
 	assert(entry.clip->builtFor == skeleton.get() && "clip was mapped agaisnt a different skelton");
 
 	playback.clip = entry.clip;
 	playback.events = &entry.events;
 	playback.isLoop = entry.isLoop;
-	playback.timeInSec = 0.f;
+	playback.timeInSec = std::clamp(startTimeSec, 0.f, entry.clip->DurationInSeconds());
 	playback.isFinished = false;
 	playback.isFreshStart = true;
 	playback.cursors.assign(playback.clip->channels.size(), KeyCursor{});
@@ -647,7 +647,11 @@ void SkeletalAnimatorComponent::StartPlayback(const ClipEntry& entry)
 	{
 		playback.firstRootPos = rootChannel.positions.front().value;
 		playback.endRootPos = rootChannel.positions.back().value;
-		playback.lastRootPos = playback.firstRootPos;
+
+		unsigned cursor = 0;
+		const float startTicks = playback.timeInSec * clip.ticksPerSecond;
+		DirectX::XMStoreFloat3(&playback.lastRootPos, SampleVectorKeyInfo(rootChannel.positions, startTicks, cursor, DirectX::XMLoadFloat3(&playback.firstRootPos)));
+
 		playback.pinXZ = hasRootAnchor
 			                 ? rootAnchorXZ
 			                 : DirectX::XMFLOAT2{playback.firstRootPos.x, playback.firstRootPos.z};

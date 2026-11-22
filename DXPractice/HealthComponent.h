@@ -10,7 +10,7 @@ public:
 
 	void OnHitTaken(const HitEvent& event) override;
 
-	void ApplyDamage(float damage, float stagger);
+	void ApplyDamage(float damage, float stagger, const HitEvent* hitEvent = nullptr);
 
 	// for debug
 	void Reset();
@@ -37,7 +37,7 @@ public:
 	float minHp = 0.f;
 
 	// listerners 
-	std::function<void(float damage, float stagger)> onDamaged;
+	std::function<void(float damage, float stagger, const HitEvent* hitEvent)> onDamaged;
 	std::function<void()> onThreasholdCrossed;
 	std::function<void()> onDeath;
 

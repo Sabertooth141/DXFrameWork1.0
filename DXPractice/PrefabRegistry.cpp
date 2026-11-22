@@ -87,6 +87,6 @@ void RegisterPrefabs()
 		object.AddComponent<HealthComponent>(100.f);
 
 		// temporary: N/B/R to look through the clips
-		object.AddComponent<CycleAnimationTester>();
+		//object.AddComponent<CycleAnimationTester>();
 	});
 }

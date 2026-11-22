@@ -26,13 +26,13 @@ void HealthComponent::OnHitTaken(const HitEvent& event)
 		if (group.name == event.hitboxGroup)
 		{
 			// TODO: basedamage 1.f TEMP change later
-			ApplyDamage(group.damageScale * 1.f, group.staggerScale * 1.f);
+			ApplyDamage(group.damageScale * 1.f, group.staggerScale * 1.f, &event);
 			return;
 		}
 	}
 }
 
-void HealthComponent::ApplyDamage(float damage, float stagger)
+void HealthComponent::ApplyDamage(float damage, float stagger, const HitEvent* hitEvent)
 {
 	if (isDead)
 	{
@@ -44,7 +44,7 @@ void HealthComponent::ApplyDamage(float damage, float stagger)
 
 	if (onDamaged)
 	{
-		onDamaged(damage, stagger);
+		onDamaged(damage, stagger, hitEvent);
 	}
 
 	if (!isThreasholdCrossed && currHp <= maxHp * thresholdRatio)

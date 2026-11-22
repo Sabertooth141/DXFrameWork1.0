@@ -289,7 +289,7 @@ void DragonAI::BindHealthCallbacks()
 
 	health->minHp = health->GetMaxHp() * health->thresholdRatio;
 
-	health->onDamaged = [this](float damage, float stagger)
+	health->onDamaged = [this](float damage, float stagger, const HitEvent*)
 	{
 		staggerMeter += stagger;
 		wasDamaged = true;
