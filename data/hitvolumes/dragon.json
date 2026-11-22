@@ -1,10 +1,10 @@
 {
  "version": 1,
  "groups": [
-  {"name":"breath","rehitIntervalSec":0.4,"damageScale":20.0,"vfxColor":[1.0,0.45,0.1,0.18]},
-  {"name":"wingL","rehitIntervalSec":0.0,"damageScale":25.0,"vfxColor":[0.8,0.3,1.0,0.12]},
-  {"name":"headBlade","rehitIntervalSec":0.0,"damageScale":30.0,"vfxColor":[0.4,0.9,1.0,0.4]},
-  {"name":"tail","rehitIntervalSec":0.0,"damageScale":25.0,"vfxColor":[1.0,0.25,0.2,0.12]}
+  {"name":"breath","rehitIntervalSec":0.4,"damageScale":20.0,"staggerScale":1.0,"vfxColor":[1.0,0.45,0.1,0.18]},
+  {"name":"wingL","rehitIntervalSec":0.0,"damageScale":25.0,"staggerScale":1.0,"vfxColor":[0.8,0.3,1.0,0.12]},
+  {"name":"headBlade","rehitIntervalSec":0.0,"damageScale":30.0,"staggerScale":1.0,"vfxColor":[0.4,0.9,1.0,0.4]},
+  {"name":"tail","rehitIntervalSec":0.0,"damageScale":25.0,"staggerScale":1.0,"vfxColor":[1.0,0.25,0.2,0.12]}
  ],
  "shapes": [
   {"role":"hurtbox","name":"body","bone":"pelvis","a":[0.0,0.0,0.0],"b":[-1.05,0.0,0.42],"radius":0.75},
@@ -126,6 +126,8 @@
   {"role":"body","name":"calfL","bone":"calf_l1","a":[0.0,0.0,0.0],"b":[0.85,0.0,0.0],"radius":0.255},
   {"role":"body","name":"calfR","bone":"calf_r1","a":[0.0,0.0,0.0],"b":[-0.85,0.0,0.0],"radius":0.255},
   {"role":"body","name":"legL","bone":"foot_l","a":[0.0,0.0,0.0],"b":[0.6,0.0,0.0],"radius":0.2},
-  {"role":"body","name":"legR","bone":"foot_r","a":[0.0,0.0,0.0],"b":[-0.6,0.0,0.0],"radius":0.2}
+  {"role":"body","name":"legR","bone":"foot_r","a":[0.0,0.0,0.0],"b":[-0.6,0.0,0.0],"radius":0.2},
+  {"role":"hitbox","name":"headBlade-Head","group":"headBlade","bone":"head","a":[0.0,0.0,0.0],"b":[0.35,0.0,-1.0],"radius":0.89,"sweeping":false},
+  {"role":"hitbox","name":"headBlade-Neck","group":"headBlade","bone":"neck_01","a":[0.0,0.0,0.0],"b":[0.79,0.0,0.0],"radius":0.745,"sweeping":false}
  ]
 }

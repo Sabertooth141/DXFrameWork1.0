@@ -160,7 +160,7 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 
-		// keyboard msg
+	// keyboard msg
 	case WM_KEYDOWN:
 	case WM_SYSKEYDOWN:
 		if (editorKeys)
@@ -185,8 +185,14 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		keyboard.OnChar(static_cast<unsigned char>(wParam));
 		break;
+	case WM_SYSCOMMAND:
+		if ((wParam & 0xFFF0) == SC_KEYMENU)
+		{
+			return 0;
+		}
+		break;
 
-		// mouse msg
+	// mouse msg
 	case WM_MOUSEMOVE:
 	{
 		const POINTS pt = MAKEPOINTS(lParam);
@@ -331,7 +337,7 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 
-		const RAWINPUT& ri = reinterpret_cast<const RAWINPUT&>(*rawBuffer.data());
+		const auto& ri = reinterpret_cast<const RAWINPUT&>(*rawBuffer.data());
 		if (ri.header.dwType == RIM_TYPEMOUSE && (ri.data.mouse.lLastX != 0 || ri.data.mouse.lLastY != 0))
 		{
 			mouse.OnRawDelta(ri.data.mouse.lLastX, ri.data.mouse.lLastY);

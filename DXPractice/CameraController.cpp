@@ -30,12 +30,12 @@ void CameraController::LateUpdate(float deltaTime)
 	HandleOrbitInput();
 	HandleZoomInput();
 
-#ifndef NDEBUG
-	if (keyboard->KeyIsTriggered(VK_F3))
+	// snap to target
+	if (keyboard->KeyIsPressed('Q'))
 	{
-		FrameDragon();
+		StartSnapToTarget();
 	}
-#endif
+	UpdateSnap(deltaTime);
 
 	// lerp
 	const DirectX::XMFLOAT3 target = GetTargetPoint();
@@ -51,12 +51,14 @@ void CameraController::HandleOrbitInput()
 {
 	const Mouse::RawDelta delta = mouse->ConsumeRawDelta();
 
-	bool isOrbit = mouse->RightPressed();
+	const bool isOrbit = !keyboard->KeyIsPressed(VK_MENU);
 	owner->GetContext().wantsCursorlock = isOrbit;
-	if (!isOrbit)
+	if (!isOrbit || (delta.x == 0 && delta.y == 0))
 	{
 		return;
 	}
+
+	isSnapping = false;
 
 	yaw = remainderf(yaw + static_cast<float>(delta.x) * lookSens, DirectX::XM_2PI);
 
@@ -92,10 +94,84 @@ void CameraController::ApplyToCamera() const
 	cam->yaw = yaw;
 	cam->pitch = -orbitPitch;
 
+	const DirectX::XMVECTOR lookTarget = DirectX::XMVectorAdd(DirectX::XMLoadFloat3(&smoothedTarget), DirectX::XMVectorScale(cam->GetCamForward(), shoulderOffset));
+
+
 	const DirectX::XMVECTOR forward = cam->GetCamForward();
-	const DirectX::XMVECTOR pos = DirectX::XMVectorSubtract(
-		DirectX::XMLoadFloat3(&smoothedTarget), DirectX::XMVectorScale(forward, distance));
+	const DirectX::XMVECTOR pos = DirectX::XMVectorSubtract(lookTarget, DirectX::XMVectorScale(forward, distance));
 	DirectX::XMStoreFloat3(&cam->pos, pos);
+}
+
+const GameObject* CameraController::FindTarget() const
+{
+	const Scene* currScene = owner->GetContext().currScene;
+	if (!currScene)
+	{
+		return nullptr;
+	}
+
+	for (const auto& object : currScene->GetObjects())
+	{
+		if (object->GetTag() == ObjectTag::ENEMY && !currScene->IsPendingDestroy(object.get()))
+		{
+			return object.get();
+		}
+	}
+
+	return nullptr;
+}
+
+void CameraController::StartSnapToTarget()
+{
+	const GameObject* target = FindTarget();
+	if (!target)
+	{
+		return;
+	}
+
+	const DirectX::XMFLOAT3 from = owner->GetTransform()->GetPosition();
+	const DirectX::XMFLOAT3 to = target->GetTransform()->GetPosition();
+	const float dirX = to.x - from.x;
+	const float dirZ = to.z - from.z;
+	const float horizontalSq = dirX * dirX + dirZ * dirZ;
+
+	if (horizontalSq < 1e-4f)
+	{
+		return;
+	}
+	snapYaw = atan2f(dirX, dirZ);
+
+	const DirectX::XMFLOAT3 targetPoint = GetTargetPoint();
+	const float dirY = (to.y + snapLookHeight) - targetPoint.y;
+	// down -> positive y
+	snapPitch = std::clamp(-atan2f(dirY, sqrtf(horizontalSq)),
+	                       DirectX::XMConvertToRadians(minPitchDeg), DirectX::XMConvertToRadians(maxPitchDeg));
+	isSnapping = true;
+}
+
+void CameraController::UpdateSnap(float deltaTime)
+{
+	if (!isSnapping)
+	{
+		return;
+	}
+
+	const float yawDiff = remainderf(snapYaw - yaw, DirectX::XM_2PI);
+	const float pitchDiff = snapPitch - orbitPitch;
+
+	const float endRad = DirectX::XMConvertToRadians(snapEndDeg);
+	if (fabsf(yawDiff) < endRad && fabsf(pitchDiff) < endRad)
+	{
+		yaw = snapYaw;
+		orbitPitch = snapPitch;
+		isSnapping = false;
+		return;
+	}
+
+	// lerp to target
+	const float t = 1.f - std::exp(-snapSpeed * deltaTime);
+	yaw = remainderf(yaw + yawDiff * t, DirectX::XM_2PI);
+	orbitPitch += pitchDiff * t;
 }
 
 #ifndef NDEBUG

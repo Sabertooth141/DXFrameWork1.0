@@ -26,7 +26,7 @@ const std::vector<AttackOption>& DragonAttackData()
 		// front && left whole sector
 		attkList.push_back({
 			.name = "headBlade", .clip = "Attk3", .priority = 3, .cooldownSec = 6.f,
-			.minRange = 2.f, .maxRange = 7.f, .sectors = sectorFront | sectorLeft,
+			.minRange = 0.f, .maxRange = 7.f, .sectors = sectorFront | sectorLeft,
 			.trackSpeedDeg = 90.f, .recoverSec = 0.6f, .whiffRecoverSec = 1.f, .hitboxGroup = "headBlade"
 			});
 
