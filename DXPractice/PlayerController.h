@@ -26,7 +26,6 @@ enum class BufferedInput
 	ROLL,
 };
 
-
 class PlayerController : public MonoBehavior
 {
 public:

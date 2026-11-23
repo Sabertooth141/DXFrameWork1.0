@@ -230,9 +230,15 @@ void PlayerController::UpdateAction(const DirectX::XMFLOAT3& dir, BufferedInput 
 		isOnChainFrame = true;
 	}
 
-	const bool isComboClosing = animator->WasMarkerFired(comboWindowEndEvent);
+	if (animator->WasMarkerFired(comboWindowEndEvent))
+	{
+		isComboOpen = false;
+	}
 
 	const bool isAttackBuffered = bufferedInput == BufferedInput::ATTACK1 || bufferedInput == BufferedInput::ATTACK2;
+	const bool hasFollowUp = currAction && (*currAction->nextOnAttack || *currAction->nextOnAttack2);
+	const bool canMoveCancel = !isComboOpen || !hasFollowUp;
+
 	if (isCancelOpen)
 	{
 		if (bufferedInput == BufferedInput::ROLL)
@@ -246,17 +252,12 @@ void PlayerController::UpdateAction(const DirectX::XMFLOAT3& dir, BufferedInput 
 			return;
 		}
 
-		if (bufferedInput == BufferedInput::NONE && (dir.x != 0.f || dir.z != 0.f))
+		if (canMoveCancel && bufferedInput == BufferedInput::NONE && (dir.x != 0.f || dir.z != 0.f))
 		{
 			ChangeState(PlayerState::LOCOMOTION);
 			UpdateLocomotion(dir);
 			return;
 		}
-	}
-
-	if (isComboClosing)
-	{
-		isComboOpen = false;
 	}
 
 	if (animator->IsFinished())
