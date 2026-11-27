@@ -425,6 +425,9 @@
     <ClCompile Include="LightComponent.cpp">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
+    <ClCompile Include="ActionController.cpp">
+      <Filter>Source Files\Scripts\Entity</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Win.h">
@@ -744,6 +747,9 @@
     </ClInclude>
     <ClInclude Include="ActionData.h">
       <Filter>Header Files\Scripts\Entity\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="ActionController.h">
+      <Filter>Header Files\Scripts\Entity</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

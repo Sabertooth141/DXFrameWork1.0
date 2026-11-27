@@ -2,6 +2,7 @@
 
 #include <cassert>
 
+#include "ActionController.h"
 #include "AnimSetComponent.h"
 #include "GameObject.h"
 #include "SkeletalAnimatorComponent.h"
@@ -70,4 +71,6 @@ void ApplyCharacterData(GameObject& object, const CharacterData& data)
 			animator->SetRootMotionAnchor(data.rootMotionAnchorClip);
 		}
 	}
+
+	object.AddComponent<ActionController>();
 }

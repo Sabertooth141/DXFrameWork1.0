@@ -2,6 +2,7 @@
 #include "MonoBehavior.h"
 #include "PlayerInput.h"
 
+class ActionController;
 enum class ActionButton : uint8_t;
 struct PlayerIntent;
 struct ActionDef;
@@ -78,7 +79,7 @@ private:
 	bool isCancelOpen = false;
 
 	PlayerState state = PlayerState::LOCOMOTION;
-	const ActionDef* currAction = nullptr; // null while in locomotion
+	ActionController* actionController = nullptr;
 
 	bool isKnockdownPending = false;
 	DirectX::XMFLOAT3 hitDir{};

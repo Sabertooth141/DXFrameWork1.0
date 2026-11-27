@@ -1,5 +1,6 @@
 #include "PlayerController.h"
 
+#include "ActionController.h"
 #include "ActionData.h"
 #include "GameContext.h"
 #include "GameObject.h"
@@ -33,10 +34,11 @@ void PlayerController::Start()
 
 	locomotion = owner->GetComponent<LocomotionComponent>();
 	animator = owner->GetComponent<SkeletalAnimatorComponent>();
-	if (!locomotion || !animator)
+	actionController = owner->GetComponent<ActionController>();
+	if (!locomotion || !animator || !actionController)
 	{
 #ifndef NDEBUG
-		textRenderer->Log("[PlayerController] %s: needs LocomotionComponent and SkeletalAnimatorComponent, controller disabled",
+		textRenderer->Log("[PlayerController] %s: needs LocomotionComponent and SkeletalAnimatorComponentand ActionController, controller disabled",
 		                  owner->GetName().c_str());
 #endif
 		SetEnabled(false);
@@ -158,6 +160,7 @@ void PlayerController::UpdateAction(const PlayerIntent& intent, float deltaTime)
 	}
 
 	const bool isAttackBuffered = inputBuffer.HasAttack();
+	const ActionDef* currAction = actionController->GetCurrAction();
 	const bool hasFollowUp = currAction && (*currAction->nextOnAttack || *currAction->nextOnAttack2);
 	const bool canMoveCancel = !isComboOpen || !hasFollowUp;
 
@@ -212,6 +215,7 @@ void PlayerController::UpdateInvuln()
 
 void PlayerController::StartFromInput(ActionButton input, const DirectX::XMFLOAT3& dir, bool isLateChain)
 {
+	const ActionDef* currAction = actionController->GetCurrAction();
 	const float minFade = isLateChain ? lateChainFadeSec : 0.f;
 
 	switch (input)
@@ -248,9 +252,8 @@ void PlayerController::StartAction(const char* actionName, const DirectX::XMFLOA
 		locomotion->SetFacing(atan2f(dir.x, dir.z), instantTurnRate);
 	}
 
-	animator->PlayClip(action->clip, std::max(action->fadeInSec, minFadeSec));
+	actionController->Play(*action, minFadeSec);
 	ChangeState(nextState);
-	currAction = action;
 }
 
 void PlayerController::StartKnockdown()
@@ -271,7 +274,7 @@ void PlayerController::StartKnockdown()
 
 	animator->PlayClip(knockdownClip, knockdownFadeSec, knockdownStartSec);
 	ChangeState(PlayerState::KNOCKDOWN);
-	currAction = nullptr;
+	actionController->Stop();
 
 	if (hitVolume)
 	{
@@ -362,7 +365,7 @@ void PlayerController::ChangeState(PlayerState nextState)
 
 	if (nextState == PlayerState::LOCOMOTION)
 	{
-		currAction = nullptr;
+		actionController->Stop();
 	}
 
 	inputBuffer.Clear();
@@ -382,6 +385,6 @@ void PlayerController::PlayLocomotionClip(const char* clipName)
 void PlayerController::ApplyRootMotion()
 {
 	const DirectX::XMFLOAT3& delta = animator->GetRootMoveDelta();
-	const float scale = currAction ? currAction->rootMotionScale : 1.f;
+	const float scale = actionController->GetRootMotionScale();
 	locomotion->AddMove({delta.x * scale, 0.f, delta.z * scale});
 }
