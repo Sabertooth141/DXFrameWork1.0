@@ -54,7 +54,7 @@ class PlayerInputReader
 public:
 	PlayerInputReader();
 
-	PlayerIntent ReadIntent(const Keyboard& keyboard, const Mouse& mouse, const Camera3D cam);
+	PlayerIntent ReadIntent(const Keyboard& keyboard, const Mouse& mouse, const Camera3D& cam);
 	void Bind(InputButton button, const ButtonBinding& binding);
 
 private:
@@ -89,7 +89,7 @@ public:
 	}
 
 public:
-	float bufferSec = 0.f;
+	float bufferSec = 0.4f;
 
 private:
 	ActionButton bufferedAction = ActionButton::NONE;

@@ -27,10 +27,6 @@ public:
 	void Update(float deltaTime) override;
 
 private:
-	DirectX::XMFLOAT3 ReadMoveInput() const;
-	bool ReadAttack1Triggered();
-	bool ReadAttack2Triggered();
-
 	void UpdateLocomotion(const PlayerIntent& intent);
 
 	void UpdateAction(const PlayerIntent& intent, float deltaTime);
@@ -52,7 +48,6 @@ public:
 	float turnSpeed = 12.f;
 	float locomotionFadeSec = 0.15f;
 	float lateChainFadeSec = 0.1f;
-	float bufferSec = 0.4f;
 
 	// TODO: TEMP
 	const char* idleClip = "IdleCombat";
@@ -64,9 +59,9 @@ public:
 	const char* knockdownClip = "Death_RM";
 	const char* getUpClip = "GetUpB";
 
-	float knockdownStartSec = 1.f;      // skip Death_RM's stumble, start at the fall
+	float knockdownStartSec = 1.f; // skip Death_RM's stumble, start at the fall
 	float knockdownFadeSec = 0.1f;
-	float knockdownAirSec = 0.45f;      // Death_RM's fall takes about this long
+	float knockdownAirSec = 0.45f; // Death_RM's fall takes about this long
 	float knockdownAirHeight = 0.4f;
 	float knockdownPushDistance = 1.7f; // added to the clip's own ~0.8 m
 
@@ -84,8 +79,6 @@ private:
 
 	PlayerState state = PlayerState::LOCOMOTION;
 	const ActionDef* currAction = nullptr; // null while in locomotion
-	bool wasAttk1Down = false;
-	bool wasAttk2Down = false;
 
 	bool isKnockdownPending = false;
 	DirectX::XMFLOAT3 hitDir{};
@@ -93,6 +86,4 @@ private:
 	float knockdownTimer = 0.f;
 	float knockdownGroundY = 0.f;
 	bool isGettingUp = false;
-
-	float bufferAgeSec = 0.f;
 };

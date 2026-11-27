@@ -119,59 +119,6 @@ void PlayerController::Update(float deltaTime)
 	locomotion->ApplyLocomotion(deltaTime);
 }
 
-DirectX::XMFLOAT3 PlayerController::ReadMoveInput() const
-{
-	float inputX = 0.f;
-	float inputZ = 0.f;
-	if (keyboard->KeyIsPressed('W'))
-	{
-		inputZ += 1.f;
-	}
-	if (keyboard->KeyIsPressed('S'))
-	{
-		inputZ -= 1.f;
-	}
-	if (keyboard->KeyIsPressed('D'))
-	{
-		inputX += 1.f;
-	}
-	if (keyboard->KeyIsPressed('A'))
-	{
-		inputX -= 1.f;
-	}
-
-	if (inputX == 0.f && inputZ == 0.f)
-	{
-		return {};
-	}
-
-	// camera-relative: W is "away from the camera", whatever way it faces
-	const float sinYaw = sinf(cam->yaw);
-	const float cosYaw = cosf(cam->yaw);
-	const float dirX = sinYaw * inputZ + cosYaw * inputX;
-	const float dirZ = cosYaw * inputZ - sinYaw * inputX;
-
-	// normalize so diagonals aren't faster
-	const float invLen = 1.f / sqrtf(dirX * dirX + dirZ * dirZ);
-	return {dirX * invLen, 0.f, dirZ * invLen};
-}
-
-bool PlayerController::ReadAttack1Triggered()
-{
-	const bool isAttkDown = mouse->LeftPressed();
-	const bool istriggered = isAttkDown && !wasAttk1Down;
-	wasAttk1Down = isAttkDown;
-	return istriggered;
-}
-
-bool PlayerController::ReadAttack2Triggered()
-{
-	const bool isAttkDown = mouse->RightPressed();
-	const bool istriggered = isAttkDown && !wasAttk2Down;
-	wasAttk2Down = isAttkDown;
-	return istriggered;
-}
-
 void PlayerController::UpdateLocomotion(const PlayerIntent& intent)
 {
 	if (!intent.HasMove())

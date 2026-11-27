@@ -1,6 +1,6 @@
 #include "PlayerInput.h"
 
-#include "App.h"
+#include "Win.h"
 #include "Camera3D.h"
 #include "Keyboard.h"
 #include "Mouse.h"
@@ -18,7 +18,7 @@ void PlayerInputReader::Bind(InputButton button, const ButtonBinding& binding)
 	bindings[Index(button)] = binding;
 }
 
-PlayerIntent PlayerInputReader::ReadIntent(const Keyboard& keyboard, const Mouse& mouse, const Camera3D cam)
+PlayerIntent PlayerInputReader::ReadIntent(const Keyboard& keyboard, const Mouse& mouse, const Camera3D& cam)
 {
 	PlayerIntent intent;
 	intent.moveDir = ReadMove(keyboard, cam);
