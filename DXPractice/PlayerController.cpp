@@ -86,22 +86,7 @@ void PlayerController::Start()
 
 void PlayerController::Update(float deltaTime)
 {
-	// TODO: temp
-	const DirectX::XMFLOAT3 dir = ReadMoveInput();
-
-	auto pressed = BufferedInput::NONE;
-	if (ReadAttack1Triggered())
-	{
-		pressed = BufferedInput::ATTACK1;
-	}
-	if (ReadAttack2Triggered())
-	{
-		pressed = BufferedInput::ATTACK2;
-	}
-	if (keyboard->KeyIsTriggered(VK_SPACE))
-	{
-		pressed = BufferedInput::ROLL; // wins a same-frame tie
-	}
+	const PlayerIntent intent = inputReader.ReadIntent(*keyboard, *mouse, *cam);
 
 	if (isKnockdownPending)
 	{
@@ -112,21 +97,21 @@ void PlayerController::Update(float deltaTime)
 	switch (state)
 	{
 	case PlayerState::LOCOMOTION:
-		if (pressed != BufferedInput::NONE)
+		if (intent.pressedInput != ActionButton::NONE)
 		{
-			StartFromInput(pressed, dir, false);
+			StartFromInput(intent.pressedInput, intent.moveDir, false);
 		}
 		else
 		{
-			UpdateLocomotion(dir);
+			UpdateLocomotion(intent);
 		}
 		break;
 	case PlayerState::ATTACK:
 	case PlayerState::ROLL:
-		UpdateAction(dir, pressed, deltaTime);
+		UpdateAction(intent, deltaTime);
 		break;
 	case PlayerState::KNOCKDOWN:
-		UpdateKnockdown(dir, pressed, deltaTime);
+		UpdateKnockdown(intent, deltaTime);
 		break;
 	}
 
@@ -187,40 +172,30 @@ bool PlayerController::ReadAttack2Triggered()
 	return istriggered;
 }
 
-void PlayerController::UpdateLocomotion(const DirectX::XMFLOAT3& dir)
+void PlayerController::UpdateLocomotion(const PlayerIntent& intent)
 {
-	if (dir.x == 0.f && dir.z == 0.f)
+	if (!intent.HasMove())
 	{
 		PlayLocomotionClip(idleClip);
 		return;
 	}
 
-	const bool isSprinting = keyboard->KeyIsPressed(VK_SHIFT);
-	locomotion->SetMove(dir, isSprinting ? sprintSpeed : runSpeed);
+	const DirectX::XMFLOAT3& dir = intent.moveDir;
+	locomotion->SetMove(dir, intent.isSprinting ? sprintSpeed : runSpeed);
 	locomotion->SetFacing(atan2f(dir.x, dir.z), turnSpeed);
-	PlayLocomotionClip(isSprinting ? sprintClip : runClip);
+	PlayLocomotionClip(intent.isSprinting ? sprintClip : runClip);
 }
 
-void PlayerController::UpdateAction(const DirectX::XMFLOAT3& dir, BufferedInput pressedInput, float deltaTime)
+void PlayerController::UpdateAction(const PlayerIntent& intent, float deltaTime)
 {
 	if (state == PlayerState::ROLL)
 	{
 		UpdateInvuln();
 	}
 
-	if (pressedInput != BufferedInput::NONE)
-	{
-		bufferedInput = pressedInput;
-		bufferAgeSec = 0.f;
-	}
-	else if (bufferedInput != BufferedInput::NONE)
-	{
-		bufferAgeSec += deltaTime;
-		if (bufferAgeSec > bufferSec)
-		{
-			bufferedInput = BufferedInput::NONE;
-		}
-	}
+	inputBuffer.Update(intent.pressedInput, deltaTime);
+	const ActionButton bufferedInput = inputBuffer.Get();
+	const DirectX::XMFLOAT3& dir = intent.moveDir;
 
 	bool isOnChainFrame = false;
 	if (!isCancelOpen && animator->WasMarkerFired(comboWindowEvent))
@@ -235,13 +210,13 @@ void PlayerController::UpdateAction(const DirectX::XMFLOAT3& dir, BufferedInput 
 		isComboOpen = false;
 	}
 
-	const bool isAttackBuffered = bufferedInput == BufferedInput::ATTACK1 || bufferedInput == BufferedInput::ATTACK2;
+	const bool isAttackBuffered = inputBuffer.HasAttack();
 	const bool hasFollowUp = currAction && (*currAction->nextOnAttack || *currAction->nextOnAttack2);
 	const bool canMoveCancel = !isComboOpen || !hasFollowUp;
 
 	if (isCancelOpen)
 	{
-		if (bufferedInput == BufferedInput::ROLL)
+		if (bufferedInput == ActionButton::ROLL)
 		{
 			StartFromInput(bufferedInput, dir, !isOnChainFrame);
 			return;
@@ -252,19 +227,19 @@ void PlayerController::UpdateAction(const DirectX::XMFLOAT3& dir, BufferedInput 
 			return;
 		}
 
-		if (canMoveCancel && bufferedInput == BufferedInput::NONE && (dir.x != 0.f || dir.z != 0.f))
+		if (canMoveCancel && bufferedInput == ActionButton::NONE && intent.HasMove())
 		{
 			ChangeState(PlayerState::LOCOMOTION);
-			UpdateLocomotion(dir);
+			UpdateLocomotion(intent);
 			return;
 		}
 	}
 
 	if (animator->IsFinished())
 	{
-		const BufferedInput pendingInput = isAttackBuffered ? bufferedInput : BufferedInput::NONE;
+		const ActionButton pendingInput = isAttackBuffered ? bufferedInput : ActionButton::NONE;
 		ChangeState(PlayerState::LOCOMOTION);
-		if (pendingInput != BufferedInput::NONE)
+		if (pendingInput != ActionButton::NONE)
 		{
 			StartFromInput(pendingInput, dir, false);
 		}
@@ -288,24 +263,24 @@ void PlayerController::UpdateInvuln()
 	}
 }
 
-void PlayerController::StartFromInput(BufferedInput input, const DirectX::XMFLOAT3& dir, bool isLateChain)
+void PlayerController::StartFromInput(ActionButton input, const DirectX::XMFLOAT3& dir, bool isLateChain)
 {
 	const float minFade = isLateChain ? lateChainFadeSec : 0.f;
 
 	switch (input)
 	{
-	case BufferedInput::ROLL:
+	case ActionButton::ROLL:
 		StartAction(rollAction, dir, PlayerState::ROLL, minFade);
 		break;
-	case BufferedInput::ATTACK1:
+	case ActionButton::ATTACK1:
 		StartAction(currAction && *currAction->nextOnAttack ? currAction->nextOnAttack : attackAction,
 		            dir, PlayerState::ATTACK, minFade);
 		break;
-	case BufferedInput::ATTACK2:
+	case ActionButton::ATTACK2:
 		StartAction(currAction && *currAction->nextOnAttack2 ? currAction->nextOnAttack2 : attack2Action,
 		            dir, PlayerState::ATTACK, minFade);
 		break;
-	case BufferedInput::NONE:
+	case ActionButton::NONE:
 		break;
 	}
 }
@@ -361,7 +336,7 @@ void PlayerController::StartKnockdown()
 	isGettingUp = false;
 }
 
-void PlayerController::UpdateKnockdown(const DirectX::XMFLOAT3& dir, BufferedInput pressedInput, float deltaTime)
+void PlayerController::UpdateKnockdown(const PlayerIntent& intent, float deltaTime)
 {
 	TransformComponent* transform = owner->GetTransform();
 
@@ -376,9 +351,9 @@ void PlayerController::UpdateKnockdown(const DirectX::XMFLOAT3& dir, BufferedInp
 		transform->SetPosition(pos);
 
 		const auto pushAt = [this](float x)
-			{
-				return knockdownPushDistance * (1.f - (1.f - x) * (1.f - x));
-			};
+		{
+			return knockdownPushDistance * (1.f - (1.f - x) * (1.f - x));
+		};
 		const float step = pushAt(t) - pushAt(prevT);
 		locomotion->AddMove({knockdownBackDir.x * step, 0.f, knockdownBackDir.z * step});
 	}
@@ -404,15 +379,15 @@ void PlayerController::UpdateKnockdown(const DirectX::XMFLOAT3& dir, BufferedInp
 
 	if (isCancelOpen)
 	{
-		if (pressedInput != BufferedInput::NONE)
+		if (intent.pressedInput != ActionButton::NONE)
 		{
-			StartFromInput(pressedInput, dir, true);
+			StartFromInput(intent.pressedInput, intent.moveDir, true);
 			return;
 		}
-		if (dir.x != 0.f || dir.z != 0.f)
+		if (intent.moveDir.x != 0.f || intent.moveDir.z != 0.f)
 		{
 			ChangeState(PlayerState::LOCOMOTION);
-			UpdateLocomotion(dir);
+			UpdateLocomotion(intent);
 			return;
 		}
 	}
@@ -443,7 +418,7 @@ void PlayerController::ChangeState(PlayerState nextState)
 		currAction = nullptr;
 	}
 
-	bufferedInput = BufferedInput::NONE;
+	inputBuffer.Clear();
 	isComboOpen = false;
 	isCancelOpen = false;
 	state = nextState;

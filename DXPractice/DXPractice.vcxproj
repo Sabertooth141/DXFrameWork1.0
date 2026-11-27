@@ -217,6 +217,7 @@
     <ClCompile Include="PixelShader.cpp" />
     <ClCompile Include="PlayerController.cpp" />
     <ClCompile Include="PlayerData.cpp" />
+    <ClCompile Include="PlayerInput.cpp" />
     <ClCompile Include="PrefabRegistry.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Rigidbody2DComponent.cpp" />
@@ -306,6 +307,7 @@
     <ClInclude Include="PhysicsSystem.h" />
     <ClInclude Include="PhysicsTest.h" />
     <ClInclude Include="PlayerController.h" />
+    <ClInclude Include="PlayerInput.h" />
     <ClInclude Include="PrefabRegistry.h" />
     <ClInclude Include="RenderLayer.h" />
     <ClInclude Include="RenderSystem.h" />

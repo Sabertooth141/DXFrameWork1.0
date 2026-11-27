@@ -1,6 +1,9 @@
 #pragma once
 #include "MonoBehavior.h"
+#include "PlayerInput.h"
 
+enum class ActionButton : uint8_t;
+struct PlayerIntent;
 struct ActionDef;
 class HitVolumeComponent;
 class SkeletalAnimatorComponent;
@@ -8,22 +11,12 @@ class HealthComponent;
 class LocomotionComponent;
 class Camera3D;
 
-// TODO: temp
 enum class PlayerState
 {
 	LOCOMOTION,
 	ATTACK,
 	ROLL,
 	KNOCKDOWN
-};
-
-// input buffer temp
-enum class BufferedInput
-{
-	NONE,
-	ATTACK1,
-	ATTACK2,
-	ROLL,
 };
 
 class PlayerController : public MonoBehavior
@@ -38,15 +31,15 @@ private:
 	bool ReadAttack1Triggered();
 	bool ReadAttack2Triggered();
 
-	void UpdateLocomotion(const DirectX::XMFLOAT3& dir);
+	void UpdateLocomotion(const PlayerIntent& intent);
 
-	void UpdateAction(const DirectX::XMFLOAT3& dir, BufferedInput pressedInput, float deltaTime);
+	void UpdateAction(const PlayerIntent& intent, float deltaTime);
 	void UpdateInvuln();
-	void StartFromInput(BufferedInput input, const DirectX::XMFLOAT3& dir, bool isLateChain);
+	void StartFromInput(ActionButton input, const DirectX::XMFLOAT3& dir, bool isLateChain);
 	void StartAction(const char* actionName, const DirectX::XMFLOAT3& dir, PlayerState nextState, float minFadeSec = 0.f);
 
 	void StartKnockdown();
-	void UpdateKnockdown(const DirectX::XMFLOAT3& dir, BufferedInput pressedInput, float deltaTime);
+	void UpdateKnockdown(const PlayerIntent& intent, float deltaTime);
 
 	void ChangeState(PlayerState nextState);
 	void PlayLocomotionClip(const char* clipName);
@@ -83,7 +76,8 @@ private:
 	LocomotionComponent* locomotion = nullptr;
 	SkeletalAnimatorComponent* animator = nullptr;
 	HitVolumeComponent* hitVolume = nullptr;
-	BufferedInput bufferedInput = BufferedInput::NONE;
+	PlayerInputReader inputReader;
+	InputBuffer inputBuffer;
 
 	bool isComboOpen = false;
 	bool isCancelOpen = false;

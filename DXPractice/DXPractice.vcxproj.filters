@@ -157,6 +157,9 @@
     <Filter Include="Source Files\Scripts\Entity\Player">
       <UniqueIdentifier>{fc0e8fda-b622-4eeb-a013-ac8d7018c7d8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Scripts\Entity\Player">
+      <UniqueIdentifier>{27e8eb21-750a-4046-bad4-e7dcf1f0c13f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Image Include="small.ico">
@@ -314,9 +317,6 @@
     <ClCompile Include="GameScene.cpp">
       <Filter>Source Files\Scene\GameScenes</Filter>
     </ClCompile>
-    <ClCompile Include="LightComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="SkeletalAnimatorComponent.cpp">
       <Filter>Source Files\Components\Mesh</Filter>
     </ClCompile>
@@ -328,9 +328,6 @@
     </ClCompile>
     <ClCompile Include="AnimationClipCache.cpp">
       <Filter>Source Files\Components\Mesh</Filter>
-    </ClCompile>
-    <ClCompile Include="CycleAnimationTester.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Collision3D.cpp">
       <Filter>Source Files\Components\Physics\Colliders</Filter>
@@ -416,8 +413,17 @@
     <ClCompile Include="PlayerController.cpp">
       <Filter>Source Files\Scripts\Entity\Player</Filter>
     </ClCompile>
+    <ClCompile Include="PlayerInput.cpp">
+      <Filter>Source Files\Scripts\Entity\Player</Filter>
+    </ClCompile>
     <ClCompile Include="PlayerData.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Scripts\Entity\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="CycleAnimationTester.cpp">
+      <Filter>Source Files\Scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="LightComponent.cpp">
+      <Filter>Source Files\Components</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -493,9 +499,6 @@
     <ClInclude Include="Material.h">
       <Filter>Header Files\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="Vertex.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="MeshData.h">
       <Filter>Header Files\Graphics</Filter>
     </ClInclude>
@@ -523,9 +526,6 @@
     <ClInclude Include="SpriteAnimatorComponent.h">
       <Filter>Header Files\Components\Sprite</Filter>
     </ClInclude>
-    <ClInclude Include="TextureCache.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="stb_image.h">
       <Filter>Header Files\3rdParty</Filter>
     </ClInclude>
@@ -534,9 +534,6 @@
     </ClInclude>
     <ClInclude Include="AnimatorComponent.h">
       <Filter>Header Files\Components\Sprite</Filter>
-    </ClInclude>
-    <ClInclude Include="PlayerController.h">
-      <Filter>Header Files\Scripts</Filter>
     </ClInclude>
     <ClInclude Include="MonoBehavior.h">
       <Filter>Header Files\Components\ScriptSystem</Filter>
@@ -655,12 +652,6 @@
     <ClInclude Include="LightComponent.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
-    <ClInclude Include="Skeleton.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SkinnedVertex.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="SkeletalAnimatorComponent.h">
       <Filter>Header Files\Components\Mesh</Filter>
     </ClInclude>
@@ -678,9 +669,6 @@
     </ClInclude>
     <ClInclude Include="AnimationFadeTable.h">
       <Filter>Header Files\Components\Mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="CycleAnimationTester.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="HitVolumeComponent.h">
       <Filter>Header Files\Components\Physics</Filter>
@@ -732,6 +720,30 @@
     </ClInclude>
     <ClInclude Include="VfxRenderer.h">
       <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerController.h">
+      <Filter>Header Files\Scripts\Entity\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerInput.h">
+      <Filter>Header Files\Scripts\Entity\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="CycleAnimationTester.h">
+      <Filter>Header Files\Scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="Skeleton.h">
+      <Filter>Header Files\Components\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="SkinnedVertex.h">
+      <Filter>Header Files\Components\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureCache.h">
+      <Filter>Header Files\Components\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Vertex.h">
+      <Filter>Header Files\Components\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="ActionData.h">
+      <Filter>Header Files\Scripts\Entity\Player</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
