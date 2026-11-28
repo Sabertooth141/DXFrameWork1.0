@@ -1,7 +1,6 @@
 #include "PlayerController.h"
 
 #include "ActionController.h"
-#include "ActionData.h"
 #include "GameContext.h"
 #include "GameObject.h"
 #include "HealthComponent.h"
@@ -41,10 +40,6 @@ void PlayerController::Start()
 		SetEnabled(false);
 		return;
 	}
-
-#ifndef NDEBUG
-	ValidateActionData();
-#endif
 
 	hitVolume = owner->GetComponent<HitVolumeComponent>();
 
@@ -87,6 +82,15 @@ void PlayerController::Start()
 	}
 
 	RegisterStates();
+#ifndef NDEBUG
+	for (const std::unique_ptr<PlayerState>& state : states)
+	{
+		if (state)
+		{
+			state->Validate(*this);
+		}
+	}
+#endif
 	GetState(currStateID)->Enter(*this);
 }
 
@@ -111,54 +115,17 @@ void PlayerController::Update(float deltaTime)
 	locomotion->ApplyLocomotion(deltaTime);
 }
 
+void PlayerController::RequestAction(ActionButton button, const DirectX::XMFLOAT3& dir, bool isLateChain)
+{
+	if (RequestState(PlayerStateID::ACTION))
+	{
+		actionRequest = {button, dir, isLateChain};
+	}
+}
+
 TransformComponent& PlayerController::GetTransform() const
 {
 	return *owner->GetTransform();
-}
-
-void PlayerController::StartFromInput(ActionButton input, const DirectX::XMFLOAT3& dir, bool isLateChain)
-{
-	const ActionDef* currAction = actionController->GetCurrAction();
-	const float minFade = isLateChain ? lateChainFadeSec : 0.f;
-
-	switch (input)
-	{
-	case ActionButton::ROLL:
-		StartAction(rollAction, dir, minFade);
-		break;
-	case ActionButton::ATTACK1:
-		StartAction(currAction && *currAction->nextOnAttack ? currAction->nextOnAttack : attackAction,
-		            dir, minFade);
-		break;
-	case ActionButton::ATTACK2:
-		StartAction(currAction && *currAction->nextOnAttack2 ? currAction->nextOnAttack2 : attack2Action,
-		            dir, minFade);
-		break;
-	case ActionButton::NONE:
-		break;
-	}
-}
-
-void PlayerController::StartAction(const char* actionName, const DirectX::XMFLOAT3& dir, float minFadeSec)
-{
-	const ActionDef* action = FindAction(PlayerActionData(), actionName);
-	if (!action)
-	{
-#ifndef NDEBUG
-		textRenderer->Log("[PlayerController] no action named %s", actionName);
-#endif
-		return;
-	}
-
-	if (dir.x != 0.f || dir.z != 0.f)
-	{
-		locomotion->SetFacing(atan2f(dir.x, dir.z), instantTurnRate);
-	}
-
-	// played in PlayerActionState::Enter, not here: ACTION's Exit stops during the transition and would kill it
-	requestedAction = action;
-	requestedMinFadeSec = minFadeSec;
-	RequestState(PlayerStateID::ACTION);
 }
 
 bool PlayerController::RequestState(PlayerStateID nextID, bool isRunNow)
@@ -227,44 +194,3 @@ void PlayerController::ApplyRootMotion()
 	const float scale = actionController->GetRootMotionScale();
 	locomotion->AddMove({delta.x * scale, 0.f, delta.z * scale});
 }
-
-#ifndef NDEBUG
-void PlayerController::ValidateActionData() const
-{
-	const std::vector<ActionDef>& actions = PlayerActionData();
-	bool isValid = true;
-
-	const auto checkActionName = [&](const char* fromName, const char* actionName)
-	{
-		if (!FindAction(actions, actionName))
-		{
-			textRenderer->Log("[PlayerController] %s: no action named %s", fromName, actionName);
-			isValid = false;
-		}
-	};
-
-	for (const ActionDef& action : actions)
-	{
-		if (!animator->HasClip(action.clip))
-		{
-			textRenderer->Log("[PlayerController] action %s: clip %s is not loaded", action.name, action.clip);
-			isValid = false;
-		}
-
-		if (*action.nextOnAttack)
-		{
-			checkActionName(action.name, action.nextOnAttack);
-		}
-		if (*action.nextOnAttack2)
-		{
-			checkActionName(action.name, action.nextOnAttack2);
-		}
-	}
-
-	checkActionName("attackAction", attackAction);
-	checkActionName("attack2Action", attack2Action);
-	checkActionName("rollAction", rollAction);
-
-	assert(isValid && "player action data has errors, see the on-screen log");
-}
-#endif

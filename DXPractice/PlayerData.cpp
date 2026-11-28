@@ -1,5 +1,6 @@
 #include "ActionData.h"
 #include "CharacterData.h"
+#include "PlayerMoveData.h"
 #include "SkeletalAnimatorComponent.h"
 
 
@@ -46,7 +47,7 @@ namespace
 			}
 		}
 
-		data.rootMotionClips.push_back({ "GetUpB", RootMotionMode::TRANSLATION_XZ });
+		data.rootMotionClips.push_back({"GetUpB", RootMotionMode::TRANSLATION_XZ});
 
 		return data;
 	}
@@ -55,17 +56,34 @@ namespace
 	{
 		return {
 			// openers fade in from whatever loop is playing; chained hits start on an identical frame -> no fade
-			{.name = "Combo1Attk1", .clip = "Combo1Attk1_RM", .nextOnAttack = "Combo1Attk2"},
-			{.name = "Combo1Attk2", .clip = "Combo1Attk2_RM", .nextOnAttack = "Combo1Attk3", .fadeInSec = 0.f},
-			{.name = "Combo1Attk3", .clip = "Combo1Attk3_RM", .nextOnAttack = "Combo1Attk4", .fadeInSec = 0.f},
+			{.name = "Combo1Attk1", .clip = "Combo1Attk1_RM"},
+			{.name = "Combo1Attk2", .clip = "Combo1Attk2_RM", .fadeInSec = 0.f},
+			{.name = "Combo1Attk3", .clip = "Combo1Attk3_RM", .fadeInSec = 0.f},
 			{.name = "Combo1Attk4", .clip = "Combo1Attk4_RM", .fadeInSec = 0.f},
 
-			{.name = "Combo3Attk1", .clip = "Combo3Attk1", .nextOnAttack2 = "Combo3Attk2"},
-			{.name = "Combo3Attk2", .clip = "Combo3Attk2", .nextOnAttack2 = "Combo3Attk3", .fadeInSec = 0.f},
-			{.name = "Combo3Attk3", .clip = "Combo3Attk3", .nextOnAttack2 = "Combo3Attk4", .fadeInSec = 0.f},
+			{.name = "Combo3Attk1", .clip = "Combo3Attk1"},
+			{.name = "Combo3Attk2", .clip = "Combo3Attk2", .fadeInSec = 0.f},
+			{.name = "Combo3Attk3", .clip = "Combo3Attk3", .fadeInSec = 0.f},
 			{.name = "Combo3Attk4", .clip = "Combo3Attk4", .fadeInSec = 0.f},
 
 			{.name = "RollF", .clip = "RollF_RM"},
+		};
+	}
+
+	std::vector<PlayerMove> BuildPlayerMoves()
+	{
+		return {
+			{.name = "Combo1Attk1", .action = "Combo1Attk1", .nextOnAttack = "Combo1Attk2"},
+			{.name = "Combo1Attk2", .action = "Combo1Attk2", .nextOnAttack = "Combo1Attk3"},
+			{.name = "Combo1Attk3", .action = "Combo1Attk3", .nextOnAttack = "Combo1Attk4"},
+			{.name = "Combo1Attk4", .action = "Combo1Attk4"},
+
+			{.name = "Combo3Attk1", .action = "Combo3Attk1", .nextOnAttack2 = "Combo3Attk2"},
+			{.name = "Combo3Attk2", .action = "Combo3Attk2", .nextOnAttack2 = "Combo3Attk3"},
+			{.name = "Combo3Attk3", .action = "Combo3Attk3", .nextOnAttack2 = "Combo3Attk4"},
+			{.name = "Combo3Attk4", .action = "Combo3Attk4"},
+
+			{.name = "RollF", .action = "RollF"},
 		};
 	}
 }
@@ -80,4 +98,10 @@ const std::vector<ActionDef>& PlayerActionData()
 {
 	static const std::vector<ActionDef> actions = BuildPlayerActions();
 	return actions;
+}
+
+const std::vector<PlayerMove>& PlayerMoveData()
+{
+	static const std::vector<PlayerMove> moves = BuildPlayerMoves();
+	return moves;
 }

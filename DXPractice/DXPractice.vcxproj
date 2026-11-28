@@ -313,6 +313,7 @@
     <ClInclude Include="PhysicsTest.h" />
     <ClInclude Include="PlayerController.h" />
     <ClInclude Include="PlayerInput.h" />
+    <ClInclude Include="PlayerMoveData.h" />
     <ClInclude Include="PlayerState.h" />
     <ClInclude Include="PlayerStates.h" />
     <ClInclude Include="PrefabRegistry.h" />

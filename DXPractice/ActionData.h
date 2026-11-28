@@ -6,8 +6,6 @@ struct ActionDef
 {
 	const char* name;
 	const char* clip;
-	const char* nextOnAttack = "";
-	const char* nextOnAttack2 = "";
 	float fadeInSec = 0.1f;
 	float rootMotionScale = 1.f;
 };

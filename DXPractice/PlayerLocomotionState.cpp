@@ -8,7 +8,7 @@ void PlayerLocomotionState::Update(PlayerController& player, const PlayerIntent&
 {
 	if (intent.pressedInput != ActionButton::NONE)
 	{
-		player.StartFromInput(intent.pressedInput, intent.moveDir, false);
+		player.RequestAction(intent.pressedInput, intent.moveDir, false);
 		return;
 	}
 

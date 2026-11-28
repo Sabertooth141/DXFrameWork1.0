@@ -16,6 +16,14 @@ class LocomotionComponent;
 class TransformComponent;
 class Camera3D;
 
+// controller passes requests directly to action layer
+struct ActionRequest
+{
+	ActionButton button = ActionButton::NONE;
+	DirectX::XMFLOAT3 dir{};
+	bool isLateChain = false;
+};
+
 class PlayerController : public MonoBehavior
 {
 public:
@@ -24,7 +32,7 @@ public:
 	void Update(float deltaTime) override;
 
 	// public for manipulation from state machine
-	void StartFromInput(ActionButton input, const DirectX::XMFLOAT3& dir, bool isLateChain);
+	void RequestAction(ActionButton button, const DirectX::XMFLOAT3& dir, bool isLateChain);
 
 	bool RequestState(PlayerStateID nextID, bool isRunNow = false);
 	void ForceState(PlayerStateID nextID, bool isRunNow = false);
@@ -67,26 +75,17 @@ public:
 		return requestedMinFadeSec;
 	}
 
-private:
-	void StartAction(const char* actionName, const DirectX::XMFLOAT3& dir, float minFadeSec = 0.f);
+	const ActionRequest& GetActionRequest() const
+	{
+		return actionRequest;
+	}
 
+private:
 	void RegisterStates();
 	PlayerState* GetState(PlayerStateID id) const;
 	void ApplyPendingTransition(const PlayerIntent& intent, float deltaTime);
 
 	void ApplyRootMotion();
-
-#ifndef NDEBUG
-	void ValidateActionData() const;
-#endif
-
-public:
-	float lateChainFadeSec = 0.1f;
-
-	// TODO: TEMP
-	const char* attackAction = "Combo1Attk1";
-	const char* attack2Action = "Combo3Attk1";
-	const char* rollAction = "RollF";
 
 private:
 	const Camera3D* cam = nullptr;
@@ -96,13 +95,15 @@ private:
 	HitVolumeComponent* hitVolume = nullptr;
 	PlayerInputReader inputReader;
 
-	static constexpr PlayerStateID noState = PlayerStateID::COUNT;
+	static constexpr auto noState = PlayerStateID::COUNT;
 	std::array<std::unique_ptr<PlayerState>, static_cast<size_t>(PlayerStateID::COUNT)> states;
 	PlayerStateID currStateID = PlayerStateID::LOCOMOTION;
 	PlayerStateID pendingStateID = noState;
 	bool isPendingRunNow = false;
 
 	ActionController* actionController = nullptr;
+	ActionRequest actionRequest;
+
 	const ActionDef* requestedAction = nullptr;
 	float requestedMinFadeSec = 0.f;
 

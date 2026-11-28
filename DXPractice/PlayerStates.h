@@ -4,6 +4,7 @@
 #include "PlayerInput.h"
 #include "PlayerState.h"
 
+struct PlayerMove;
 inline constexpr float instantTurnRate = 80.f;
 inline constexpr auto comboWindowEvent = "ComboWindow";
 
@@ -36,8 +37,25 @@ public:
 	void Update(PlayerController& player, const PlayerIntent& intent, float deltaTime) override;
 	void Exit(PlayerController& player) override;
 
+#ifndef NDEBUG
+	void Validate(const PlayerController& player) const override;
+#endif
+
+private:
+	const char* PickMove(ActionButton button, const PlayerMove* fromMove) const;
+	void StartMove(PlayerController& player, const char* moveName, const DirectX::XMFLOAT3& dir, float minFadeSec);
+
+public:
+	float lateChainFadeSec = 0.1f;
+
+	// TODO: openers for each combo - object to change later
+	const char* attackMove = "Combo1Attack1";
+	const char* attack2Move = "Combo2Attack1";
+	const char* rollMove = "RollF";
+
 private:
 	InputBuffer inputBuffer;
+	const PlayerMove* currMove = nullptr;
 };
 
 class PlayerKnockdownState : public PlayerState

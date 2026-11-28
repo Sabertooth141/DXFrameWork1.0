@@ -84,7 +84,7 @@ void PlayerKnockdownState::Update(PlayerController& player, const PlayerIntent& 
 	{
 		if (intent.pressedInput != ActionButton::NONE)
 		{
-			player.StartFromInput(intent.pressedInput, intent.moveDir, true);
+			player.RequestAction(intent.pressedInput, intent.moveDir, true);
 			return;
 		}
 		if (intent.moveDir.x != 0.f || intent.moveDir.z != 0.f)

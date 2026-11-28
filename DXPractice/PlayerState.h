@@ -43,4 +43,10 @@ public:
 	virtual void Exit(PlayerController& player)
 	{
 	}
+
+#ifndef NDEBUG
+	virtual void Validate(const PlayerController& player) const
+	{
+	}
+#endif
 };

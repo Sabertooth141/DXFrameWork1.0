@@ -2,24 +2,18 @@
 
 #include "ActionController.h"
 #include "ActionData.h"
+#include "LocomotionComponent.h"
 #include "PlayerController.h"
+#include "PlayerMoveData.h"
 #include "PlayerStates.h"
+#include "SkeletalAnimatorComponent.h"
 #include "TextRenderer.h"
 
 void PlayerActionState::Enter(PlayerController& player)
 {
-	inputBuffer.Clear();
-
-	const ActionDef* action = player.GetRequestedAction();
-	assert(action && "ACTION entered without StartAction");
-	if (!action || !player.GetActionController().Play(*action, player.GetRequestedMinFade()))
-	{
-#ifndef NDEBUG
-		player.textRenderer->Log("[PlayerController] action %s failed to play clip %s",
-		                         action ? action->name : "(none)", action ? action->clip : "(none)");
-#endif
-		player.RequestState(PlayerStateID::LOCOMOTION);
-	}
+	const ActionRequest& request = player.GetActionRequest();
+	assert(request.button != ActionButton::NONE && "ACTION entered without RequestAction");
+	StartMove(player, PickMove(request.button, nullptr), request.dir, request.isLateChain);
 }
 
 void PlayerActionState::Update(PlayerController& player, const PlayerIntent& intent, float deltaTime)
@@ -35,20 +29,20 @@ void PlayerActionState::Update(PlayerController& player, const PlayerIntent& int
 	bool isComboOpen = actionController.IsComboOpen();
 
 	const bool isAttackBuffered = inputBuffer.HasAttack();
-	const ActionDef* currAction = actionController.GetCurrAction();
-	const bool hasFollowUp = currAction && (*currAction->nextOnAttack || *currAction->nextOnAttack2);
+	const bool hasFollowUp = currMove && (*currMove->nextOnAttack || *currMove->nextOnAttack2);
 	const bool canMoveCancel = !isComboOpen || !hasFollowUp;
+	const float chainFadeSec = isOnChainFrame ? 0.f : lateChainFadeSec;
 
 	if (actionController.IsCancelOpen())
 	{
 		if (bufferedInput == ActionButton::ROLL)
 		{
-			player.StartFromInput(bufferedInput, dir, !isOnChainFrame);
+			StartMove(player, PickMove(bufferedInput, currMove), dir, chainFadeSec);
 			return;
 		}
 		if (isAttackBuffered && isComboOpen)
 		{
-			player.StartFromInput(bufferedInput, dir, !isOnChainFrame);
+			StartMove(player, PickMove(bufferedInput, currMove), dir, chainFadeSec);
 			return;
 		}
 
@@ -63,9 +57,7 @@ void PlayerActionState::Update(PlayerController& player, const PlayerIntent& int
 	{
 		if (isAttackBuffered)
 		{
-			// StartFromInput picks the follow-up from the current action: stop first so this restarts at the opener
-			actionController.Stop();
-			player.StartFromInput(bufferedInput, dir, false);
+			StartMove(player, PickMove(bufferedInput, nullptr), dir, 0.f);
 		}
 		else
 		{
@@ -77,4 +69,130 @@ void PlayerActionState::Update(PlayerController& player, const PlayerIntent& int
 void PlayerActionState::Exit(PlayerController& player)
 {
 	player.GetActionController().Stop();
+	currMove = nullptr;
+}
+
+void PlayerActionState::Validate(const PlayerController& player) const
+{
+	const std::vector<ActionDef>& actions = PlayerActionData();
+	const std::vector<PlayerMove>& moves = PlayerMoveData();
+	bool isValid = true;
+
+	const auto checkMoveName = [&](const char* fromName, const char* moveName)
+	{
+		if (!FindMove(moves, moveName))
+		{
+			player.textRenderer->Log("[PlayerAction] %s: no move named %s", fromName, moveName);
+			isValid = false;
+		}
+	};
+
+	for (const ActionDef& action : actions)
+	{
+		if (!player.GetAnimator().HasClip(action.clip))
+		{
+			player.textRenderer->Log("[PlayerAction] action %s: clip %s is not loaded", action.name, action.clip);
+			isValid = false;
+		}
+	}
+
+	for (const PlayerMove& move : moves)
+	{
+		if (!FindAction(actions, move.action))
+		{
+			player.textRenderer->Log("[PlayerAction] move %s: no action named %s", move.name, move.action);
+			isValid = false;
+		}
+		if (*move.nextOnAttack)
+		{
+			checkMoveName(move.name, move.nextOnAttack);
+		}
+		if (*move.nextOnAttack2)
+		{
+			checkMoveName(move.name, move.nextOnAttack2);
+		}
+	}
+
+	checkMoveName("attackMove", attackMove);
+	checkMoveName("attack2Move", attack2Move);
+	checkMoveName("rollMove", rollMove);
+
+	assert(isValid && "player action/move data has errors, see the on-screen log");
+}
+
+const char* PlayerActionState::PickMove(ActionButton button, const PlayerMove* fromMove) const
+{
+	switch (button)
+	{
+	case ActionButton::ROLL:
+		return rollMove;
+	case ActionButton::ATTACK1:
+		if (fromMove && *fromMove->nextOnAttack)
+		{
+			return fromMove->nextOnAttack;
+		}
+		return attackMove;
+	case ActionButton::ATTACK2:
+		if (fromMove && *fromMove->nextOnAttack2)
+		{
+			return fromMove->nextOnAttack2;
+		}
+
+		return attack2Move;
+	default:
+		return nullptr;
+	}
+}
+
+void PlayerActionState::StartMove(PlayerController& player, const char* moveName, const DirectX::XMFLOAT3& dir, float minFadeSec)
+{
+	ActionController& actionController = player.GetActionController();
+
+	const PlayerMove* move;
+	if (moveName)
+	{
+		move = FindMove(PlayerMoveData(), moveName);
+	}
+	else
+	{
+		move = nullptr;
+	}
+
+	const ActionDef* action;
+	if (move)
+	{
+		action = FindAction(PlayerActionData(), move->action);
+	}
+	else
+	{
+		action = nullptr;
+	}
+
+	bool isPlaying = false;
+	if (action)
+	{
+		if (dir.x != 0.f || dir.z != 0.f)
+		{
+			player.GetLocomotion().SetFacing(atan2f(dir.x, dir.z), instantTurnRate);
+		}
+		isPlaying = actionController.Play(*action, minFadeSec);
+	}
+
+	if (isPlaying)
+	{
+		inputBuffer.Clear();
+		currMove = move;
+		return;
+	}
+
+#ifndef NDEBUG
+	player.textRenderer->Log("[PlayerAction] move %s failed (%s)", moveName ? moveName : "(none)",
+	                         !move ? "no such move" : !action ? "no such action" : "clip failed to play");
+#endif
+
+	if (!actionController.IsActive())
+	{
+		currMove = nullptr;
+		player.RequestState(PlayerStateID::LOCOMOTION);
+	}
 }
