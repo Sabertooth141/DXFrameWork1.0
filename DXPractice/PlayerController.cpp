@@ -9,6 +9,7 @@
 #include "Keyboard.h"
 #include "LocomotionComponent.h"
 #include "Mouse.h"
+#include "PlayerStates.h"
 #include "SkeletalAnimatorComponent.h"
 #include "TextRenderer.h"
 
@@ -16,6 +17,8 @@ namespace
 {
 	constexpr float instantTurnRate = 80.f;
 	constexpr auto comboWindowEvent = "ComboWindow";
+
+	constexpr int maxTransitionsPerFrame = 4;
 }
 
 void PlayerController::Awake()
@@ -81,6 +84,9 @@ void PlayerController::Start()
 			health->Reset();
 		};
 	}
+
+	RegisterStates();
+	GetState(currStateID)->Enter(*this);
 }
 
 void PlayerController::Update(float deltaTime)
@@ -90,29 +96,15 @@ void PlayerController::Update(float deltaTime)
 	if (isKnockdownPending)
 	{
 		isKnockdownPending = false;
-		StartKnockdown();
+		ForceState(PlayerStateID::KNOCKDOWN, true);
 	}
 
-	switch (state)
+	if (pendingStateID == noState)
 	{
-	case PlayerState::LOCOMOTION:
-		if (intent.pressedInput != ActionButton::NONE)
-		{
-			StartFromInput(intent.pressedInput, intent.moveDir, false);
-		}
-		else
-		{
-			UpdateLocomotion(intent);
-		}
-		break;
-	case PlayerState::ATTACK:
-	case PlayerState::ROLL:
-		UpdateAction(intent, deltaTime);
-		break;
-	case PlayerState::KNOCKDOWN:
-		UpdateKnockdown(intent, deltaTime);
-		break;
+		GetState(currStateID)->Update(*this, intent, deltaTime);
 	}
+
+	ApplyPendingTransition(intent, deltaTime);
 
 	ApplyRootMotion();
 	locomotion->ApplyLocomotion(deltaTime);
@@ -162,19 +154,21 @@ void PlayerController::UpdateAction(const PlayerIntent& intent, float deltaTime)
 
 		if (canMoveCancel && bufferedInput == ActionButton::NONE && intent.HasMove())
 		{
-			ChangeState(PlayerState::LOCOMOTION);
-			UpdateLocomotion(intent);
+			RequestState(PlayerStateID::LOCOMOTION, true);
 			return;
 		}
 	}
 
 	if (actionController->IsFinished())
 	{
-		const ActionButton pendingInput = isAttackBuffered ? bufferedInput : ActionButton::NONE;
-		ChangeState(PlayerState::LOCOMOTION);
-		if (pendingInput != ActionButton::NONE)
+		if (isAttackBuffered)
 		{
-			StartFromInput(pendingInput, dir, false);
+			actionController->Stop();
+			StartFromInput(bufferedInput, dir, false);
+		}
+		else
+		{
+			RequestState(PlayerStateID::LOCOMOTION);
 		}
 	}
 }
@@ -187,22 +181,22 @@ void PlayerController::StartFromInput(ActionButton input, const DirectX::XMFLOAT
 	switch (input)
 	{
 	case ActionButton::ROLL:
-		StartAction(rollAction, dir, PlayerState::ROLL, minFade);
+		StartAction(rollAction, dir, minFade);
 		break;
 	case ActionButton::ATTACK1:
 		StartAction(currAction && *currAction->nextOnAttack ? currAction->nextOnAttack : attackAction,
-		            dir, PlayerState::ATTACK, minFade);
+		            dir, minFade);
 		break;
 	case ActionButton::ATTACK2:
 		StartAction(currAction && *currAction->nextOnAttack2 ? currAction->nextOnAttack2 : attack2Action,
-		            dir, PlayerState::ATTACK, minFade);
+		            dir, minFade);
 		break;
 	case ActionButton::NONE:
 		break;
 	}
 }
 
-void PlayerController::StartAction(const char* actionName, const DirectX::XMFLOAT3& dir, PlayerState nextState, float minFadeSec)
+void PlayerController::StartAction(const char* actionName, const DirectX::XMFLOAT3& dir, float minFadeSec)
 {
 	const ActionDef* action = FindAction(PlayerActionData(), actionName);
 	if (!action)
@@ -219,7 +213,7 @@ void PlayerController::StartAction(const char* actionName, const DirectX::XMFLOA
 	}
 
 	actionController->Play(*action, minFadeSec);
-	ChangeState(nextState);
+	RequestState(PlayerStateID::ACTION);
 }
 
 void PlayerController::StartKnockdown()
@@ -239,7 +233,6 @@ void PlayerController::StartKnockdown()
 	}
 
 	animator->PlayClip(knockdownClip, knockdownFadeSec, knockdownStartSec);
-	ChangeState(PlayerState::KNOCKDOWN);
 	actionController->Stop();
 
 	if (hitVolume)
@@ -303,40 +296,98 @@ void PlayerController::UpdateKnockdown(const PlayerIntent& intent, float deltaTi
 		}
 		if (intent.moveDir.x != 0.f || intent.moveDir.z != 0.f)
 		{
-			ChangeState(PlayerState::LOCOMOTION);
-			UpdateLocomotion(intent);
+			RequestState(PlayerStateID::LOCOMOTION, true);
 			return;
 		}
 	}
 
 	if (animator->IsFinished())
 	{
-		ChangeState(PlayerState::LOCOMOTION);
+		RequestState(PlayerStateID::LOCOMOTION);
 	}
 }
 
-void PlayerController::ChangeState(PlayerState nextState)
+bool PlayerController::RequestState(PlayerStateID nextID, bool isRunNow)
 {
-	// leaving a roll always ends its i-frames, whatever cut it short
-	if (state == PlayerState::KNOCKDOWN && hitVolume)
+	if (pendingStateID != noState)
+	{
+#ifndef NDEBUG
+		textRenderer->Log("[PlayerController] %s ignored, %s already pending", ToString(nextID), ToString(pendingStateID));
+#endif
+		return false;
+	}
+
+	pendingStateID = nextID;
+	isPendingRunNow = isRunNow;
+	return true;
+}
+
+void PlayerController::ForceState(PlayerStateID nextID, bool isRunNow)
+{
+	pendingStateID = nextID;
+	isPendingRunNow = isRunNow;
+}
+
+void PlayerController::RegisterStates()
+{
+	states[static_cast<size_t>(PlayerStateID::LOCOMOTION)] = std::make_unique<PlayerLocomotionState>();
+	states[static_cast<size_t>(PlayerStateID::ACTION)] = std::make_unique<PlayerActionState>();
+	states[static_cast<size_t>(PlayerStateID::KNOCKDOWN)] = std::make_unique<PlayerKnockdownState>();
+}
+
+PlayerState* PlayerController::GetState(PlayerStateID id) const
+{
+	if (id >= PlayerStateID::COUNT)
+	{
+		return nullptr;
+	}
+
+	return states[static_cast<size_t>(id)].get();
+}
+
+void PlayerController::ApplyPendingTransition(const PlayerIntent& intent, float deltaTime)
+{
+	for (int i = 0; i < maxTransitionsPerFrame && pendingStateID != noState; i++)
+	{
+		const PlayerStateID nextId = pendingStateID;
+		const bool isRunNow = isPendingRunNow;
+		pendingStateID = noState;
+		isPendingRunNow = false;
+
+		GetState(currStateID)->Exit(*this);
+		RunTransitionCleanup(currStateID, nextId);
+		currStateID = nextId;
+		GetState(currStateID)->Enter(*this);
+
+		if (isRunNow)
+		{
+			GetState(currStateID)->Update(*this, intent, deltaTime);
+		}
+	}
+
+	assert(pendingStateID == noState && "player states keep requesting each other");
+}
+
+void PlayerController::RunTransitionCleanup(PlayerStateID fromID, PlayerStateID toID)
+{
+	if (fromID == PlayerStateID::KNOCKDOWN && hitVolume)
 	{
 		hitVolume->SetAllHurtboxEnabled(true);
 	}
 
-	if (state == PlayerState::KNOCKDOWN && nextState != PlayerState::KNOCKDOWN)
+	if (fromID == PlayerStateID::KNOCKDOWN && toID != PlayerStateID::KNOCKDOWN)
 	{
 		DirectX::XMFLOAT3 pos = owner->GetTransform()->GetPosition();
 		pos.y = knockdownGroundY;
 		owner->GetTransform()->SetPosition(pos);
 	}
 
-	if (nextState == PlayerState::LOCOMOTION)
+	if (toID == PlayerStateID::LOCOMOTION)
 	{
 		actionController->Stop();
 	}
 
 	inputBuffer.Clear();
-	state = nextState;
 }
 
 void PlayerController::PlayLocomotionClip(const char* clipName)

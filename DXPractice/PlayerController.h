@@ -1,6 +1,9 @@
 #pragma once
+#include <memory>
+
 #include "MonoBehavior.h"
 #include "PlayerInput.h"
+#include "PlayerState.h"
 
 class ActionController;
 enum class ActionButton : uint8_t;
@@ -12,14 +15,6 @@ class HealthComponent;
 class LocomotionComponent;
 class Camera3D;
 
-enum class PlayerState
-{
-	LOCOMOTION,
-	ATTACK,
-	ROLL,
-	KNOCKDOWN
-};
-
 class PlayerController : public MonoBehavior
 {
 public:
@@ -27,17 +22,24 @@ public:
 	void Start() override;
 	void Update(float deltaTime) override;
 
-private:
-	void UpdateLocomotion(const PlayerIntent& intent);
-
-	void UpdateAction(const PlayerIntent& intent, float deltaTime);
+	// public for manipulation from state machine
 	void StartFromInput(ActionButton input, const DirectX::XMFLOAT3& dir, bool isLateChain);
-	void StartAction(const char* actionName, const DirectX::XMFLOAT3& dir, PlayerState nextState, float minFadeSec = 0.f);
+	void UpdateLocomotion(const PlayerIntent& intent);
+	void UpdateAction(const PlayerIntent& intent, float deltaTime);
 
 	void StartKnockdown();
 	void UpdateKnockdown(const PlayerIntent& intent, float deltaTime);
 
-	void ChangeState(PlayerState nextState);
+	bool RequestState(PlayerStateID nextID, bool isRunNow = false);
+	void ForceState(PlayerStateID nextID, bool isRunNow = false);
+private:
+	void StartAction(const char* actionName, const DirectX::XMFLOAT3& dir, float minFadeSec = 0.f);	
+
+	void RegisterStates();
+	PlayerState* GetState(PlayerStateID id) const;
+	void ApplyPendingTransition(const PlayerIntent& intent, float deltaTime);
+	void RunTransitionCleanup(PlayerStateID fromID, PlayerStateID toID);
+
 	void PlayLocomotionClip(const char* clipName);
 	void ApplyRootMotion();
 
@@ -74,7 +76,12 @@ private:
 	PlayerInputReader inputReader;
 	InputBuffer inputBuffer;
 
-	PlayerState state = PlayerState::LOCOMOTION;
+	static constexpr PlayerStateID noState = PlayerStateID::COUNT;
+	std::array<std::unique_ptr<PlayerState>, static_cast<size_t>(PlayerStateID::COUNT)> states;
+	PlayerStateID currStateID = PlayerStateID::LOCOMOTION;
+	PlayerStateID pendingStateID = noState;
+	bool isPendingRunNow = false;
+
 	ActionController* actionController = nullptr;
 
 	bool isKnockdownPending = false;

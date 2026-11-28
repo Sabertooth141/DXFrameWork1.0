@@ -160,6 +160,12 @@
     <Filter Include="Header Files\Scripts\Entity\Player">
       <UniqueIdentifier>{27e8eb21-750a-4046-bad4-e7dcf1f0c13f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Scripts\Entity\Player\States">
+      <UniqueIdentifier>{9c2a22cf-c927-4827-b72e-7f7107c76c22}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Scripts\Entity\Player\States">
+      <UniqueIdentifier>{53e34737-f3ff-4bd3-8236-51a825a4af0b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Image Include="small.ico">
@@ -427,6 +433,15 @@
     </ClCompile>
     <ClCompile Include="ActionController.cpp">
       <Filter>Source Files\Scripts\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerLocomotionState.cpp">
+      <Filter>Source Files\Scripts\Entity\Player\States</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerActionState.cpp">
+      <Filter>Source Files\Scripts\Entity\Player\States</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerKnockdownState.cpp">
+      <Filter>Source Files\Scripts\Entity\Player\States</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -750,6 +765,12 @@
     </ClInclude>
     <ClInclude Include="ActionController.h">
       <Filter>Header Files\Scripts\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerState.h">
+      <Filter>Header Files\Scripts\Entity\Player\States</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerStates.h">
+      <Filter>Header Files\Scripts\Entity\Player\States</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
