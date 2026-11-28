@@ -68,7 +68,7 @@
   {"clip":"Combo3Attk4","time":0.16,"event":"HitboxOn","param":"sword"},
   {"clip":"Combo3Attk4","time":0.31,"event":"HitboxOff","param":"sword"},
   {"clip":"Combo3Attk4","time":1.1,"event":"ComboWindow"},
-  {"clip":"GetUpB","time":2.0,"event":"ComboWindow"},
+  {"clip":"GetUpB","time":1.6,"event":"ComboWindow"},
   {"clip":"RollF_RM","time":0.0,"event":"InvulnOn"},
   {"clip":"RollF_RM","time":1.0,"event":"ComboWindow"},
   {"clip":"RollF_RM","time":1.183,"event":"InvulnOff"}

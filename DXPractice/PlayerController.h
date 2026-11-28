@@ -31,7 +31,6 @@ private:
 	void UpdateLocomotion(const PlayerIntent& intent);
 
 	void UpdateAction(const PlayerIntent& intent, float deltaTime);
-	void UpdateInvuln();
 	void StartFromInput(ActionButton input, const DirectX::XMFLOAT3& dir, bool isLateChain);
 	void StartAction(const char* actionName, const DirectX::XMFLOAT3& dir, PlayerState nextState, float minFadeSec = 0.f);
 

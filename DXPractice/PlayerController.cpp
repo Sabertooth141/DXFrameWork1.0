@@ -15,8 +15,6 @@
 namespace
 {
 	constexpr float instantTurnRate = 80.f;
-	constexpr auto invulnOnEvent = "InvulnOn";
-	constexpr auto invulnOffEvent = "InvulnOff";
 	constexpr auto comboWindowEvent = "ComboWindow";
 }
 
@@ -136,11 +134,6 @@ void PlayerController::UpdateLocomotion(const PlayerIntent& intent)
 
 void PlayerController::UpdateAction(const PlayerIntent& intent, float deltaTime)
 {
-	if (state == PlayerState::ROLL)
-	{
-		UpdateInvuln();
-	}
-
 	inputBuffer.Update(intent.pressedInput, deltaTime);
 	const ActionButton bufferedInput = inputBuffer.Get();
 	const DirectX::XMFLOAT3& dir = intent.moveDir;
@@ -183,23 +176,6 @@ void PlayerController::UpdateAction(const PlayerIntent& intent, float deltaTime)
 		{
 			StartFromInput(pendingInput, dir, false);
 		}
-	}
-}
-
-void PlayerController::UpdateInvuln()
-{
-	if (!hitVolume)
-	{
-		return;
-	}
-
-	if (animator->WasMarkerFired(invulnOnEvent))
-	{
-		hitVolume->SetAllHurtboxEnabled(false);
-	}
-	if (animator->WasMarkerFired(invulnOffEvent))
-	{
-		hitVolume->SetAllHurtboxEnabled(true);
 	}
 }
 
@@ -342,7 +318,7 @@ void PlayerController::UpdateKnockdown(const PlayerIntent& intent, float deltaTi
 void PlayerController::ChangeState(PlayerState nextState)
 {
 	// leaving a roll always ends its i-frames, whatever cut it short
-	if ((state == PlayerState::ROLL || state == PlayerState::KNOCKDOWN) && hitVolume)
+	if (state == PlayerState::KNOCKDOWN && hitVolume)
 	{
 		hitVolume->SetAllHurtboxEnabled(true);
 	}

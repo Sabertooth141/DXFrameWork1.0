@@ -1,6 +1,7 @@
 #pragma once
 #include "IComponent.h"
 
+class HitVolumeComponent;
 class SkeletalAnimatorComponent;
 struct ActionDef;
 
@@ -46,10 +47,12 @@ public:
 
 private:
 	SkeletalAnimatorComponent* animator = nullptr;
+	HitVolumeComponent* hitVolume = nullptr;
 	const ActionDef* currAction = nullptr;
 
 	bool isComboOpen = false;
 	bool isCancelOpen = false;
 	bool didCancelOpenThisFrame = false;
+	bool isInvuln = false;
 };
 
