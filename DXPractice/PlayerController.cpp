@@ -18,7 +18,6 @@ namespace
 	constexpr auto invulnOnEvent = "InvulnOn";
 	constexpr auto invulnOffEvent = "InvulnOff";
 	constexpr auto comboWindowEvent = "ComboWindow";
-	constexpr auto comboWindowEndEvent = "ComboWindowEnd";
 }
 
 void PlayerController::Awake()
@@ -146,25 +145,16 @@ void PlayerController::UpdateAction(const PlayerIntent& intent, float deltaTime)
 	const ActionButton bufferedInput = inputBuffer.Get();
 	const DirectX::XMFLOAT3& dir = intent.moveDir;
 
-	bool isOnChainFrame = false;
-	if (!isCancelOpen && animator->WasMarkerFired(comboWindowEvent))
-	{
-		isCancelOpen = true;
-		isComboOpen = true;
-		isOnChainFrame = true;
-	}
-
-	if (animator->WasMarkerFired(comboWindowEndEvent))
-	{
-		isComboOpen = false;
-	}
+	actionController->Tick();
+	bool isOnChainFrame = actionController->DidCancelOpenThisFrame();
+	bool isComboOpen = actionController->IsComboOpen();
 
 	const bool isAttackBuffered = inputBuffer.HasAttack();
 	const ActionDef* currAction = actionController->GetCurrAction();
 	const bool hasFollowUp = currAction && (*currAction->nextOnAttack || *currAction->nextOnAttack2);
 	const bool canMoveCancel = !isComboOpen || !hasFollowUp;
 
-	if (isCancelOpen)
+	if (actionController->IsCancelOpen())
 	{
 		if (bufferedInput == ActionButton::ROLL)
 		{
@@ -185,7 +175,7 @@ void PlayerController::UpdateAction(const PlayerIntent& intent, float deltaTime)
 		}
 	}
 
-	if (animator->IsFinished())
+	if (actionController->IsFinished())
 	{
 		const ActionButton pendingInput = isAttackBuffered ? bufferedInput : ActionButton::NONE;
 		ChangeState(PlayerState::LOCOMOTION);
@@ -284,6 +274,7 @@ void PlayerController::StartKnockdown()
 	knockdownTimer = 0.f;
 	knockdownGroundY = transform->GetPosition().y;
 	isGettingUp = false;
+	isGetUpCancelOpen = false;
 }
 
 void PlayerController::UpdateKnockdown(const PlayerIntent& intent, float deltaTime)
@@ -318,16 +309,16 @@ void PlayerController::UpdateKnockdown(const PlayerIntent& intent, float deltaTi
 		return;
 	}
 
-	if (!isCancelOpen && animator->WasMarkerFired(comboWindowEvent))
+	if (!isGetUpCancelOpen && animator->WasMarkerFired(comboWindowEvent))
 	{
-		isCancelOpen = true;
+		isGetUpCancelOpen = true;
 		if (hitVolume)
 		{
 			hitVolume->SetAllHurtboxEnabled(true);
 		}
 	}
 
-	if (isCancelOpen)
+	if (isGetUpCancelOpen)
 	{
 		if (intent.pressedInput != ActionButton::NONE)
 		{
@@ -369,8 +360,6 @@ void PlayerController::ChangeState(PlayerState nextState)
 	}
 
 	inputBuffer.Clear();
-	isComboOpen = false;
-	isCancelOpen = false;
 	state = nextState;
 }
 

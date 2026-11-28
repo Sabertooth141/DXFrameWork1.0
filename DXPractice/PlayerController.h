@@ -75,9 +75,6 @@ private:
 	PlayerInputReader inputReader;
 	InputBuffer inputBuffer;
 
-	bool isComboOpen = false;
-	bool isCancelOpen = false;
-
 	PlayerState state = PlayerState::LOCOMOTION;
 	ActionController* actionController = nullptr;
 
@@ -86,5 +83,7 @@ private:
 	DirectX::XMFLOAT3 knockdownBackDir{};
 	float knockdownTimer = 0.f;
 	float knockdownGroundY = 0.f;
+
 	bool isGettingUp = false;
+	bool isGetUpCancelOpen = false;
 };
