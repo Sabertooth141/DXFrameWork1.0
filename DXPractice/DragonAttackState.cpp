@@ -1,5 +1,6 @@
 #include <string>
 
+#include "ActionController.h"
 #include "ActionData.h"
 #include "DebugRenderer.h"
 #include "DragonAI.h"
@@ -21,18 +22,16 @@ void DragonAttackState::Enter(DragonAI& ai)
 	selector.StartCooldown(attkIndex);
 
 	const ActionDef* actionDef = FindAction(DragonActionData(), option->action);
-	if (!actionDef)
-	{
-		return;
-	}
-
-	SkeletalAnimatorComponent& animator = ai.GetAnimator();
-	isPlaying = animator.PlayClip(option->action);
-	isTracking = isPlaying && option->trackSpeedDeg > 0.f && animator.HasEvent(option->action, trackEndEvent);
+	isPlaying = actionDef && ai.GetActionController().Play(*actionDef);
+	isTracking = isPlaying && option->trackSpeedDeg > 0.f && ai.GetAnimator().HasEvent(actionDef->clip, trackEndEvent);
 }
 
 void DragonAttackState::Update(DragonAI& ai, float deltaTime)
 {
+	ActionController& actionController = ai.GetActionController();
+	// TODO: for future combo implementation
+	actionController.Tick();
+
 	if (!isPlaying)
 	{
 		ai.RequestStateTransition(StateID::IDLE);
@@ -52,10 +51,15 @@ void DragonAttackState::Update(DragonAI& ai, float deltaTime)
 			DirectX::XMConvertToRadians(option->trackSpeedDeg));
 	}
 	
-	if (ai.GetAnimator().IsFinished())
+	if (actionController.IsFinished())
 	{
 		ai.RequestStateTransition(StateID::RECOVER);
 	}
+}
+
+void DragonAttackState::Exit(DragonAI& ai)
+{
+	ai.GetActionController().Stop();
 }
 
 #ifndef NDEBUG

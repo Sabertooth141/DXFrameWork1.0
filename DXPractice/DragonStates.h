@@ -109,6 +109,7 @@ class DragonAttackState : public DragonState
 public:
 	void Enter(DragonAI& ai) override;
 	void Update(DragonAI& ai, float deltaTime) override;
+	void Exit(DragonAI& ai) override;
 
 	bool CanBeInterrupted(InterruptStateKind kind) const override
 	{

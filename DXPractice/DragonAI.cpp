@@ -11,7 +11,7 @@
 #include "Scene.h"
 #include "TextRenderer.h"
 #include "SkeletalAnimatorComponent.h"
-
+#include "ActionController.h"
 
 void DragonAI::Start()
 {
@@ -20,10 +20,11 @@ void DragonAI::Start()
 	animator = owner->GetComponent<SkeletalAnimatorComponent>();
 	transform = owner->GetTransform();
 	locomotion = owner->GetComponent<LocomotionComponent>();
-	if (!animator || !transform || !locomotion)
+	actionController = owner->GetComponent<ActionController>();
+	if (!animator || !transform || !locomotion || !actionController)
 	{
 #ifndef NDEBUG
-		textRenderer->Log("[DragonAI] %s: no animator / transform / locomotion, AI disabled", owner->GetName().c_str());
+		textRenderer->Log("[DragonAI] %s: no animator / transform / locomotion / action controller, AI disabled", owner->GetName().c_str());
 #endif
 		SetEnabled(false);
 		return;

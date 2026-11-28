@@ -10,6 +10,7 @@
 #include "HitVolumeComponent.h"
 #include "MonoBehavior.h"
 
+class ActionController;
 class LocomotionComponent;
 class HealthComponent;
 class SkeletalAnimatorComponent;
@@ -120,6 +121,11 @@ public:
 		return currRecoverScale;
 	}
 
+	ActionController& GetActionController() const
+	{
+		return *actionController;
+	}
+
 private:
 	void RegisterStates();
 	void BindHealthCallbacks();
@@ -161,6 +167,7 @@ private:
 	HealthComponent* health = nullptr;
 	LocomotionComponent* locomotion = nullptr;
 	HitVolumeComponent* hitVolume = nullptr;
+	ActionController* actionController = nullptr;
 
 	// flags by health callbacks
 	bool isDeathPending = false;
