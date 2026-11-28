@@ -15,9 +15,6 @@
 
 namespace
 {
-	constexpr float instantTurnRate = 80.f;
-	constexpr auto comboWindowEvent = "ComboWindow";
-
 	constexpr int maxTransitionsPerFrame = 4;
 }
 
@@ -44,6 +41,10 @@ void PlayerController::Start()
 		SetEnabled(false);
 		return;
 	}
+
+#ifndef NDEBUG
+	ValidateActionData();
+#endif
 
 	hitVolume = owner->GetComponent<HitVolumeComponent>();
 
@@ -110,67 +111,9 @@ void PlayerController::Update(float deltaTime)
 	locomotion->ApplyLocomotion(deltaTime);
 }
 
-void PlayerController::UpdateLocomotion(const PlayerIntent& intent)
+TransformComponent& PlayerController::GetTransform() const
 {
-	if (!intent.HasMove())
-	{
-		PlayLocomotionClip(idleClip);
-		return;
-	}
-
-	const DirectX::XMFLOAT3& dir = intent.moveDir;
-	locomotion->SetMove(dir, intent.isSprinting ? sprintSpeed : runSpeed);
-	locomotion->SetFacing(atan2f(dir.x, dir.z), turnSpeed);
-	PlayLocomotionClip(intent.isSprinting ? sprintClip : runClip);
-}
-
-void PlayerController::UpdateAction(const PlayerIntent& intent, float deltaTime)
-{
-	inputBuffer.Update(intent.pressedInput, deltaTime);
-	const ActionButton bufferedInput = inputBuffer.Get();
-	const DirectX::XMFLOAT3& dir = intent.moveDir;
-
-	actionController->Tick();
-	bool isOnChainFrame = actionController->DidCancelOpenThisFrame();
-	bool isComboOpen = actionController->IsComboOpen();
-
-	const bool isAttackBuffered = inputBuffer.HasAttack();
-	const ActionDef* currAction = actionController->GetCurrAction();
-	const bool hasFollowUp = currAction && (*currAction->nextOnAttack || *currAction->nextOnAttack2);
-	const bool canMoveCancel = !isComboOpen || !hasFollowUp;
-
-	if (actionController->IsCancelOpen())
-	{
-		if (bufferedInput == ActionButton::ROLL)
-		{
-			StartFromInput(bufferedInput, dir, !isOnChainFrame);
-			return;
-		}
-		if (isAttackBuffered && isComboOpen)
-		{
-			StartFromInput(bufferedInput, dir, !isOnChainFrame);
-			return;
-		}
-
-		if (canMoveCancel && bufferedInput == ActionButton::NONE && intent.HasMove())
-		{
-			RequestState(PlayerStateID::LOCOMOTION, true);
-			return;
-		}
-	}
-
-	if (actionController->IsFinished())
-	{
-		if (isAttackBuffered)
-		{
-			actionController->Stop();
-			StartFromInput(bufferedInput, dir, false);
-		}
-		else
-		{
-			RequestState(PlayerStateID::LOCOMOTION);
-		}
-	}
+	return *owner->GetTransform();
 }
 
 void PlayerController::StartFromInput(ActionButton input, const DirectX::XMFLOAT3& dir, bool isLateChain)
@@ -212,99 +155,10 @@ void PlayerController::StartAction(const char* actionName, const DirectX::XMFLOA
 		locomotion->SetFacing(atan2f(dir.x, dir.z), instantTurnRate);
 	}
 
-	actionController->Play(*action, minFadeSec);
+	// played in PlayerActionState::Enter, not here: ACTION's Exit stops during the transition and would kill it
+	requestedAction = action;
+	requestedMinFadeSec = minFadeSec;
 	RequestState(PlayerStateID::ACTION);
-}
-
-void PlayerController::StartKnockdown()
-{
-	TransformComponent* transform = owner->GetTransform();
-
-	// face the hit
-	if (hitDir.x != 0.f || hitDir.z != 0.f)
-	{
-		locomotion->SetFacing(atan2f(hitDir.x, hitDir.z), instantTurnRate);
-		knockdownBackDir = {-hitDir.x, 0.f, -hitDir.z};
-	}
-	else
-	{
-		const float yaw = transform->GetRotation().y;
-		knockdownBackDir = {-sinf(yaw), 0.f, -cosf(yaw)};
-	}
-
-	animator->PlayClip(knockdownClip, knockdownFadeSec, knockdownStartSec);
-	actionController->Stop();
-
-	if (hitVolume)
-	{
-		hitVolume->SetAllHurtboxEnabled(false);
-	}
-
-	knockdownTimer = 0.f;
-	knockdownGroundY = transform->GetPosition().y;
-	isGettingUp = false;
-	isGetUpCancelOpen = false;
-}
-
-void PlayerController::UpdateKnockdown(const PlayerIntent& intent, float deltaTime)
-{
-	TransformComponent* transform = owner->GetTransform();
-
-	// procedural launch
-	const float prevT = std::min(knockdownTimer / knockdownAirSec, 1.f);
-	knockdownTimer += deltaTime;
-	const float t = std::min(knockdownTimer / knockdownAirSec, 1.f);
-	if (prevT < 1.f)
-	{
-		DirectX::XMFLOAT3 pos = transform->GetPosition();
-		pos.y = knockdownGroundY + 4.f * knockdownAirHeight * t * (1.f - t);
-		transform->SetPosition(pos);
-
-		const auto pushAt = [this](float x)
-		{
-			return knockdownPushDistance * (1.f - (1.f - x) * (1.f - x));
-		};
-		const float step = pushAt(t) - pushAt(prevT);
-		locomotion->AddMove({knockdownBackDir.x * step, 0.f, knockdownBackDir.z * step});
-	}
-
-	if (!isGettingUp)
-	{
-		if (animator->IsFinished())
-		{
-			animator->PlayClip(getUpClip, 0.f);
-			isGettingUp = true;
-		}
-		return;
-	}
-
-	if (!isGetUpCancelOpen && animator->WasMarkerFired(comboWindowEvent))
-	{
-		isGetUpCancelOpen = true;
-		if (hitVolume)
-		{
-			hitVolume->SetAllHurtboxEnabled(true);
-		}
-	}
-
-	if (isGetUpCancelOpen)
-	{
-		if (intent.pressedInput != ActionButton::NONE)
-		{
-			StartFromInput(intent.pressedInput, intent.moveDir, true);
-			return;
-		}
-		if (intent.moveDir.x != 0.f || intent.moveDir.z != 0.f)
-		{
-			RequestState(PlayerStateID::LOCOMOTION, true);
-			return;
-		}
-	}
-
-	if (animator->IsFinished())
-	{
-		RequestState(PlayerStateID::LOCOMOTION);
-	}
 }
 
 bool PlayerController::RequestState(PlayerStateID nextID, bool isRunNow)
@@ -355,7 +209,6 @@ void PlayerController::ApplyPendingTransition(const PlayerIntent& intent, float 
 		isPendingRunNow = false;
 
 		GetState(currStateID)->Exit(*this);
-		RunTransitionCleanup(currStateID, nextId);
 		currStateID = nextId;
 		GetState(currStateID)->Enter(*this);
 
@@ -368,39 +221,50 @@ void PlayerController::ApplyPendingTransition(const PlayerIntent& intent, float 
 	assert(pendingStateID == noState && "player states keep requesting each other");
 }
 
-void PlayerController::RunTransitionCleanup(PlayerStateID fromID, PlayerStateID toID)
-{
-	if (fromID == PlayerStateID::KNOCKDOWN && hitVolume)
-	{
-		hitVolume->SetAllHurtboxEnabled(true);
-	}
-
-	if (fromID == PlayerStateID::KNOCKDOWN && toID != PlayerStateID::KNOCKDOWN)
-	{
-		DirectX::XMFLOAT3 pos = owner->GetTransform()->GetPosition();
-		pos.y = knockdownGroundY;
-		owner->GetTransform()->SetPosition(pos);
-	}
-
-	if (toID == PlayerStateID::LOCOMOTION)
-	{
-		actionController->Stop();
-	}
-
-	inputBuffer.Clear();
-}
-
-void PlayerController::PlayLocomotionClip(const char* clipName)
-{
-	if (animator->GetCurrClipName() != clipName)
-	{
-		animator->PlayClip(clipName, locomotionFadeSec);
-	}
-}
-
 void PlayerController::ApplyRootMotion()
 {
 	const DirectX::XMFLOAT3& delta = animator->GetRootMoveDelta();
 	const float scale = actionController->GetRootMotionScale();
 	locomotion->AddMove({delta.x * scale, 0.f, delta.z * scale});
 }
+
+#ifndef NDEBUG
+void PlayerController::ValidateActionData() const
+{
+	const std::vector<ActionDef>& actions = PlayerActionData();
+	bool isValid = true;
+
+	const auto checkActionName = [&](const char* fromName, const char* actionName)
+	{
+		if (!FindAction(actions, actionName))
+		{
+			textRenderer->Log("[PlayerController] %s: no action named %s", fromName, actionName);
+			isValid = false;
+		}
+	};
+
+	for (const ActionDef& action : actions)
+	{
+		if (!animator->HasClip(action.clip))
+		{
+			textRenderer->Log("[PlayerController] action %s: clip %s is not loaded", action.name, action.clip);
+			isValid = false;
+		}
+
+		if (*action.nextOnAttack)
+		{
+			checkActionName(action.name, action.nextOnAttack);
+		}
+		if (*action.nextOnAttack2)
+		{
+			checkActionName(action.name, action.nextOnAttack2);
+		}
+	}
+
+	checkActionName("attackAction", attackAction);
+	checkActionName("attack2Action", attack2Action);
+	checkActionName("rollAction", rollAction);
+
+	assert(isValid && "player action data has errors, see the on-screen log");
+}
+#endif
