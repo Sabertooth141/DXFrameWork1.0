@@ -49,8 +49,8 @@ public:
 	float lateChainFadeSec = 0.1f;
 
 	// TODO: openers for each combo - object to change later
-	const char* attackMove = "Combo1Attack1";
-	const char* attack2Move = "Combo2Attack1";
+	const char* attackMove = "Combo1Attk1";
+	const char* attack2Move = "Combo3Attk1";
 	const char* rollMove = "RollF";
 
 private:

@@ -13,7 +13,7 @@ void PlayerActionState::Enter(PlayerController& player)
 {
 	const ActionRequest& request = player.GetActionRequest();
 	assert(request.button != ActionButton::NONE && "ACTION entered without RequestAction");
-	StartMove(player, PickMove(request.button, nullptr), request.dir, request.isLateChain);
+	StartMove(player, PickMove(request.button, nullptr), request.dir, request.isLateChain ? lateChainFadeSec : 0.f);
 }
 
 void PlayerActionState::Update(PlayerController& player, const PlayerIntent& intent, float deltaTime)
@@ -72,6 +72,7 @@ void PlayerActionState::Exit(PlayerController& player)
 	currMove = nullptr;
 }
 
+#ifndef NDEBUG
 void PlayerActionState::Validate(const PlayerController& player) const
 {
 	const std::vector<ActionDef>& actions = PlayerActionData();
@@ -119,6 +120,7 @@ void PlayerActionState::Validate(const PlayerController& player) const
 
 	assert(isValid && "player action/move data has errors, see the on-screen log");
 }
+#endif
 
 const char* PlayerActionState::PickMove(ActionButton button, const PlayerMove* fromMove) const
 {
