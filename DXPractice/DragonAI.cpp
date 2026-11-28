@@ -2,6 +2,7 @@
 
 #include <imgui.h>
 
+#include "ActionData.h"
 #include "DragonStates.h"
 #include "GameObject.h"
 #include "HealthComponent.h"
@@ -29,6 +30,10 @@ void DragonAI::Start()
 	}
 
 	hitVolume = owner->GetComponent<HitVolumeComponent>();
+
+#ifndef NDEBUG
+	ValidateActionData();
+#endif
 
 	RegisterStates();
 	BindHealthCallbacks();
@@ -258,6 +263,32 @@ void DragonAI::DrawDebugGizmos(DebugRenderer& debugRenderer) const
 	{
 		state->DrawDebug(*this, debugRenderer);
 	}
+}
+
+void DragonAI::ValidateActionData() const
+{
+	const std::vector<ActionDef>& actions = DragonActionData();
+	bool isValid = true;
+
+	for (const ActionDef& action : actions)
+	{
+		if (!animator->HasClip(action.clip))
+		{
+			textRenderer->Log("[DragonAI] action %s: clip %s is not loaded", action.name, action.clip);
+			isValid = false;
+		}
+	}
+
+	for (const AttackOption& option : DragonAttackData())
+	{
+		if (!FindAction(actions, option.action))
+		{
+			textRenderer->Log("[DragonAI] attack %s: no action named %s", option.name.c_str(), option.action.c_str());
+			isValid = false;
+		}
+	}
+
+	assert(isValid && "dragon action/attack data has errors, see the on-screen log");
 }
 #endif
 

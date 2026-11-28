@@ -1,5 +1,6 @@
 #include <string>
 
+#include "ActionData.h"
 #include "DebugRenderer.h"
 #include "DragonAI.h"
 #include "DragonStates.h"
@@ -19,9 +20,15 @@ void DragonAttackState::Enter(DragonAI& ai)
 
 	selector.StartCooldown(attkIndex);
 
+	const ActionDef* actionDef = FindAction(DragonActionData(), option->action);
+	if (!actionDef)
+	{
+		return;
+	}
+
 	SkeletalAnimatorComponent& animator = ai.GetAnimator();
-	isPlaying = animator.PlayClip(option->clip);
-	isTracking = isPlaying && option->trackSpeedDeg > 0.f && animator.HasEvent(option->clip, trackEndEvent);
+	isPlaying = animator.PlayClip(option->action);
+	isTracking = isPlaying && option->trackSpeedDeg > 0.f && animator.HasEvent(option->action, trackEndEvent);
 }
 
 void DragonAttackState::Update(DragonAI& ai, float deltaTime)

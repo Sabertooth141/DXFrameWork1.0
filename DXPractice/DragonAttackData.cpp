@@ -9,7 +9,7 @@ const std::vector<AttackOption>& DragonAttackData()
 		// behind: the answer to a player hugging the tail
 		// back whole sector
 		attkList.push_back({
-			.name = "tailSwipe", .clip = "Attk2", .priority = 5, .cooldownSec = 8.f,
+			.name = "tailSwipe", .action = "Attk2", .priority = 5, .cooldownSec = 8.f,
 			.minRange = 0.f, .maxRange = 8.f, .sectors = sectorBack,
 			.trackSpeedDeg = 0.f, .recoverSec = 0.8f, .whiffRecoverSec = 1.6f, .hitboxGroup = "tail"
 			});
@@ -17,7 +17,7 @@ const std::vector<AttackOption>& DragonAttackData()
 		// close range
 		// front whole sector
 		attkList.push_back({
-			.name = "wingSlam", .clip = "Attk5", .priority = 4, .cooldownSec = 8.f,
+			.name = "wingSlam", .action = "Attk5", .priority = 4, .cooldownSec = 8.f,
 			.minRange = 2.f, .maxRange = 8.f, .sectors = sectorFront,
 			.trackSpeedDeg = 60.f, .recoverSec = 0.8f, .whiffRecoverSec = 1.f, .hitboxGroup = "wingL"
 			});
@@ -25,7 +25,7 @@ const std::vector<AttackOption>& DragonAttackData()
 		// close
 		// front && left whole sector
 		attkList.push_back({
-			.name = "headBlade", .clip = "Attk3", .priority = 3, .cooldownSec = 6.f,
+			.name = "headBlade", .action = "Attk3", .priority = 3, .cooldownSec = 6.f,
 			.minRange = 0.f, .maxRange = 7.f, .sectors = sectorFront | sectorLeft,
 			.trackSpeedDeg = 90.f, .recoverSec = 0.6f, .whiffRecoverSec = 1.f, .hitboxGroup = "headBlade"
 			});
@@ -33,7 +33,7 @@ const std::vector<AttackOption>& DragonAttackData()
 		// close
 		// front sector
 		attkList.push_back({
-			.name = "breathFan", .clip = "Attk4", .priority = 1, .cooldownSec = 12.f,
+			.name = "breathFan", .action = "Attk4", .priority = 1, .cooldownSec = 12.f,
 			.minRange = 4.f, .maxRange = 7.f, .sectors = sectorFront,
 			.trackSpeedDeg = 30.f, .recoverSec = 1.5f, .whiffRecoverSec = 2.2f, .hitboxGroup = "breath"
 			});
@@ -41,7 +41,7 @@ const std::vector<AttackOption>& DragonAttackData()
 		// mid range
 		// dead ahead
 		attkList.push_back({
-			.name = "breathLine", .clip = "Attk1", .priority = 2, .cooldownSec = 12.f,
+			.name = "breathLine", .action = "Attk1", .priority = 2, .cooldownSec = 12.f,
 			.minRange = 5.5f, .maxRange = 15.f, .sectors = sectorFront,
 			.trackSpeedDeg = 60.f, .recoverSec = 0.2f, .whiffRecoverSec = 0.6f, .hitboxGroup = "breath"
 			});

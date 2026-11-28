@@ -1,3 +1,4 @@
+#include "ActionData.h"
 #include "CharacterData.h"
 #include "SkeletalAnimatorComponent.h"
 
@@ -55,10 +56,27 @@ namespace
 
 		return data;
 	}
+
+	std::vector<ActionDef> BuildDragonActions()
+	{
+		return {
+			{.name = "Attk1", .clip = "Attk1", .fadeInSec = useFadeTable},
+			{.name = "Attk2", .clip = "Attk2", .fadeInSec = useFadeTable},
+			{.name = "Attk3", .clip = "Attk3", .fadeInSec = useFadeTable},
+			{.name = "Attk4", .clip = "Attk4", .fadeInSec = useFadeTable},
+			{.name = "Attk5", .clip = "Attk5", .fadeInSec = useFadeTable},
+		};
+	}
 }
 
 const CharacterData& DragonData()
 {
 	static const CharacterData data = BuildDragonData();
 	return data;
+}
+
+const std::vector<ActionDef>& DragonActionData()
+{
+	static const std::vector<ActionDef> actionData = BuildDragonActions();
+	return actionData;
 }

@@ -112,7 +112,11 @@ public:
 		fadeTable = inTable;
 	}
 
+	// resolve fadesec if fadesec = -1
 	bool PlayClip(const std::string& name, float fadeSec = -1.f, float startTimeSec = 0.f);
+	// fade table lookup
+	float ResolveFadeSec(const std::string& toClipName) const;
+
 	void AddEvent(const std::string& clipName, float timeSec, const std::string& eventName, const std::string& param = {});
 
 	// for data-driven setup / the editor (AnimSetComponent)

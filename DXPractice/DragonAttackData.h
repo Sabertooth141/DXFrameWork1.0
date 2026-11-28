@@ -26,7 +26,7 @@ constexpr uint8_t phaseAll = ToPhaseBit(1) | ToPhaseBit(2);
 struct AttackOption
 {
 	std::string name;
-	std::string clip;
+	std::string action;
 
 	int priority = 0; // higher = more priority
 	float cooldownSec = 0.f;

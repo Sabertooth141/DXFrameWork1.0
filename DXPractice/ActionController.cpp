@@ -61,7 +61,22 @@ bool ActionController::Play(const ActionDef& action, float minFadeSec)
 {
 	Stop();
 
-	if (!animator || !animator->PlayClip(action.clip, std::max(action.fadeInSec, minFadeSec)))
+	if (!animator)
+	{
+		return false;
+	}
+
+	float fadeSec;
+	if (action.fadeInSec < 0.f)
+	{
+		fadeSec = animator->ResolveFadeSec(action.clip);
+	}
+	else
+	{
+		fadeSec = action.fadeInSec;
+	}
+
+	if (!animator->PlayClip(action.clip, std::max(fadeSec, minFadeSec)))
 	{
 		return false;
 	}

@@ -31,6 +31,7 @@ public:
 #ifndef NDEBUG
 	void DrawDebugUI() override;
 	void DrawDebugGizmos(DebugRenderer& debugRenderer) const override;
+	void ValidateActionData() const;
 #endif
 
 

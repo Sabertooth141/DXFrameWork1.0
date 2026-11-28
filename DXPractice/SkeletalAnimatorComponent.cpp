@@ -220,7 +220,7 @@ bool SkeletalAnimatorComponent::PlayClip(const std::string& name, float fadeSec,
 
 	if (fadeSec < 0.f)
 	{
-		fadeSec = fadeTable ? fadeTable->GetFadeTime(GetCurrClipName(), name) : 0.f;
+		fadeSec = ResolveFadeSec(name);
 	}
 
 #ifndef NDEBUG
@@ -247,6 +247,15 @@ bool SkeletalAnimatorComponent::PlayClip(const std::string& name, float fadeSec,
 	StartFade(fadeSec);
 	StartPlayback(it->second, startTimeSec);
 	return true;
+}
+
+float SkeletalAnimatorComponent::ResolveFadeSec(const std::string& toClipName) const
+{
+	if (fadeTable)
+	{
+		return fadeTable->GetFadeTime(GetCurrClipName(), toClipName);
+	}
+	return 0.f;
 }
 
 void SkeletalAnimatorComponent::AddEvent(const std::string& clipName, float timeSec, const std::string& eventName, const std::string& param)
